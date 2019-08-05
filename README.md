@@ -96,6 +96,13 @@ There's builtin support for frames, scrolling, bouncing, delayed and compound sp
 - any other ideas welcome!
 
 
+## Fun facts
+
+- This whole project was implemented in functional style;
+- It uses wholeheartedly Python Closures and Generators, they're very nice tools;
+- It does not declare even a single class.
+
+
 ## Changelog highlights:
 - 1.0: first public release, already very complete and mature
 
