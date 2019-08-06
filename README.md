@@ -56,7 +56,7 @@ The `bar()` call is what makes the bar go forward. You usually call it after con
 It returns the current count if you'd like to know where you are.
 
 
-### Messages
+### Outputting messages
 
 While in an alive progress bar context, you have two ways to output messages:
   - calling `bar('message')`, which besides incrementing the counter, also sets/overwrites an inline message within the bar line;
@@ -73,12 +73,54 @@ And you can mix and match them.
 
 [![asciicast](https://asciinema.org/a/j392MaLz1w0zDw6EVHw4QbLAO.svg)](https://asciinema.org/a/j392MaLz1w0zDw6EVHw4QbLAO)
 
-#### Advanced
+
+### Advanced
+
+#### Create your own animations
 
 Make your own spinners and bars!
 There's builtin support for frames, scrolling, bouncing, delayed and compound spinners! Be creative!
 
 [![asciicast](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc.svg)](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc)
+
+
+#### Get to know the Pause mechanism
+
+To use the pause mechanism, you must use a generator to yield the object you want to interact with. The bar object includes another context manager to do that, just do `with bar.pause(): yield obj`.
+Let's see an example, suppose you need to reconcile transactions. When you found one in the wrong state, you must debug and understand where it went wrong. You would do something like this:
+
+```python
+from alive_progress import alive_bar
+
+def reconcile_transactions():
+    qs = Transaction.objects.filter()  # django example, or in sqlalchemy: session.query(Transaction).filter()
+    with alive_bar(qs.count()) as bar:
+        for transaction in qs:
+            expected = ...  # calculate expected, like request to a remote system
+            bar()
+            if transaction.state != expected:
+                with bar.pause():
+                    yield transaction
+```
+
+Then you could use it as:
+
+```python
+>>> gen = reconcile_transactions()
+>>> t = next(gen, None)
+|███████████████▍                       | ▅▃▁ 82/200 [41%] in 4s (18.9/s, eta: 6s)
+```
+
+The progress bar will run as usual, but as soon as an inconsistency is found, you get:
+
+```python
+>>> t = next(gen, None)
+|█████████████████████                   | 105/200 [52%] in 2s (42.8/s, eta: 2s)
+>>> t
+Transaction<id: 123>
+```
+
+Then just interact with and fix that transaction any way you want, and continue with the same `t = next(gen, None)`, the bar returns like nothing happened!!
 
 
 ## To do
