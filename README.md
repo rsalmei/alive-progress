@@ -11,23 +11,18 @@ I've made this thinking about all that, the Alive-Progress bar! :)
 
 [![asciicast](https://asciinema.org/a/eOxk1RqJd0AlSNONgoAtR0CLz.svg)](https://asciinema.org/a/eOxk1RqJd0AlSNONgoAtR0CLz)
 
+
 I like to think of it as a new kind of progress bar for python, as it has among other things:
   - a cool live spinner, which makes it clear the process did not hang and your terminal/connection is healthy;
   - a visual feedback of the current speed/throughput, as the spinner runs faster or slower according to the actual processing speed;
   - an efficient multi-threaded bar, which updates itself at a fraction of the actual speed (1,000,000 iterations per second equates to roughly 60fps refresh rate) to keep CPU usage low and avoid terminal spamming;
-  - an expected time of arrival (eta), that shows the remaining processing time in a friendly way, not anything like `eta: 1584s`, it will nicely show `eta: 0:26:24` as you would expect (but anything less than a minute is indeed `eta: 42s`;
+  - an expected time of arrival (eta), that shows the remaining processing time in a friendly way, not anything like `eta: 1584s`, it will nicely show `eta: 0:26:24` as you would expect (but anything less than a minute is indeed `eta: 42s`);
   - a `print()` hook, which allows print statements in the midst of an alive-bar context, nicely cleaning the output of any garbage, and even enriching with the current count when it occurred;
   - after your processing has finished, a nice receipt is printed with the statistics of that run, including the elapsed time and observed throughput;
   - it tracks the actual count in regard of the expected count, so it will look different if you send in more or less than expected;
   - it automatically detects if there's really an allocated tty, and if there isn't, only the final receipt is printed, so you can safely include the alive-bar in all and any code and rest assure your log file won't get 60fps garbage;
   - you can pause the alive-bar! I think that's an unprecedented feature for a progress-bar, it's incredible to orchestrate operations that request manual interaction on some items;
   - it is customizable, with a growing smorgasbord of different bar and spinner styles, as well as several factories to easily generate yours!
-
-Wondering what styles does it have bundled? It's `showtime`! ;)
-
-[![asciicast](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG.svg)](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG)
-
-I've made these styles to test all combinations of parameters of the factories, but I think some of them ended up very very cool! Use them, or create your own.
 
 
 ## Get it
@@ -39,7 +34,7 @@ $ pip install alive-progress
 ```
 
 
-## How to use
+## How to use it
 
 Use it in a `with` context manager like this:
 
@@ -52,8 +47,16 @@ with alive_bar(qs.count()) as bar:  # or `len(iterable)`: declare your expected 
         bar()                       # call after consuming one item
 ```
 
-The `bar()` call is what makes the bar go forward. You usually call it after consuming an item and in every iteration, but you can get creative! Call it only when you find something for example, depending on what you want to monitor.
-It returns the current count if you'd like to know where you are.
+The `bar()` call is what makes the bar go forward. You usually call it after consuming an item and in every iteration, but you can get creative! Call it only when you find something for example, depending on what you want to monitor. It returns the current count if you'd like to know where you are.
+
+
+### Styles
+
+Wondering what styles does it have bundled? It's `showtime`! ;)
+
+[![asciicast](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG.svg)](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG)
+
+I've made these styles to test all combinations of parameters of the factories, but I think some of them ended up very very cool! Use them, or create your own.
 
 
 ### Outputting messages
@@ -61,6 +64,7 @@ It returns the current count if you'd like to know where you are.
 While in an alive progress bar context, you have two ways to output messages:
   - calling `bar('message')`, which besides incrementing the counter, also sets/overwrites an inline message within the bar line;
   - calling `print('message')`, which prints an enriched message that includes the current position of the alive bar, thus leaving behind a log and continuing the bar below it.
+
 Both methods always clear the line appropriately to remove any garbage of previous messages on screen.
 
 [![asciicast](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F.svg)](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F)
@@ -79,14 +83,15 @@ And you can mix and match them.
 #### Create your own animations
 
 Make your own spinners and bars!
-There's builtin support for frames, scrolling, bouncing, delayed and compound spinners! Be creative!
+There's builtin support for frames, scrolling, bouncing, delayed and compound spinners! Get creative!
 
 [![asciicast](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc.svg)](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc)
 
 
-#### Get to know the Pause mechanism
+#### The Pause mechanism
 
 To use the pause mechanism, you must use a generator to yield the object you want to interact with. The bar object includes another context manager to do that, just do `with bar.pause(): yield obj`.
+
 Let's see an example, suppose you need to reconcile transactions. When you found one in the wrong state, you must debug and understand where it went wrong. You would do something like this:
 
 ```python
@@ -106,21 +111,28 @@ def reconcile_transactions():
 Then you could use it as:
 
 ```python
->>> gen = reconcile_transactions()
->>> t = next(gen, None)
+In [12]: gen = reconcile_transactions()
+
+In [13]: t = next(gen, None)
 |███████████████▍                       | ▅▃▁ 82/200 [41%] in 4s (18.9/s, eta: 6s)
 ```
 
 The progress bar will run as usual, but as soon as an inconsistency is found, you get:
 
 ```python
->>> t = next(gen, None)
-|█████████████████████                   | 105/200 [52%] in 2s (42.8/s, eta: 2s)
->>> t
-Transaction<id: 123>
+In [13]: t = next(gen, None)
+|█████████████████████                   | 105/200 [52%] in 5s (18.8/s, eta: 4s)
+
+In [14]: t
+Out[14]: Transaction<#123>
 ```
 
 Then just interact with and fix that transaction any way you want, and continue with the same `t = next(gen, None)`, the bar returns like nothing happened!!
+
+```python
+In [21]: t = next(gen, None)
+|█████████████████████                   | ▁▃▅ 105/200 [52%] in 5s (18.8/s, eta: 4s)
+```
 
 
 ## To do
@@ -156,5 +168,7 @@ This software is licensed under the MIT License. See the LICENSE file in the top
 ## Did you like it?
 
 Thank you for your interest!
+
 I've put much ❤️ and effort into this.
+
 Hope you'll like it.
