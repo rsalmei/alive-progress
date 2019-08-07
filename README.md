@@ -73,7 +73,7 @@ with alive_bar(3) as bar:
 ```
 
 
-### Styles
+## Styles
 
 Wondering what styles does it have bundled? It's `showtime`! ;)
 
@@ -82,10 +82,10 @@ Wondering what styles does it have bundled? It's `showtime`! ;)
 I've made these styles to test all combinations of parameters of the factories, but I think some of them ended up very very cool! Use them, or create your own.
 
 
-### Outputting messages
+## Outputting messages
 
 While in an alive progress bar context, you have two ways to output messages:
-  - calling `bar('message')`, which besides incrementing the counter, also sets/overwrites an inline message within the bar line;
+  - calling `bar('message')`, which besides incrementing the counter, also sets/overwrites a situational message within the bar line, usually to display something about the phase the processing is in, or some hint about the items being processed;
   - calling `print('message')`, which prints an enriched message that includes the current position of the alive bar, thus leaving behind a log and continuing the bar below it.
 
 Both methods always clear the line appropriately to remove any garbage of previous messages on screen.
@@ -93,17 +93,18 @@ Both methods always clear the line appropriately to remove any garbage of previo
 [![asciicast](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F.svg)](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F)
 
 
-### Customization
+## Customization
 
 All of the components are individually customizable, both globally and per use!
+
 And you can mix and match them.
 
 [![asciicast](https://asciinema.org/a/j392MaLz1w0zDw6EVHw4QbLAO.svg)](https://asciinema.org/a/j392MaLz1w0zDw6EVHw4QbLAO)
 
 
-### Advanced
+## Advanced
 
-#### Create your own animations
+### Create your own animations
 
 Make your own spinners and bars!
 There's builtin support for frames, scrolling, bouncing, delayed and compound spinners! Get creative!
@@ -111,7 +112,7 @@ There's builtin support for frames, scrolling, bouncing, delayed and compound sp
 [![asciicast](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc.svg)](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc)
 
 
-#### The Pause mechanism
+### The Pause mechanism
 
 To use the pause mechanism, you must use a generator to yield the object you want to interact with. The bar object includes another context manager to do that, just do `with bar.pause(): yield obj`.
 
