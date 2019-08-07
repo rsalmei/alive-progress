@@ -40,14 +40,37 @@ Use it in a `with` context manager like this:
 
 ```python
 from alive_progress import alive_bar
-qs = <query or iterable>            # usually some queryset or iterable
-with alive_bar(qs.count()) as bar:  # or `len(iterable)`: declare your expected total
-    for item in qs:                 # iterate over your items
-        # process an item
-        bar()                       # call after consuming one item
+items = (1, 2, 3)                    # declare your set of items
+with alive_bar(len(items)) as bar:   # declare your expected total
+    for item in items:               # iterate over your items
+        # process each item
+        bar()                        # call after consuming one item
 ```
 
-The `bar()` call is what makes the bar go forward. You usually call it after consuming an item and in every iteration, but you can get creative! Call it only when you find something for example, depending on what you want to monitor. It returns the current count if you'd like to know where you are.
+That's it!
+
+In general lines, just retrieve the items, enter the `alive_bar(total)` context manager, and iterate/process normally, calling `bar()` in each iteration.
+
+
+### Notes
+
+- the `items` can be any iterable, and usually is some queryset;
+- the first argument of the `alive_bar` is the total, it could be a `qs.count()` for querysets, a `len(items)` if the iterable supports it, or anything that returns an integer;
+- the `bar()` call is what makes the bar go forward -- you usually call it after consuming an item and in every iteration, but you can get creative! For example you could call it only when you find something you want, or call it more than once in the same iteration, depending on what you want to monitor. Just adjust the total accordingly to get a useful eta;
+- the `bar()` call also returns the current count if needed, and enables to pass situational messages to the bar.
+
+So, you could even use it like:
+
+```python
+from alive_progress import alive_bar
+with alive_bar(3) as bar:
+    corpus = read_big_file()
+    bar('file read, tokenizing')
+    tokens = tokenize(corpus)
+    bar('tokens ok, processing')
+    process(tokens)
+    bar()
+```
 
 
 ### Styles
