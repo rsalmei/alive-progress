@@ -114,9 +114,13 @@ There's builtin support for frames, scrolling, bouncing, delayed and compound sp
 
 ### The Pause mechanism
 
-To use the pause mechanism, you must use a generator to yield the object you want to interact with. The bar object includes another context manager to do that, just do `with bar.pause(): yield obj`.
+To use the pause mechanism, you must use a generator to yield the objects you want to interact with. The bar object includes another context manager to do that, just do `with bar.pause(): yield obj`.
 
-Let's see an example, suppose you need to reconcile transactions. When you found one in the wrong state, you must debug and understand where it went wrong. You would do something like this:
+Let's use an example, suppose you need to reconcile transactions. You need to iterate over thousands of them, detect somehow the faulty ones, and fix them. They could be broken or not synced or invalid or anything else, several different problems.
+
+Typically you would have to let the process run, appending to a list each inconsistency found, and waiting, potentially a long time, until the end to be able to do anything. You could mitigate this by processing in chunks, but that has its own implications.
+
+With the Alive-Progress bar and the Pause mechanism, you can inspect these transactions in **real-time**! You wait only until the next one is found! You would do something like this:
 
 ```python
 from alive_progress import alive_bar
@@ -125,14 +129,13 @@ def reconcile_transactions():
     qs = Transaction.objects.filter()  # django example, or in sqlalchemy: session.query(Transaction).filter()
     with alive_bar(qs.count()) as bar:
         for transaction in qs:
-            expected = ...  # calculate expected, like request to a remote system
-            bar()
-            if transaction.state != expected:
+            if not validate(transaction):
                 with bar.pause():
                     yield transaction
+            bar()
 ```
 
-Then you could use it as:
+Then you could use it in ipython as:
 
 ```python
 In [12]: gen = reconcile_transactions()
@@ -141,7 +144,7 @@ In [13]: t = next(gen, None)
 |███████████████▍                       | ▅▃▁ 82/200 [41%] in 4s (18.9/s, eta: 6s)
 ```
 
-The progress bar will run as usual, but as soon as an inconsistency is found, you get:
+The progress bar will run as usual, but as soon as an inconsistency is found, the bar pauses itself and you get the prompt back:
 
 ```python
 In [13]: t = next(gen, None)
@@ -151,7 +154,7 @@ In [14]: t
 Out[14]: Transaction<#123>
 ```
 
-Then just interact with and fix that transaction any way you want, and continue with the same `t = next(gen, None)`, the bar returns like nothing happened!!
+Debug and fix that transaction any way you want, and when you're done, continue the process with the same `t = next(gen, None)`... The bar returns like nothing happened!! How cool is that? :)
 
 ```python
 In [21]: t = next(gen, None)
