@@ -14,7 +14,7 @@ from .spinners import spinner_player
 
 
 @contextmanager
-def alive_bar(total=None, title=None, **options):
+def alive_bar(total=None, title=None, force_tty=False, **options):
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, time elapsed, throughput and eta.
     When the operation finishes, a receipt is displayed with statistics.
@@ -70,6 +70,7 @@ def alive_bar(total=None, title=None, **options):
     Args:
         total (Optional[int]): the total expected count
         title (Optional[str]): the title, will be printed whenever there's no custom message
+        force_tty (bool): runs animations even without a tty (pycharm terminal for example)
         **options: custom configuration options, see config_handler for details
 
     """
@@ -138,10 +139,11 @@ def alive_bar(total=None, title=None, **options):
             print_buffer[:] = []
 
     print_buffer = []
-    alive_bar.write = print_hook
+    print_hook.write = print_hook
+    print_hook.flush = lambda: None
 
     def start_monitoring():
-        sys.stdout = alive_bar
+        sys.stdout = print_hook
         event.set()
 
     def stop_monitoring(clear):
@@ -149,7 +151,9 @@ def alive_bar(total=None, title=None, **options):
             event.clear()
         sys.stdout = sys.__stdout__
 
-    if sys.stdout.isatty():
+    event = threading.Event()
+    print_lock = threading.Lock()
+    if sys.stdout.isatty() or force_tty:
         @contextmanager
         def pause_monitoring():
             stop_monitoring(True)
@@ -160,8 +164,6 @@ def alive_bar(total=None, title=None, **options):
             start_monitoring()
 
         tracker.pause = pause_monitoring
-        event = threading.Event()
-        print_lock = threading.Lock()
         thread = threading.Thread(target=__tick)
         thread.daemon = True
         thread.start()

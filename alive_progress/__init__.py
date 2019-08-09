@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-VERSION = (1, 0)
+VERSION = (1, 0, 1)
 
 __author__ = 'Rogério Sampaio de Almeida'
 __email__ = 'rsalmei@gmail.com'
@@ -20,3 +20,8 @@ __all__ = ['alive_bar', 'standard_bar_factory', 'unknown_bar_factory', 'spinner_
            'frame_spinner_factory', 'scrolling_spinner_factory', 'bouncing_spinner_factory',
            'compound_spinner_factory', 'delayed_spinner_factory', 'BARS', 'SPINNERS',
            'showtime', 'config_handler']
+
+import sys
+
+if sys.version_info <= (3,):
+    __all__ = [bytes(x) for x in __all__]

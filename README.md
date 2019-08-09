@@ -62,7 +62,6 @@ In general lines, just retrieve the items, enter the `alive_bar(total)` context 
 So, you could even use it like:
 
 ```python
-from alive_progress import alive_bar
 with alive_bar(3) as bar:
     corpus = read_big_file()
     bar('file read, tokenizing')
@@ -123,8 +122,6 @@ Typically you would have to let the process run, appending to a list each incons
 With the Alive-Progress bar and the Pause mechanism, you can inspect these transactions in **real-time**! You wait only until the next one is found! You would do something like this:
 
 ```python
-from alive_progress import alive_bar
-
 def reconcile_transactions():
     qs = Transaction.objects.filter()  # django example, or in sqlalchemy: session.query(Transaction).filter()
     with alive_bar(qs.count()) as bar:
@@ -161,6 +158,21 @@ In [21]: t = next(gen, None)
 |█████████████████████                   | ▁▃▅ 105/200 [52%] in 5s (18.8/s, eta: 4s)
 ```
 
+### Pycharm Python Console
+
+Pycharm's python console do not report itself as "interactive", so I've included a `force_tty` argument to be able to use the alive-progress bar in it.
+
+So, just start it as:
+
+```python
+with alive_bar(1000, force_tty=1) as bar:
+    for i in range(1000):
+        time.sleep(.01)
+        bar()
+```
+
+Do note that this console is heavily instrumented and has much more overhead, so the outcome is not as fluid as you would expect.
+ 
 
 ## To do
 
@@ -185,7 +197,8 @@ In [21]: t = next(gen, None)
 
 
 ## Changelog highlights:
-- 1.0: first public release, already very complete and mature
+- 1.0.1: pycharm console support, improve compatibility with python streams, support 'from alive_progress import *' in python 2.7
+- 1.0.0: first public release, already very complete and mature
 
 
 ## License
