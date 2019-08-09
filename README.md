@@ -197,7 +197,8 @@ Do note that this console is heavily instrumented and has much more overhead, so
 
 
 ## Changelog highlights:
-- 1.0: first public release, already very complete and mature
+- 1.0.1: pycharm console support, improve compatibility with python streams, support 'from alive_progress import *' in python 2.7
+- 1.0.0: first public release, already very complete and mature
 
 
 ## License
