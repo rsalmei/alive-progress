@@ -14,7 +14,7 @@ from .spinners import spinner_player
 
 
 @contextmanager
-def alive_bar(total=None, title=None, **options):
+def alive_bar(total=None, title=None, force_tty=False, **options):
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, time elapsed, throughput and eta.
     When the operation finishes, a receipt is displayed with statistics.
@@ -70,6 +70,7 @@ def alive_bar(total=None, title=None, **options):
     Args:
         total (Optional[int]): the total expected count
         title (Optional[str]): the title, will be printed whenever there's no custom message
+        force_tty (bool): runs animations even without a tty (pycharm terminal for example)
         **options: custom configuration options, see config_handler for details
 
     """
@@ -149,7 +150,7 @@ def alive_bar(total=None, title=None, **options):
             event.clear()
         sys.stdout = sys.__stdout__
 
-    if sys.stdout.isatty():
+    if sys.stdout.isatty() or force_tty:
         @contextmanager
         def pause_monitoring():
             stop_monitoring(True)
