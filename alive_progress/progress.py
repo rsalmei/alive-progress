@@ -150,6 +150,8 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
             event.clear()
         sys.stdout = sys.__stdout__
 
+    event = threading.Event()
+    print_lock = threading.Lock()
     if sys.stdout.isatty() or force_tty:
         @contextmanager
         def pause_monitoring():
@@ -161,8 +163,6 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
             start_monitoring()
 
         tracker.pause = pause_monitoring
-        event = threading.Event()
-        print_lock = threading.Lock()
         thread = threading.Thread(target=__tick)
         thread.daemon = True
         thread.start()
