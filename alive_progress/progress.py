@@ -139,10 +139,10 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
             print_buffer[:] = []
 
     print_buffer = []
-    alive_bar.write = print_hook
+    print_hook.write = print_hook
 
     def start_monitoring():
-        sys.stdout = alive_bar
+        sys.stdout = print_hook
         event.set()
 
     def stop_monitoring(clear):
