@@ -140,6 +140,7 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
 
     print_buffer = []
     print_hook.write = print_hook
+    print_hook.flush = lambda: None
 
     def start_monitoring():
         sys.stdout = print_hook
