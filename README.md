@@ -7,9 +7,9 @@
 
 Ever found yourself in a remote ssh session, doing some lengthy operations, and every now and then you feel the need to hit [enter] just to ensure you didn't lose the connection? Ever wondered where your processing is in, and when will it finish? Ever needed to *pause* the progress bar for a while, return to the python REPL for a manual inspection or fixing an item, and then *resume* the process like it never happened? I did...
 
-I've made this thinking about all that, the Alive-Progress bar! :)
+I've made this cool progress bar thinking about all that, the Alive-Progress bar! :)
 
-[![asciicast](https://asciinema.org/a/eOxk1RqJd0AlSNONgoAtR0CLz.svg)](https://asciinema.org/a/eOxk1RqJd0AlSNONgoAtR0CLz)
+[![alive-progress](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/main.gif)](https://asciinema.org/a/eOxk1RqJd0AlSNONgoAtR0CLz)
 
 
 I like to think of it as a new kind of progress bar for python, as it has among other things:
