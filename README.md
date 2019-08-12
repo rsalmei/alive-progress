@@ -49,7 +49,7 @@ with alive_bar(len(items)) as bar:   # declare your expected total
 
 That's it!
 
-In general lines, just retrieve the items, enter the `alive_bar(total)` context manager, and iterate/process normally, calling `bar()` in each iteration.
+In general lines, just retrieve the items, enter the `alive_bar(total)` context manager, and iterate/process as usual, calling `bar()` in each iteration.
 
 
 ### Notes
@@ -132,18 +132,11 @@ def reconcile_transactions():
             bar()
 ```
 
-Then you could use it in ipython as:
+Then you could use it in ipython or your preferred REPL, just instantiate the generator and call `next`. The progress bar will run as usual, but as soon as an inconsistency is found, the bar pauses itself and you get the prompt back:
 
-```python
+```text
 In [12]: gen = reconcile_transactions()
 
-In [13]: t = next(gen, None)
-|███████████████▍                       | ▅▃▁ 82/200 [41%] in 4s (18.9/s, eta: 6s)
-```
-
-The progress bar will run as usual, but as soon as an inconsistency is found, the bar pauses itself and you get the prompt back:
-
-```python
 In [13]: t = next(gen, None)
 |█████████████████████                   | 105/200 [52%] in 5s (18.8/s, eta: 4s)
 
@@ -151,14 +144,14 @@ In [14]: t
 Out[14]: Transaction<#123>
 ```
 
-Debug and fix that transaction any way you want, and when you're done, continue the process with the same `t = next(gen, None)`... The bar returns like nothing happened!! How cool is that? :)
+Debug and fix that transaction any way you want, and when you're done, continue the process with the same `next` as before... The bar returns like nothing happened!! How cool is that? :)
 
-```python
+```text
 In [21]: t = next(gen, None)
 |█████████████████████                   | ▁▃▅ 105/200 [52%] in 5s (18.8/s, eta: 4s)
 ```
 
-### Pycharm Python Console
+### Forcing on not-interactive consoles (like Pycharm's)
 
 Pycharm's python console do not report itself as "interactive", so I've included a `force_tty` argument to be able to use the alive-progress bar in it.
 
