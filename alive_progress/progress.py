@@ -141,6 +141,7 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
     print_buffer = []
     print_hook.write = print_hook
     print_hook.flush = lambda: None
+    print_lock = threading.Lock()
 
     def start_monitoring():
         sys.stdout = print_hook
@@ -152,7 +153,6 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
         sys.stdout = sys.__stdout__
 
     event = threading.Event()
-    print_lock = threading.Lock()
     if sys.stdout.isatty() or force_tty:
         @contextmanager
         def pause_monitoring():
