@@ -85,29 +85,28 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
     def clear_traces():
         sys.__stdout__.write('\033[2K\r')
 
-    def __tick():
+    def run():
         last_line_len, player = 0, spinner_player(config.spinner())
         while thread:
             event.wait()
-            fps, last_line_len = __alive_repr(last_line_len, spin=next(player))
+            fps, last_line_len = alive_repr(last_line_len, spin=next(player))
             time.sleep(1. / fps)
 
-    def __alive_repr(last_line_len, spin=''):
-        init, pos, text = init_pos_text
-        elapsed = time.time() - init
-        rate = pos / elapsed if elapsed else 0
+    def alive_repr(last_line_len, spin=''):
+        elapsed = time.time() - run.init
+        rate = run.pos / elapsed if elapsed else 0
 
         eta_text = '?'
         if total and rate:
-            eta = (total - pos) / rate
+            eta = (total - run.pos) / rate
             if eta >= 0:
                 eta_text = '{:.0f}s'.format(eta) if eta < 60 \
                     else timedelta(seconds=int(eta) + 1)
 
-        text, stats_ = ('', stats_end) if end else (text, stats)
-        percent = percent_fn(pos)
+        text, stats_ = ('', stats_end) if end else (run.text, stats)
+        percent = percent_fn(run.pos)
         line = '{} {}{}{} in {} {} {}'.format(
-            bar_repr(percent, end), spin, spin and ' ' or '', monitor(percent, pos),
+            bar_repr(percent, end), spin, spin and ' ' or '', monitor(percent, run.pos),
             to_elapsed(elapsed), stats_(rate, eta_text), text or title or ''
         )
 
@@ -118,20 +117,20 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
             sys.__stdout__.write(line + (spin and '\r' or '\n'))
             sys.__stdout__.flush()
 
-        fps = (math.log10(rate) * 10 if rate >= 1.3 else 2) if pos else 10
+        fps = (math.log10(rate) * 10 if rate >= 1.3 else 2) if run.pos else 10
         return fps, line_len
 
     def tracker(text=None):
-        init_pos_text[1] += 1
+        run.pos += 1
         if text is not None:
-            init_pos_text[2] = str(text)
-        return init_pos_text[1]
+            run.text = str(text)
+        return run.pos
 
     def print_hook(part):
         if part != '\n':
             print_buffer.extend([u for x in part.splitlines(True) for u in (x, None)][:-1])
         else:
-            header = 'on {}: '.format(init_pos_text[1])
+            header = 'on {}: '.format(run.pos)
             nested = map(lambda x: x or ' ' * len(header), print_buffer)
             with print_lock:
                 clear_traces()
@@ -157,14 +156,14 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
         @contextmanager
         def pause_monitoring():
             stop_monitoring(True)
-            offset = time.time() - init_pos_text[0]
-            __alive_repr(1e6)
+            offset = time.time() - run.init
+            alive_repr(1e6)
             yield
-            init_pos_text[0] = time.time() - offset
+            run.init = time.time() - offset
             start_monitoring()
 
         tracker.pause = pause_monitoring
-        thread = threading.Thread(target=__tick)
+        thread = threading.Thread(target=run)
         thread.daemon = True
         thread.start()
 
@@ -183,7 +182,7 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
     stats_end = lambda rate, eta: '({:.2f}/s)'.format(rate)
 
     end = False
-    init_pos_text = [time.time(), 0, '']
+    run.init, run.pos, run.text = time.time(), 0, ''
     start_monitoring()
     try:
         yield tracker
@@ -196,4 +195,4 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
         stop_monitoring(False)
 
     end = True
-    __alive_repr(1e6)
+    alive_repr(1e6)
