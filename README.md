@@ -189,11 +189,12 @@ Do note that this console is heavily instrumented and has much more overhead, so
 - any other ideas welcome!
 
 
-## Fun facts
+## Interesting facts
 
 - This whole project was implemented in functional style;
-- It uses wholeheartedly Python Closures and Generators, they're very nice tools;
-- It does not declare even a single class.
+- It uses wholeheartedly _Closures_ and _Generators_, they're in almost all modules here;
+- It does not declare even a single class;
+- It does not have any dependencies.
 
 
 ## Changelog highlights:
