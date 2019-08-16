@@ -14,7 +14,7 @@ from .spinners import spinner_player
 
 
 @contextmanager
-def alive_bar(total=None, title=None, force_tty=False, **options):
+def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, time elapsed, throughput and eta.
     When the operation finishes, a receipt is displayed with statistics.
@@ -71,6 +71,7 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
         total (Optional[int]): the total expected count
         title (Optional[str]): the title, will be printed whenever there's no custom message
         force_tty (bool): runs animations even without a tty (pycharm terminal for example)
+        manual (bool): set to manage progress manually
         **options: custom configuration options, see config_handler for details
 
     """
@@ -120,11 +121,18 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
         fps = (math.log10(rate) * 10 if rate >= 1.3 else 2) if run.pos else 10
         return fps, line_len
 
-    def tracker(text=None):
-        run.pos += 1
-        if text is not None:
-            run.text = str(text)
-        return run.pos
+    if manual:
+        def bar(perc, text=None):
+            run.percent = float(perc)
+            if text is not None:
+                run.text = str(text)
+            return run.percent
+    else:
+        def bar(text=None):
+            run.count += 1
+            if text is not None:
+                run.text = str(text)
+            return run.count
 
     def print_hook(part):
         if part != '\n':
@@ -162,7 +170,7 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
             run.init = time.time() - offset
             start_monitoring()
 
-        tracker.pause = pause_monitoring
+        bar.pause = pause_monitoring
         thread = threading.Thread(target=run)
         thread.daemon = True
         thread.start()
@@ -186,7 +194,7 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
     run.percent, run.rate, run.init, run.elapsed = 0., 0., 0., 0.
     start_monitoring()
     try:
-        yield tracker
+        yield bar
     except BaseException:
         # makes visible the point where an exception is thrown.
         sys.__stdout__.write('\n')
