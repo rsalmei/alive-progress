@@ -130,8 +130,8 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
         if part != '\n':
             print_buffer.extend([u for x in part.splitlines(True) for u in (x, None)][:-1])
         else:
-            header = 'on {}: '.format(run.pos)
-            nested = map(lambda x: x or ' ' * len(header), print_buffer)
+            header = 'on {}: '.format(run.count)
+            nested = (line or ' ' * len(header) for line in print_buffer)
             with print_lock:
                 clear_traces()
                 sys.__stdout__.write('{}{}\n'.format(header, ''.join(nested)))
