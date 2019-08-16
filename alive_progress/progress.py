@@ -139,25 +139,25 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
     print_hook.flush = lambda: None
     print_lock = threading.Lock()
 
-    def start_monitoring():
+    def start_monitoring(offset=0.):
         sys.stdout = print_hook
         event.set()
+        run.init = time.time() - offset
 
     def stop_monitoring(clear):
         if clear:
             event.clear()
         sys.stdout = sys.__stdout__
+        return time.time() - run.init
 
     event = threading.Event()
     if sys.stdout.isatty() or force_tty:
         @contextmanager
         def pause_monitoring():
-            stop_monitoring(True)
-            offset = time.time() - run.init
+            offset = stop_monitoring(True)
             alive_repr()
             yield
-            run.init = time.time() - offset
-            start_monitoring()
+            start_monitoring(offset)
 
         bar.pause = pause_monitoring
         thread = threading.Thread(target=run)
