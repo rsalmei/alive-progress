@@ -78,9 +78,9 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
     if total and total <= 0:
         total = None
 
-    def to_elapsed(secs):
-        return timedelta(seconds=int(secs)) if secs >= 60 else \
-            '{:.1f}s'.format(secs) if end else '{}s'.format(int(secs))
+    def to_elapsed():
+        return timedelta(seconds=int(run.elapsed)) if run.elapsed >= 60 else \
+            '{:.1f}s'.format(run.elapsed) if end else '{}s'.format(int(run.elapsed))
 
     def clear_traces():
         sys.__stdout__.write('\033[2K\r')
@@ -106,8 +106,8 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
         text, stats_ = ('', stats_end) if end else (run.text, stats)
         percent = percent_fn(run.pos)
         line = '{} {}{}{} in {} {} {}'.format(
-            bar_repr(percent, end), spin, spin and ' ' or '', monitor(percent, run.pos),
-            to_elapsed(elapsed), stats_(rate, eta_text), text or title or ''
+            bar_repr(run.percent, end), spin, spin and ' ' or '',
+            monitor(), to_elapsed(), run.stats(), run.text or title or ''
         )
 
         line_len = len(line)
@@ -181,8 +181,9 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
         stats = lambda rate, eta: '({:.1f}/s)'.format(rate)
     stats_end = lambda rate, eta: '({:.2f}/s)'.format(rate)
 
-    end = False
-    run.init, run.pos, run.text = time.time(), 0, ''
+    end, run.text, run.eta_text, run.stats = False, '', '', stats
+    run.count, run.last_line_len = 0, 0
+    run.percent, run.rate, run.init, run.elapsed = 0., 0., 0., 0.
     start_monitoring()
     try:
         yield tracker
@@ -194,5 +195,5 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
         thread = None
         stop_monitoring(False)
 
-    end = True
     alive_repr(1e6)
+    end, run.text, run.stats = True, '', stats_end
