@@ -92,20 +92,9 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
             event.wait()
             fps, last_line_len = alive_repr(last_line_len, spin=next(player))
             time.sleep(1. / fps)
+        update_data()
 
     def alive_repr(last_line_len, spin=''):
-        elapsed = time.time() - run.init
-        rate = run.pos / elapsed if elapsed else 0
-
-        eta_text = '?'
-        if total and rate:
-            eta = (total - run.pos) / rate
-            if eta >= 0:
-                eta_text = '{:.0f}s'.format(eta) if eta < 60 \
-                    else timedelta(seconds=int(eta) + 1)
-
-        text, stats_ = ('', stats_end) if end else (run.text, stats)
-        percent = percent_fn(run.pos)
         line = '{} {}{}{} in {} {} {}'.format(
             bar_repr(run.percent, end), spin, spin and ' ' or '',
             monitor(), to_elapsed(), run.stats(), run.text or title or ''
@@ -176,6 +165,10 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
         thread.start()
 
     if total:
+    def update_data():
+        run.elapsed = time.time() - run.init
+        run.rate = current() / run.elapsed if run.elapsed else 0.
+        run.eta_text = eta_text()
         bar_repr = config.bar(config.length)
         percent_fn = lambda x: x / total
         monitor = lambda percent, pos: '{}{}/{} [{:.0%}]'.format(
