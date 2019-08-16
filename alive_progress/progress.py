@@ -87,14 +87,15 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
         sys.__stdout__.write('\033[2K\r')
 
     def run():
-        last_line_len, player = 0, spinner_player(config.spinner())
+        player = spinner_player(config.spinner())
         while thread:
             event.wait()
-            fps, last_line_len = alive_repr(last_line_len, spin=next(player))
             time.sleep(1. / fps)
+            alive_repr(next(player))
+
+    def alive_repr(spin=''):
         update_data()
 
-    def alive_repr(last_line_len, spin=''):
         line = '{} {}{}{} in {} {} {}'.format(
             bar_repr(run.percent, end), spin, spin and ' ' or '',
             monitor(), to_elapsed(), run.stats(), run.text or title or ''
@@ -102,13 +103,13 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
 
         line_len = len(line)
         with print_lock:
-            if line_len < last_line_len:
+            if line_len < run.last_line_len:
                 clear_traces()
             sys.__stdout__.write(line + (spin and '\r' or '\n'))
             sys.__stdout__.flush()
 
         fps = (math.log10(rate) * 10 if rate >= 1.3 else 2) if run.pos else 10
-        return fps, line_len
+        run.last_line_len = line_len
 
     if manual:
         def bar(perc, text=None):
@@ -154,7 +155,7 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
         def pause_monitoring():
             stop_monitoring(True)
             offset = time.time() - run.init
-            alive_repr(1e6)
+            alive_repr()
             yield
             run.init = time.time() - offset
             start_monitoring()
@@ -196,5 +197,5 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
         thread = None
         stop_monitoring(False)
 
-    alive_repr(1e6)
     end, run.text, run.stats = True, '', stats_end
+    alive_repr()
