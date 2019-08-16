@@ -187,7 +187,7 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
     start_monitoring()
     try:
         yield tracker
-    except:
+    except BaseException:
         # makes visible the point where an exception is thrown.
         sys.__stdout__.write('\n')
         raise
