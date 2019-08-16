@@ -37,7 +37,7 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
     Use it like this:
 
     >>> from alive_progress import alive_bar
-    ... with alive_bar(total=<length>) as bar:
+    ... with alive_bar(<total>) as bar:
     ...     for item in <iterable>:
     ...         # process item
     ...         bar()  # makes the bar go forward
