@@ -21,7 +21,7 @@ I like to think of it as a new kind of progress bar for python, as it has among 
   - after your processing has finished, a nice receipt is printed with the statistics of that run, including the elapsed time and observed throughput;
   - it tracks the actual count in regard of the expected count, so it will look different if you send in more or less than expected;
   - it automatically detects if there's really an allocated tty, and if there isn't, only the final receipt is printed, so you can safely include the alive-bar in all and any code and rest assure your log file won't get 60fps garbage;
-  - you can pause the alive-bar! I think that's an unprecedented feature for a progress-bar, it's incredible to orchestrate operations that request manual interaction on some items;
+  - you can pause the alive-bar! I think that's an unprecedented feature for a progress-bar, it's incredible to orchestrate operations that require manual interaction on some items;
   - it is customizable, with a growing smorgasbord of different bar and spinner styles, as well as several factories to easily generate yours!
 
 
