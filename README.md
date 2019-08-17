@@ -34,20 +34,20 @@ $ pip install alive-progress
 ```
 
 
-## It's _Alive_
+## Awake it
 
-Use it in a `with` context manager like this:
+Open a context manager like this:
 
 ```python
 from alive_progress import alive_bar
-items = (1, 2, 3)                    # retrieve your set of items
+items = range(1000)                  # retrieve your set of items
 with alive_bar(len(items)) as bar:   # declare your expected total
     for item in items:               # iterate as usual
         # process each item
         bar()                        # call after consuming one item
 ```
 
-That's it!
+And it's alive! 😲
 
 In general lines, just retrieve the items, enter the `alive_bar(total)` context manager, and iterate/process as usual, calling `bar()` once per item.
 
@@ -220,4 +220,4 @@ Thank you for your interest!
 
 I've put much ❤️ and effort into this.
 
-Hope you'll like it.
+Hope you like it.
