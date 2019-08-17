@@ -34,28 +34,28 @@ $ pip install alive-progress
 ```
 
 
-## How to use it
+## It's _Alive_
 
 Use it in a `with` context manager like this:
 
 ```python
 from alive_progress import alive_bar
-items = (1, 2, 3)                    # declare your set of items
+items = (1, 2, 3)                    # retrieve your set of items
 with alive_bar(len(items)) as bar:   # declare your expected total
-    for item in items:               # iterate over your items
+    for item in items:               # iterate as usual
         # process each item
         bar()                        # call after consuming one item
 ```
 
 That's it!
 
-In general lines, just retrieve the items, enter the `alive_bar(total)` context manager, and iterate/process as usual, calling `bar()` in each iteration.
+In general lines, just retrieve the items, enter the `alive_bar(total)` context manager, and iterate/process as usual, calling `bar()` once per item.
 
 
 ### Notes
 
-- the `items` can be any iterable, and usually is some queryset;
-- the first argument of the `alive_bar` is the total, it could be a `qs.count()` for querysets, a `len(items)` if the iterable supports it, or anything that returns an integer;
+- the `items` can be any iterable, and usually will be some queryset;
+- the first argument of the `alive_bar` is the expected total, it could be a `qs.count()` for querysets, a `len(items)` if the iterable supports it, or anything that returns an integer;
 - the `bar()` call is what makes the bar go forward -- you usually call it in every iteration after consuming an item, but you can get creative! For example you could call it only when you find something you want, or call it more than once in the same iteration, depending on what you want to monitor. Just adjust the total accordingly to get a useful eta;
 - the `bar()` call also returns the current count if needed, and enables to pass situational messages to the bar.
 
@@ -151,7 +151,7 @@ In [21]: t = next(gen, None)
 |█████████████████████                   | ▁▃▅ 105/200 [52%] in 5s (18.8/s, eta: 4s)
 ```
 
-### Forcing on not-interactive consoles (like Pycharm's)
+### Forcing animations on not-interactive consoles (like Pycharm's)
 
 Pycharm's python console do not report itself as "interactive", so I've included a `force_tty` argument to be able to use the alive-progress bar in it.
 
