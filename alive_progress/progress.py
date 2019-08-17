@@ -189,10 +189,10 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
 
     if manual and not total:  # there's only a percentage indication.
         logic_total, format_spec, current = 1., '%', lambda: run.percent
-        fps = lambda: max(math.log10(run.rate) * 10. + 40, 2.) if run.percent else 10.
+        fps = lambda: max(math.log10(run.rate) * 10. + 40, 2.) if run.rate else 10.
     else:  # there's items being processed.
         logic_total, format_spec, current = total, 'f', lambda: run.count
-        fps = lambda: max(math.log10(run.rate) * 10., 2.) if run.count else 10.
+        fps = lambda: max(math.log10(run.rate) * 10., 2.) if run.rate else 10.
 
     if total:
         if manual:
