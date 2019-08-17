@@ -7,7 +7,7 @@ from .spinners import spinner_player
 def standard_bar_factory(chars='=', borders='||', blank=' ', tip='>', errors='!x'):
     def inner_factory(length):
         def inner_standard_bar(percent, end):
-            virtual_fill = int(virtual_length * min(1., percent))
+            virtual_fill = int(virtual_length * max(0., min(1., percent)))
             complete, filling = divmod(virtual_fill, len(chars))
             fill = chars[-1] * complete
             if filling:
@@ -37,6 +37,7 @@ def standard_bar_factory(chars='=', borders='||', blank=' ', tip='>', errors='!x
 
 def unknown_bar_factory(spinner_factory):
     def inner_factory(length, receipt_bar_factory=None):
+        # noinspection PyUnusedLocal
         def draw_bar(percent, end=False):
             if end:
                 return receipt_bar(1., end=True)

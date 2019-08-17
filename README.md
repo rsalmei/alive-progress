@@ -34,28 +34,28 @@ $ pip install alive-progress
 ```
 
 
-## How to use it
+## It's _Alive_
 
 Use it in a `with` context manager like this:
 
 ```python
 from alive_progress import alive_bar
-items = (1, 2, 3)                    # declare your set of items
+items = (1, 2, 3)                    # retrieve your set of items
 with alive_bar(len(items)) as bar:   # declare your expected total
-    for item in items:               # iterate over your items
+    for item in items:               # iterate as usual
         # process each item
         bar()                        # call after consuming one item
 ```
 
 That's it!
 
-In general lines, just retrieve the items, enter the `alive_bar(total)` context manager, and iterate/process as usual, calling `bar()` in each iteration.
+In general lines, just retrieve the items, enter the `alive_bar(total)` context manager, and iterate/process as usual, calling `bar()` once per item.
 
 
 ### Notes
 
-- the `items` can be any iterable, and usually is some queryset;
-- the first argument of the `alive_bar` is the total, it could be a `qs.count()` for querysets, a `len(items)` if the iterable supports it, or anything that returns an integer;
+- the `items` can be any iterable, and usually will be some queryset;
+- the first argument of the `alive_bar` is the expected total, it could be a `qs.count()` for querysets, a `len(items)` if the iterable supports it, or anything that returns an integer;
 - the `bar()` call is what makes the bar go forward -- you usually call it in every iteration after consuming an item, but you can get creative! For example you could call it only when you find something you want, or call it more than once in the same iteration, depending on what you want to monitor. Just adjust the total accordingly to get a useful eta;
 - the `bar()` call also returns the current count if needed, and enables to pass situational messages to the bar.
 
@@ -70,6 +70,20 @@ with alive_bar(3) as bar:
     process(tokens)
     bar()
 ```
+
+
+### Alive-Bar modes
+
+Actually the `total` argument is optional. Providing it makes the bar enter the **definite mode**, the one used for well-bounded tasks.
+If you do not provide it, the bar enters the **unknown mode**. In this mode, the whole progress-bar is animated like the cool spinners, as it's not possible to determine the percentage of completion.
+Note that the cool spinners are still present, and each animation runs independently of each other, rendering a unique show in your terminal.
+
+Then you have the (new) **manual mode**, where you get to manually control the bar!
+Just pass a `manual=True` argument to `alive_bar()`, and send a progress percentage (a float between 0 and 1) to the `bar()` call to put the alive-bar in wherever position you want! Call it as frequently as you need.
+The frames per second will be computed according to the sent progress and the actual elapsed time.
+
+In this mode, you can also provide the total if you have it, and get all the same position and throughput statistics as the definite mode. The position is dynamically calculated only when needed to increase efficiency.
+If you don't provide the total, a simpler `%/s` will be used, with no position nor eta.
 
 
 ## Styles
@@ -151,7 +165,7 @@ In [21]: t = next(gen, None)
 |█████████████████████                   | ▁▃▅ 105/200 [52%] in 5s (18.8/s, eta: 4s)
 ```
 
-### Forcing on not-interactive consoles (like Pycharm's)
+### Forcing animations on not-interactive consoles (like Pycharm's)
 
 Pycharm's python console do not report itself as "interactive", so I've included a `force_tty` argument to be able to use the alive-progress bar in it.
 

@@ -14,7 +14,7 @@ from .spinners import spinner_player
 
 
 @contextmanager
-def alive_bar(total=None, title=None, force_tty=False, **options):
+def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, time elapsed, throughput and eta.
     When the operation finishes, a receipt is displayed with statistics.
@@ -37,7 +37,7 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
     Use it like this:
 
     >>> from alive_progress import alive_bar
-    ... with alive_bar(total=<length>) as bar:
+    ... with alive_bar(<total>) as bar:
     ...     for item in <iterable>:
     ...         # process item
     ...         bar()  # makes the bar go forward
@@ -71,6 +71,7 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
         total (Optional[int]): the total expected count
         title (Optional[str]): the title, will be printed whenever there's no custom message
         force_tty (bool): runs animations even without a tty (pycharm terminal for example)
+        manual (bool): set to manage progress manually
         **options: custom configuration options, see config_handler for details
 
     """
@@ -78,61 +79,56 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
     if total and total <= 0:
         total = None
 
-    def to_elapsed(secs):
-        return timedelta(seconds=int(secs)) if secs >= 60 else \
-            '{:.1f}s'.format(secs) if end else '{}s'.format(int(secs))
+    def to_elapsed():
+        return timedelta(seconds=int(run.elapsed)) if run.elapsed >= 60 else \
+            '{:.1f}s'.format(run.elapsed) if end else '{}s'.format(int(run.elapsed))
 
     def clear_traces():
         sys.__stdout__.write('\033[2K\r')
 
-    def __tick():
-        last_line_len, player = 0, spinner_player(config.spinner())
+    def run():
+        player = spinner_player(config.spinner())
         while thread:
             event.wait()
-            fps, last_line_len = __alive_repr(last_line_len, spin=next(player))
-            time.sleep(1. / fps)
+            alive_repr(next(player))
+            time.sleep(1. / fps())
 
-    def __alive_repr(last_line_len, spin=''):
-        init, pos, text = init_pos_text
-        elapsed = time.time() - init
-        rate = pos / elapsed if elapsed else 0
+    def alive_repr(spin=''):
+        update_data()
 
-        eta_text = '?'
-        if total and rate:
-            eta = (total - pos) / rate
-            if eta >= 0:
-                eta_text = '{:.0f}s'.format(eta) if eta < 60 \
-                    else timedelta(seconds=int(eta) + 1)
-
-        text, stats_ = ('', stats_end) if end else (text, stats)
-        percent = percent_fn(pos)
         line = '{} {}{}{} in {} {} {}'.format(
-            bar_repr(percent, end), spin, spin and ' ' or '', monitor(percent, pos),
-            to_elapsed(elapsed), stats_(rate, eta_text), text or title or ''
+            bar_repr(run.percent, end), spin, spin and ' ' or '',
+            monitor(), to_elapsed(), run.stats(), run.text or title or ''
         )
 
         line_len = len(line)
         with print_lock:
-            if line_len < last_line_len:
+            if line_len < run.last_line_len:
                 clear_traces()
             sys.__stdout__.write(line + (spin and '\r' or '\n'))
             sys.__stdout__.flush()
 
-        fps = (math.log10(rate) * 10 if rate >= 1.3 else 2) if pos else 10
-        return fps, line_len
+        run.last_line_len = line_len
 
-    def tracker(text=None):
-        init_pos_text[1] += 1
-        if text is not None:
-            init_pos_text[2] = str(text)
-        return init_pos_text[1]
+    if manual:
+        def bar(perc, text=None):
+            run.percent = float(perc)
+            if text is not None:
+                run.text = str(text)
+            return run.percent
+    else:
+        def bar(text=None):
+            run.count += 1
+            if text is not None:
+                run.text = str(text)
+            return run.count
 
     def print_hook(part):
         if part != '\n':
             print_buffer.extend([u for x in part.splitlines(True) for u in (x, None)][:-1])
         else:
-            header = 'on {}: '.format(init_pos_text[1])
-            nested = map(lambda x: x or ' ' * len(header), print_buffer)
+            header = 'on {}: '.format(run.count)
+            nested = (line or ' ' * len(header) for line in print_buffer)
             with print_lock:
                 clear_traces()
                 sys.__stdout__.write('{}{}\n'.format(header, ''.join(nested)))
@@ -141,53 +137,93 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
     print_buffer = []
     print_hook.write = print_hook
     print_hook.flush = lambda: None
+    print_lock = threading.Lock()
 
-    def start_monitoring():
+    def start_monitoring(offset=0.):
         sys.stdout = print_hook
         event.set()
+        run.init = time.time() - offset
 
     def stop_monitoring(clear):
         if clear:
             event.clear()
         sys.stdout = sys.__stdout__
+        return time.time() - run.init
 
     event = threading.Event()
-    print_lock = threading.Lock()
     if sys.stdout.isatty() or force_tty:
         @contextmanager
         def pause_monitoring():
-            stop_monitoring(True)
-            offset = time.time() - init_pos_text[0]
-            __alive_repr(1e6)
+            offset = stop_monitoring(True)
+            alive_repr()
             yield
-            init_pos_text[0] = time.time() - offset
-            start_monitoring()
+            start_monitoring(offset)
 
-        tracker.pause = pause_monitoring
-        thread = threading.Thread(target=__tick)
+        bar.pause = pause_monitoring
+        thread = threading.Thread(target=run)
         thread.daemon = True
         thread.start()
 
-    if total:
-        bar_repr = config.bar(config.length)
-        percent_fn = lambda x: x / total
-        monitor = lambda percent, pos: '{}{}/{} [{:.0%}]'.format(
-            '(!) ' if end and pos != total else '', pos, total, percent
-        )
-        stats = lambda rate, eta: '({:.1f}/s, eta: {})'.format(rate, eta)
-    else:
-        bar_repr = config.unknown(config.length, config.bar)
-        percent_fn = lambda x: 1.
-        monitor = lambda percent, pos: '{}'.format(pos)
-        stats = lambda rate, eta: '({:.1f}/s)'.format(rate)
-    stats_end = lambda rate, eta: '({:.2f}/s)'.format(rate)
+    def update_data():
+        update_hook()
+        run.elapsed = time.time() - run.init
+        run.rate = current() / run.elapsed if run.elapsed else 0.
+        run.eta_text = eta_text()
 
-    end = False
-    init_pos_text = [time.time(), 0, '']
+    if total or manual:  # we can track progress and therefore eta.
+        bar_repr = config.bar(config.length)
+        stats = lambda: '({:.1{}}/s, eta: {})'.format(run.rate, format_spec, run.eta_text)
+
+        def eta_text():
+            if run.rate:
+                eta = (logic_total - current()) / run.rate
+                if eta >= 0:
+                    return '{:.0f}s'.format(eta) if eta < 60 \
+                        else timedelta(seconds=int(eta) + 1)
+            return '?'
+    else:  # unknown progress.
+        bar_repr = config.unknown(config.length, config.bar)
+        eta_text = lambda: None
+        stats = lambda: '({:.1f}/s)'.format(run.rate)
+    stats_end = lambda: '({:.2{}}/s)'.format(run.rate, format_spec)
+
+    if manual and not total:  # there's only a percentage indication.
+        logic_total, format_spec, current = 1., '%', lambda: run.percent
+        fps = lambda: max(math.log10(run.rate) * 10. + 40, 2.) if run.percent else 10.
+    else:  # there's items being processed.
+        logic_total, format_spec, current = total, 'f', lambda: run.count
+        fps = lambda: max(math.log10(run.rate) * 10., 2.) if run.count else 10.
+
+    if total:
+        if manual:
+            def update_hook():
+                run.count = int(math.ceil(run.percent * total))
+        else:
+            def update_hook():
+                run.percent = run.count / total
+
+        monitor = lambda: '{}{}/{} [{:.0%}]'.format(
+            '(!) ' if end and run.count != total else '', run.count, total, run.percent
+        )
+    elif manual:
+        update_hook = lambda: None
+        monitor = lambda: '{}{:.0%}'.format(
+            '(!) ' if end and run.percent != 1. else '', run.percent
+        )
+    else:
+        def update_hook():
+            if end:
+                run.percent = 1.
+
+        monitor = lambda: '{}'.format(run.count)
+
+    end, run.text, run.eta_text, run.stats = False, '', '', stats
+    run.count, run.last_line_len = 0, 0
+    run.percent, run.rate, run.init, run.elapsed = 0., 0., 0., 0.
     start_monitoring()
     try:
-        yield tracker
-    except:
+        yield bar
+    except BaseException:
         # makes visible the point where an exception is thrown.
         sys.__stdout__.write('\n')
         raise
@@ -195,5 +231,5 @@ def alive_bar(total=None, title=None, force_tty=False, **options):
         thread = None
         stop_monitoring(False)
 
-    end = True
-    __alive_repr(1e6)
+    end, run.text, run.stats = True, '', stats_end
+    alive_repr()
