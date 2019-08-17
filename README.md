@@ -88,7 +88,7 @@ If you don't provide the total, a simpler `%/s` will be used, with no position n
 
 ## Styles
 
-Wondering what styles does it have bundled? It's `showtime`! ;)
+Wondering what styles does it have bundled? It's `showtime`! ;) (_Click it to see in motion_)
 
 [![asciicast](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG.svg)](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG)
 
@@ -101,7 +101,7 @@ While in an alive progress bar context, you have two ways to output messages:
   - calling `bar('message')`, which besides incrementing the counter, also sets/overwrites a situational message within the bar line, usually to display something about the phase the processing is in, or some hint about the items being processed;
   - calling `print('message')`, which prints an enriched message that includes the current position of the alive bar, thus leaving behind a log and continuing the bar below it.
 
-Both methods always clear the line appropriately to remove any garbage of previous messages on screen.
+Both methods always clear the line appropriately to remove any garbage of previous messages on screen. (_Click it to see in motion_)
 
 [![asciicast](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F.svg)](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F)
 
@@ -110,7 +110,7 @@ Both methods always clear the line appropriately to remove any garbage of previo
 
 All of the components are individually customizable, both globally and per use!
 
-And you can mix and match them.
+And you can mix and match them! (_Click it to see in motion_)
 
 [![asciicast](https://asciinema.org/a/j392MaLz1w0zDw6EVHw4QbLAO.svg)](https://asciinema.org/a/j392MaLz1w0zDw6EVHw4QbLAO)
 
@@ -120,7 +120,7 @@ And you can mix and match them.
 ### Create your own animations
 
 Make your own spinners and bars!
-There's builtin support for frames, scrolling, bouncing, delayed and compound spinners! Get creative!
+There's builtin support for frames, scrolling, bouncing, delayed and compound spinners! Get creative! (_Click it to see in motion_)
 
 [![asciicast](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc.svg)](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc)
 
