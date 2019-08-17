@@ -72,6 +72,20 @@ with alive_bar(3) as bar:
 ```
 
 
+### Alive-Bar modes
+
+Actually the `total` argument is optional. Providing it makes the bar enter the **definite mode**, the one used for well-bounded tasks.
+If you do not provide it, the bar enters the **unknown mode**. In this mode, the whole progress-bar is animated like the cool spinners, as it's not possible to determine the percentage of completion.
+Note that the cool spinners are still present, and each animation runs independently of each other, rendering a unique show in your terminal.
+
+Then you have the (new) **manual mode**, where you get to manually control the bar!
+Just pass a `manual=True` argument to `alive_bar()`, and send a progress percentage (a float between 0 and 1) to the `bar()` call to put the alive-bar in wherever position you want! Call it as frequently as you need.
+The frames per second will be computed according to the sent progress and the actual elapsed time.
+
+In this mode, you can also provide the total if you have it, and get all the same position and throughput statistics as the definite mode. The position is dynamically calculated only when needed to increase efficiency.
+If you don't provide the total, a simpler `%/s` will be used, with no position nor eta.
+
+
 ## Styles
 
 Wondering what styles does it have bundled? It's `showtime`! ;)
