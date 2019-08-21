@@ -111,8 +111,9 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
         run.last_line_len = line_len
 
     if manual:
-        def bar(perc, text=None):
-            run.percent = float(perc)
+        def bar(perc=None, text=None):
+            if perc is not None:
+                run.percent = float(perc)
             if text is not None:
                 run.text = str(text)
             return run.percent
