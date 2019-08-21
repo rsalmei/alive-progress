@@ -72,7 +72,7 @@ with alive_bar(3) as bar:
 ```
 
 
-### Alive-Bar modes
+## Alive-Bar modes
 
 Actually the `total` argument is optional. Providing it makes the bar enter the **definite mode**, the one used for well-bounded tasks.
 If you do not provide it, the bar enters the **unknown mode**. In this mode, the whole progress-bar is animated like the cool spinners, as it's not possible to determine the percentage of completion.
@@ -86,6 +86,20 @@ In this mode, you can also provide the total if you have it, and get all the sam
 If you don't provide the total, it's not possible to infer the position and the throughput, so a simpler `%/s` will be used, and the eta will nicely be calculated to get to 100%.
 
 
+## Outputting messages
+
+While in an alive progress bar context, you have two ways to output messages:
+  - calling `bar('message')`, which sets/overwrites a situational message within the bar line, usually to display something about the phase the processing is in, or some hint about the items being processed;
+  - calling `print('message')`, which prints an enriched message that includes the current position of the alive bar, thus leaving behind a log and continuing the bar below it.
+
+Both methods work the same in **definite**, **unknown** and **manual** modes, and always clear the line appropriately to remove any garbage of previous messages on screen. (_Click to see it in motion_)
+
+[![asciicast](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F.svg)](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F)
+
+
+
+
+
 ## Styles
 
 Wondering what styles does it have bundled? It's `showtime`! ;) (_Click to see it in motion_)
@@ -93,17 +107,6 @@ Wondering what styles does it have bundled? It's `showtime`! ;) (_Click to see i
 [![asciicast](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG.svg)](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG)
 
 I've made these styles to test all combinations of parameters of the factories, but I think some of them ended up very very cool! Use them, or create your own.
-
-
-## Outputting messages
-
-While in an alive progress bar context, you have two ways to output messages:
-  - calling `bar('message')`, which besides incrementing the counter, also sets/overwrites a situational message within the bar line, usually to display something about the phase the processing is in, or some hint about the items being processed;
-  - calling `print('message')`, which prints an enriched message that includes the current position of the alive bar, thus leaving behind a log and continuing the bar below it.
-
-Both methods always clear the line appropriately to remove any garbage of previous messages on screen. (_Click to see it in motion_)
-
-[![asciicast](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F.svg)](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F)
 
 
 ## Customization
