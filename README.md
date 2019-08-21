@@ -79,7 +79,7 @@ If you do not provide it, the bar enters the **unknown mode**. In this mode, the
 Note that the cool spinners are still present, and each animation runs independently of each other, rendering a unique show in your terminal!
 
 Then you have the (new) **manual mode**, where you get to manually control the bar!
-Just pass a `manual=True` argument to `alive_bar()`, and send a progress percentage (a float between 0 and 1) to the `bar()` call to put the alive-bar in wherever position you want! Call it as frequently as you need.
+Just pass a `manual=True` argument to `alive_bar()`, and you can send any percentage (a float between 0 and 1) to the `bar()` handler to put the alive-bar in wherever position you want! Call it as frequently as you need.
 The frames per second will be computed according to the sent progress and the actual elapsed time.
 
 In this mode, you can also provide the total if you have it, and get all the same count, throughput and eta statistics as the definite mode. To increase efficiency the count is dynamically calculated only when needed.
@@ -89,7 +89,7 @@ If you don't provide the total, it's not possible to infer the count and the thr
 ## Outputting messages
 
 While in an alive progress bar context, you have two ways to output messages:
-  - calling `bar('message')`, which sets/overwrites a situational message within the bar line, usually to display something about the phase the processing is in, or some hint about the items being processed;
+  - calling `bar(text='message')`, which sets/overwrites a situational message within the bar line, usually to display something about the phase the processing is in, or some hint about the items being processed;
   - calling `print('message')`, which prints an enriched message that includes the current position of the alive bar, thus leaving behind a log and continuing the bar below it.
 
 Both methods work the same in **definite**, **unknown** and **manual** modes, and always clear the line appropriately to remove any garbage of previous messages on screen. (_Click to see it in motion_)
