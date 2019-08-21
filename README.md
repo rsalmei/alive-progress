@@ -208,6 +208,7 @@ Do note that this console is heavily instrumented and has much more overhead, so
 
 
 ## Changelog highlights:
+- 1.1.1: optional percentage in manual mode
 - 1.1.0: new manual mode
 - 1.0.1: pycharm console support, improve compatibility with python streams
 - 1.0.0: first public release, already very complete and mature
