@@ -109,7 +109,11 @@ Wondering what styles does it have bundled? It's `showtime`! ;) (_Click to see i
 
 [![alive-progress spinner styles](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG.svg)](https://asciinema.org/a/260872)
 
-I've made these styles to test all combinations of parameters of the factories, but I think some of them ended up very very cool! Use them, or create your own.
+I've made these styles to test all combinations of parameters of the factories, but I think some of them ended up very very cool! Use them, or create your own!
+
+There's also a bars `showtime(spinners=False)` ;)
+
+[![alive-progress bar styles](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/showtime-bars.gif)](https://asciinema.org/a/263491)
 
 
 ## Customization
