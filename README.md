@@ -57,7 +57,7 @@ In general lines, just retrieve the items, enter the `alive_bar(total)` context 
 - the `items` can be any iterable, and usually will be some queryset;
 - the first argument of the `alive_bar` is the expected total, it could be a `qs.count()` for querysets, a `len(items)` if the iterable supports it, or anything that returns an integer;
 - the `bar()` call is what makes the bar go forward -- you usually call it in every iteration after consuming an item, but you can get creative! For example you could call it only when you find something you want, or call it more than once in the same iteration, depending on what you want to monitor. Just adjust the total accordingly to get a useful eta;
-- the `bar()` call also returns the current count if needed, and enables to pass situational messages to the bar.
+- the `bar()` call also returns the current count/percentage if needed, and enables to pass situational messages to the bar.
 
 So, you could even use it like:
 
@@ -82,8 +82,8 @@ Then you have the (new) **manual mode**, where you get to manually control the b
 Just pass a `manual=True` argument to `alive_bar()`, and send a progress percentage (a float between 0 and 1) to the `bar()` call to put the alive-bar in wherever position you want! Call it as frequently as you need.
 The frames per second will be computed according to the sent progress and the actual elapsed time.
 
-In this mode, you can also provide the total if you have it, and get all the same position, throughput and eta statistics as the definite mode. To increase efficiency the position is dynamically calculated only when needed.
-If you don't provide the total, it's not possible to infer the position and the throughput, so a simpler `%/s` will be used, and the eta will nicely be calculated to get to 100%.
+In this mode, you can also provide the total if you have it, and get all the same count, throughput and eta statistics as the definite mode. To increase efficiency the count is dynamically calculated only when needed.
+If you don't provide the total, it's not possible to infer the count and the throughput, so a simpler `%/s` will be used, but the eta will nicely be calculated to get to 100%.
 
 
 ## Outputting messages
