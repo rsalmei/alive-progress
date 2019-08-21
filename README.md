@@ -97,7 +97,10 @@ Both methods work the same in **definite**, **unknown** and **manual** modes, an
 [![asciicast](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F.svg)](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F)
 
 
+## Signatures of the `bar` handler
 
+- in **definite** and **unknown** modes: `bar(text=None)` ➔ increases the current count, optionally sets the situational message, and returns the new count;
+- in **manual** mode: `bar(perc=None, text=None)` ➔ optionally sets a new progress percentage, optionally sets the situational message, and returns the current percentage.
 
 
 ## Styles
