@@ -152,33 +152,31 @@ def reconcile_transactions():
             bar()
 ```
 
-Then you could use it in ipython or your preferred REPL, just instantiate the generator and call `next`. The progress bar will run as usual, but as soon as an inconsistency is found, the bar pauses itself and you get the prompt back:
+Then you could use it in ipython or your preferred REPL. Just instantiate the generator and call `next` with it. The progress bar will run as usual, but as soon as an inconsistency is found, the bar pauses itself and you get the prompt back:
 
 ```text
-In [12]: gen = reconcile_transactions()
+In [11]: gen = reconcile_transactions()
 
-In [13]: t = next(gen, None)
+In [12]: next(gen, None)
 |█████████████████████                   | 105/200 [52%] in 5s (18.8/s, eta: 4s)
-
-In [14]: t
-Out[14]: Transaction<#123>
+Out[12]: Transaction<#123>
 ```
 
 Debug and fix that transaction any way you want, and when you're done, continue the process with the same `next` as before... The bar returns like nothing happened!! How cool is that? :)
 
 ```text
-In [21]: t = next(gen, None)
+In [21]: next(gen, None)
 |█████████████████████                   | ▁▃▅ 105/200 [52%] in 5s (18.8/s, eta: 4s)
 ```
 
-### Forcing animations on not-interactive consoles (like Pycharm's)
+### Forcing animations on non-interactive consoles (like Pycharm's)
 
 Pycharm's python console do not report itself as "interactive", so I've included a `force_tty` argument to be able to use the alive-progress bar in it.
 
 So, just start it as:
 
 ```python
-with alive_bar(1000, force_tty=1) as bar:
+with alive_bar(1000, force_tty=True) as bar:
     for i in range(1000):
         time.sleep(.01)
         bar()
