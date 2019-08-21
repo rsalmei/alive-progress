@@ -9,7 +9,7 @@ Ever found yourself in a remote ssh session, doing some lengthy operations, and 
 
 I've made this cool progress bar thinking about all that, the Alive-Progress bar! :)
 
-[![alive-progress](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/main.gif)](https://asciinema.org/a/eOxk1RqJd0AlSNONgoAtR0CLz)
+[![alive-progress](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/main.gif)](https://asciinema.org/a/260868)
 
 
 I like to think of it as a new kind of progress bar for python, as it has among other things:
@@ -94,7 +94,7 @@ While in an alive progress bar context, you have two ways to output messages:
 
 Both methods work the same in **definite**, **unknown** and **manual** modes, and always clear the line appropriately to remove any garbage of previous messages on screen. (_Click to see it in motion_)
 
-[![asciicast](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F.svg)](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F)
+[![alive-progress messages](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F.svg)](https://asciinema.org/a/260875)
 
 
 ## Signatures of the `bar` handler
@@ -107,7 +107,7 @@ Both methods work the same in **definite**, **unknown** and **manual** modes, an
 
 Wondering what styles does it have bundled? It's `showtime`! ;) (_Click to see it in motion_)
 
-[![asciicast](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG.svg)](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG)
+[![alive-progress spinner styles](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG.svg)](https://asciinema.org/a/260872)
 
 I've made these styles to test all combinations of parameters of the factories, but I think some of them ended up very very cool! Use them, or create your own.
 
@@ -118,7 +118,7 @@ All of the components are individually customizable, both globally and per use!
 
 And you can mix and match them! (_Click to see it in motion_)
 
-[![asciicast](https://asciinema.org/a/j392MaLz1w0zDw6EVHw4QbLAO.svg)](https://asciinema.org/a/j392MaLz1w0zDw6EVHw4QbLAO)
+[![alive-progress customization](https://asciinema.org/a/j392MaLz1w0zDw6EVHw4QbLAO.svg)](https://asciinema.org/a/260882)
 
 
 ## Advanced
@@ -128,7 +128,7 @@ And you can mix and match them! (_Click to see it in motion_)
 Make your own spinners and bars!
 There's builtin support for frames, scrolling, bouncing, delayed and compound spinners! Get creative! (_Click to see it in motion_)
 
-[![asciicast](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc.svg)](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc)
+[![alive-progress creative](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc.svg)](https://asciinema.org/a/260884)
 
 
 ### The Pause mechanism
