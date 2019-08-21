@@ -76,19 +76,19 @@ with alive_bar(3) as bar:
 
 Actually the `total` argument is optional. Providing it makes the bar enter the **definite mode**, the one used for well-bounded tasks.
 If you do not provide it, the bar enters the **unknown mode**. In this mode, the whole progress-bar is animated like the cool spinners, as it's not possible to determine the percentage of completion.
-Note that the cool spinners are still present, and each animation runs independently of each other, rendering a unique show in your terminal.
+Note that the cool spinners are still present, and each animation runs independently of each other, rendering a unique show in your terminal!
 
 Then you have the (new) **manual mode**, where you get to manually control the bar!
 Just pass a `manual=True` argument to `alive_bar()`, and send a progress percentage (a float between 0 and 1) to the `bar()` call to put the alive-bar in wherever position you want! Call it as frequently as you need.
 The frames per second will be computed according to the sent progress and the actual elapsed time.
 
-In this mode, you can also provide the total if you have it, and get all the same position and throughput statistics as the definite mode. The position is dynamically calculated only when needed to increase efficiency.
-If you don't provide the total, a simpler `%/s` will be used, with no position nor eta.
+In this mode, you can also provide the total if you have it, and get all the same position, throughput and eta statistics as the definite mode. To increase efficiency the position is dynamically calculated only when needed.
+If you don't provide the total, it's not possible to infer the position and the throughput, so a simpler `%/s` will be used, and the eta will nicely be calculated to get to 100%.
 
 
 ## Styles
 
-Wondering what styles does it have bundled? It's `showtime`! ;) (_Click it to see in motion_)
+Wondering what styles does it have bundled? It's `showtime`! ;) (_Click to see it in motion_)
 
 [![asciicast](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG.svg)](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG)
 
@@ -101,7 +101,7 @@ While in an alive progress bar context, you have two ways to output messages:
   - calling `bar('message')`, which besides incrementing the counter, also sets/overwrites a situational message within the bar line, usually to display something about the phase the processing is in, or some hint about the items being processed;
   - calling `print('message')`, which prints an enriched message that includes the current position of the alive bar, thus leaving behind a log and continuing the bar below it.
 
-Both methods always clear the line appropriately to remove any garbage of previous messages on screen. (_Click it to see in motion_)
+Both methods always clear the line appropriately to remove any garbage of previous messages on screen. (_Click to see it in motion_)
 
 [![asciicast](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F.svg)](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F)
 
@@ -110,7 +110,7 @@ Both methods always clear the line appropriately to remove any garbage of previo
 
 All of the components are individually customizable, both globally and per use!
 
-And you can mix and match them! (_Click it to see in motion_)
+And you can mix and match them! (_Click to see it in motion_)
 
 [![asciicast](https://asciinema.org/a/j392MaLz1w0zDw6EVHw4QbLAO.svg)](https://asciinema.org/a/j392MaLz1w0zDw6EVHw4QbLAO)
 
@@ -120,7 +120,7 @@ And you can mix and match them! (_Click it to see in motion_)
 ### Create your own animations
 
 Make your own spinners and bars!
-There's builtin support for frames, scrolling, bouncing, delayed and compound spinners! Get creative! (_Click it to see in motion_)
+There's builtin support for frames, scrolling, bouncing, delayed and compound spinners! Get creative! (_Click to see it in motion_)
 
 [![asciicast](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc.svg)](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc)
 
