@@ -215,6 +215,7 @@ Do note that this console is heavily instrumented and has much more overhead, so
 
 
 ## Changelog highlights:
+- 1.2.0: new filled blanks bar styles, clean underflow repr of filled blanks
 - 1.1.1: optional percentage in manual mode
 - 1.1.0: new manual mode
 - 1.0.1: pycharm console support, improve compatibility with python streams

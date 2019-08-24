@@ -1,6 +1,8 @@
 # coding=utf-8
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from itertools import chain
+
 from .spinners import spinner_player
 
 
@@ -17,14 +19,15 @@ def standard_bar_factory(chars='=', borders='||', blank=' ', tip='>', errors='!x
                 return fill, True  # no tip
             if percent > 1.:
                 return fill + overflow, False  # no right border
-            return (fill + (underflow if end else tip) + padding)[:length], True
+            under_text = (underflow, blanks) if end else (tip, padding)
+            return ''.join(chain.from_iterable((fill, under_text)))[:length], True
 
         def draw_bar(pos, end=False):
             bar, right = inner_standard_bar(pos, end)
             return draw_bar.left_border + bar + (draw_bar.right_border if right else '')
 
         virtual_length = length * len(chars)
-        padding = blank * (length - len(tip))
+        padding, blanks = (c * (length - len(tip)) for c in (blank, ' '))
 
         draw_bar.left_border, draw_bar.right_border = borders
         return draw_bar
