@@ -99,16 +99,20 @@ SPINNERS = __create_spinners()
 
 def __create_bars():
     classic = standard_bar_factory(borders='[]')
+    classic2 = standard_bar_factory(blank='.', chars='#', borders='[]', tip='')
     smooth = standard_bar_factory(chars='▏▎▍▌▋▊▉█', tip=None, errors='⚠✗')
     blocks = standard_bar_factory(chars='▏▎▍▌▋▊▉', tip=None, errors='⚠✗')
-    circular = standard_bar_factory(chars='∙○●', borders='<>', tip='', errors='⚠✗')
+    bubbles = standard_bar_factory(chars='∙○⦿●', borders='<>', tip='', errors='⚠✗')
     hollow = standard_bar_factory(chars='❒', borders='<>', tip='▷', errors='⚠✗')
     solid = standard_bar_factory(chars='■', borders='<>', tip='►', errors='⚠✗')
+    circles = standard_bar_factory(blank='○', chars='●', borders='<>', tip='', errors='⚠✗')
+    squares = standard_bar_factory(blank='❒', chars='■', borders='<>', tip='', errors='⚠✗')
     checks = standard_bar_factory(chars='✓', tip='', errors='⚠✗')
     filling = standard_bar_factory(chars='▁▂▃▄▅▆▇█', tip=None, errors='⚠✗')
 
     result = {k: v for k, v in locals().items() if not k.startswith('_')}
-    desired_order = 'classic smooth blocks circular hollow solid checks filling'.split()
+    desired_order = 'classic classic2 smooth blocks bubbles circles hollow squares solid checks ' \
+                    'filling'.split()
     return _wrap_ordered(result, desired_order)
 
 
