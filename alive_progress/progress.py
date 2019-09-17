@@ -177,20 +177,20 @@ def alive_bar(total=None, title=None, **options):
         run.rate = current() / run.elapsed if run.elapsed else 0.
         run.eta_text = eta_text()
 
-        bar_repr = config.bar(config.length)
-        stats = lambda: '({:.1{}}/s, eta: {})'.format(run.rate, format_spec, run.eta_text)
-
     if total or config.manual:  # we can track progress and therefore eta.
         def eta_text():
             if run.rate:
                 eta = (logic_total - current()) / run.rate
                 if eta >= 0:
                     return '{:.0f}s'.format(eta) if eta < 60 \
-                        else timedelta(seconds=int(eta) + 1)
+                        else timedelta(seconds=math.ceil(eta))
             return '?'
+
+        bar_repr = config.bar(config.length)
+        stats = lambda: '({:.1{}}/s, eta: {})'.format(run.rate, format_spec, run.eta_text)
     else:  # unknown progress.
-        bar_repr = config.unknown(config.length, config.bar)
         eta_text = lambda: None
+        bar_repr = config.unknown(config.length, config.bar)
         stats = lambda: '({:.1f}/s)'.format(run.rate)
     stats_end = lambda: '({:.2{}}/s)'.format(run.rate, format_spec)
 
