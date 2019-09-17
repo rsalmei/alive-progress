@@ -17,7 +17,7 @@ I've made this cool progress bar thinking about all that, the Alive-Progress bar
 I like to think of it as a new kind of progress bar for python, as it has among other things:
   - a cool live spinner, which makes it clear the process did not hang and your terminal/connection is healthy;
   - a visual feedback of the current speed/throughput, as the spinner runs faster or slower according to the actual processing speed;
-  - an efficient multi-threaded bar, which updates itself at a fraction of the actual speed (1,000,000 iterations per second equates to roughly 60fps refresh rate) to keep CPU usage low and avoid terminal spamming;
+  - an efficient multi-threaded bar, which updates itself at a fraction of the actual speed (1,000,000 iterations per second equates to roughly 60fps refresh rate) to keep CPU usage low and avoid terminal spamming; 📌 new: you can now calibrate this!
   - an expected time of arrival (eta), that shows the remaining processing time in a friendly way, not anything like `eta: 1584s`, it will nicely show `eta: 0:26:24` as you would expect (but anything less than a minute is indeed `eta: 42s`);
   - a `print()` hook, which allows print statements in the midst of an alive-bar context, nicely cleaning the output of any garbage, and even enriching with the current count when it occurred;
   - after your processing has finished, a nice receipt is printed with the statistics of that run, including the elapsed time and observed throughput;
@@ -131,6 +131,29 @@ And you can mix and match them! (_Click to see it in motion_)
 
 
 ## Advanced
+
+### Calibration (📌 new)
+
+The Alive-Bar has a cool visual feedback of the current throughput, so you can instantly see how fast your processing is, as the spinner runs faster or slower with it.
+For this to happen, I've put together and implemented a few fps curves to empirically find which one gave the best feel of speed:
+
+![alive-bar fps curves](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/alive-bar_fps.png)
+(interactive version [here](https://www.desmos.com/calculator/ema05elsux))
+
+The graph shows the logarithmic (red), parabolic (blue) and linear (green) curves, as well as an adjusted logarithmic curve (dotted orange), with a few twists for small numbers. I've settled with the adjusted logarithmic curve, as it seemed to provide the best all around perceived speed changes.
+
+The default Alive-Bar calibrations are _1,000,000_ in auto (and manual definite) modes and 1 (100%) in manual unknown mode. Both enable a vast operating range and generally work well.
+
+But let's say your processing hardly gets to 20 items per second, and you think the Alive-Bar is rendering sluggish, you can:
+
+```python
+    with alive_bar(total, calibrate=20) as bar:
+        ...
+``` 
+
+And it will be running waaaay faster... :)
+Adjust the calibration to your liking!
+
 
 ### Create your own animations
 
