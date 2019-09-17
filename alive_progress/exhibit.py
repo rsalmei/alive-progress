@@ -22,8 +22,8 @@ def showtime(fps=15, spinners=True, **options):
                     for pos in range(int(fps * 2)):
                         yield bar(percent, end=True), '\n'
 
-    def spinner_gen(name, spinner_factory, unknown_factory):
-        blanks = ' ' * (longest - spinner_lengths[name])
+    def spinner_gen(key, spinner_factory, unknown_factory):
+        blanks = ' ' * (longest - spinner_lengths[key])
         player = spinner_player(spinner_factory())
         unknown = bar_gen(unknown_factory, False)
         while True:

@@ -32,6 +32,7 @@ def _int_input_factory(start, stop):
     return _input
 
 
+# noinspection PyTypeChecker
 CONFIG_VARS = dict(
     length=_int_input_factory(2, 200),
     spinner=_object_input_factory(SPINNERS, spinners, 0),
@@ -72,7 +73,7 @@ def create_config():
                 raise ValueError('invalid option name: ' + key)
 
         if theme:
-            if not theme in THEMES:
+            if theme not in THEMES:
                 raise ValueError('invalid theme={}'.format(repr(theme)))
             swap = options
             options = deepcopy(THEMES[theme])
