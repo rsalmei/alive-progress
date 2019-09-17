@@ -200,6 +200,9 @@ def alive_bar(total=None, title=None, **options):
     else:  # there's items being processed.
         logic_total, format_spec, current = total, 'f', lambda: run.count
         fps = lambda: max(math.log10(run.rate) * 10., 2.) if run.rate else 10.
+    end, run.text, run.eta_text, run.stats = False, '', '', stats
+    run.count, run.last_line_len = 0, 0
+    run.percent, run.rate, run.init, run.elapsed = 0., 0., 0., 0.
 
     if total:
         if config.manual:
@@ -218,15 +221,10 @@ def alive_bar(total=None, title=None, **options):
             '(!) ' if end and run.percent != 1. else '', run.percent
         )
     else:
-        def update_hook():
-            if end:
-                run.percent = 1.
-
+        run.percent = 1.
+        update_hook = lambda: None
         monitor = lambda: '{}'.format(run.count)
 
-    end, run.text, run.eta_text, run.stats = False, '', '', stats
-    run.count, run.last_line_len = 0, 0
-    run.percent, run.rate, run.init, run.elapsed = 0., 0., 0., 0.
     start_monitoring()
     try:
         yield bar
