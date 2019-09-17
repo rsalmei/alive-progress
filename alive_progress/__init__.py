@@ -1,7 +1,6 @@
 # coding=utf-8
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-VERSION = (1, 2, 0)
 import sys
 
 from .bars import standard_bar_factory, unknown_bar_factory
@@ -12,6 +11,7 @@ from .spinners import bouncing_spinner_factory, compound_spinner_factory, delaye
     frame_spinner_factory, scrolling_spinner_factory, spinner_player
 from .styles import BARS, SPINNERS, THEMES
 
+VERSION = (1, 3, 0)
 
 __author__ = 'Rogério Sampaio de Almeida'
 __email__ = 'rsalmei@gmail.com'
