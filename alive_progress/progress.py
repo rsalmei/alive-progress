@@ -14,7 +14,7 @@ from .spinners import spinner_player
 
 
 @contextmanager
-def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
+def alive_bar(total=None, title=None, **options):
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, time elapsed, throughput and eta.
     When the operation finishes, a receipt is displayed with statistics.
@@ -70,9 +70,14 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
     Args:
         total (Optional[int]): the total expected count
         title (Optional[str]): the title, will be printed whenever there's no custom message
-        force_tty (bool): runs animations even without a tty (pycharm terminal for example)
-        manual (bool): set to manage progress manually
-        **options: custom configuration options, see config_handler for details
+        **options: custom configuration options, which override the global configuration:
+            length (int): number of characters to draw the animated progress bar
+            spinner (Union[str | object]): spinner name in alive_progress.SPINNERS or custom
+            bar (Union[str | object]): bar name in alive_progress.BARS or custom
+            unknown (Union[str | object]): bar name in alive_progress.BARS or custom
+            theme (str): theme name in alive_progress.THEMES
+            force_tty (bool): runs animations even without a tty (pycharm terminal for example)
+            manual (bool): set to manually control percentage
 
     """
     config = config_handler(**options)
@@ -110,7 +115,7 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
 
         run.last_line_len = line_len
 
-    if manual:
+    if config.manual:
         def bar(perc=None, text=None):
             if perc is not None:
                 run.percent = float(perc)
@@ -152,7 +157,7 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
         return time.time() - run.init
 
     event = threading.Event()
-    if sys.stdout.isatty() or force_tty:
+    if sys.stdout.isatty() or config.force_tty:
         @contextmanager
         def pause_monitoring():
             offset = stop_monitoring(True)
@@ -171,10 +176,10 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
         run.rate = current() / run.elapsed if run.elapsed else 0.
         run.eta_text = eta_text()
 
-    if total or manual:  # we can track progress and therefore eta.
         bar_repr = config.bar(config.length)
         stats = lambda: '({:.1{}}/s, eta: {})'.format(run.rate, format_spec, run.eta_text)
 
+    if total or config.manual:  # we can track progress and therefore eta.
         def eta_text():
             if run.rate:
                 eta = (logic_total - current()) / run.rate
@@ -196,7 +201,7 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
         fps = lambda: max(math.log10(run.rate) * 10., 2.) if run.rate else 10.
 
     if total:
-        if manual:
+        if config.manual:
             def update_hook():
                 run.count = int(math.ceil(run.percent * total))
         else:
@@ -206,7 +211,7 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
         monitor = lambda: '{}{}/{} [{:.0%}]'.format(
             '(!) ' if end and run.count != total else '', run.count, total, run.percent
         )
-    elif manual:
+    elif config.manual:
         update_hook = lambda: None
         monitor = lambda: '{}{:.0%}'.format(
             '(!) ' if end and run.percent != 1. else '', run.percent

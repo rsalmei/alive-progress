@@ -32,12 +32,21 @@ def _int_input_factory(lower, upper):
     return _input
 
 
+def _bool_input_factory():
+    def _input(x):
+        return bool(x)
+
+    return _input
+
+
 # noinspection PyTypeChecker
 CONFIG_VARS = dict(
     length=_int_input_factory(3, 200),
     spinner=_style_input_factory(SPINNERS, spinners, 0),
     bar=_style_input_factory(BARS, bars),
     unknown=_style_input_factory(SPINNERS, bars, 1),
+    force_tty=_bool_input_factory(),
+    manual=_bool_input_factory(),
 )
 
 Config = namedtuple('Config', tuple(CONFIG_VARS.keys()))
@@ -47,11 +56,17 @@ Config.__new__.__defaults__ = (None,) * len(CONFIG_VARS)
 def create_config():
     def reset():
         """Resets global configuration to the default one."""
-        # noinspection PyUnresolvedReferences
-        set_global(theme='smooth', length=40)
+        set_global(  # this must have all available config vars.
+            length=40,
+            theme='smooth',  # includes spinner, bar and unknown.
+            force_tty=False,
+            manual=False,
+        )
 
     def set_global(theme=None, **options):
-        """Update global configuration, to be used in subsequent alive bars."""
+        """Update global configuration, to be used in subsequent alive bars.
+        See alive_progress.alive_bar(**options) for details.
+        """
         global_config.update(_parse(theme, options))
 
     def create_context(theme=None, **options):
