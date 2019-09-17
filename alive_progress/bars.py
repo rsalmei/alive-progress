@@ -15,12 +15,12 @@ def standard_bar_factory(chars='=', borders='||', blank=' ', tip='>', errors='!x
             if filling:
                 fill += chars[filling - 1]
 
+            if percent < 1.:
+                texts = (underflow, blanks) if end else (tip, padding)
+                return ''.join(chain((fill,), texts))[:length], True  # with border
             if percent == 1.:
-                return fill, True  # no tip
-            if percent > 1.:
-                return fill + overflow, False  # no right border
-            under_text = (underflow, blanks) if end else (tip, padding)
-            return ''.join(chain.from_iterable((fill, under_text)))[:length], True
+                return fill, True  # no tip, with border
+            return fill + overflow, False  # no border
 
         def draw_bar(pos, end=False):
             bar, right = inner_standard_bar(pos, end)
