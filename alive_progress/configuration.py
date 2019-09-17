@@ -10,7 +10,7 @@ from . import bars, spinners
 from .styles import BARS, SPINNERS, THEMES
 
 
-def _object_input_factory(name_lookup, func_lookup, name_index=None):
+def _style_input_factory(name_lookup, func_lookup, name_index=None):
     def _input(x):
         if isinstance(x, FunctionType):
             if x.__code__.co_name == 'inner_factory' \
@@ -19,14 +19,14 @@ def _object_input_factory(name_lookup, func_lookup, name_index=None):
         elif x in name_lookup:
             return getter(name_lookup[x])
 
-    func_file = os.path.splitext(func_lookup.__file__)[0]
+    func_file, _ = os.path.splitext(func_lookup.__file__)
     getter = (lambda x: x) if name_index is None else lambda x: x[name_index]
     return _input
 
 
-def _int_input_factory(start, stop):
+def _int_input_factory(lower, upper):
     def _input(x):
-        if start < int(x) < stop:
+        if lower <= int(x) <= upper:
             return int(x)
 
     return _input
@@ -34,10 +34,10 @@ def _int_input_factory(start, stop):
 
 # noinspection PyTypeChecker
 CONFIG_VARS = dict(
-    length=_int_input_factory(2, 200),
-    spinner=_object_input_factory(SPINNERS, spinners, 0),
-    bar=_object_input_factory(BARS, bars),
-    unknown=_object_input_factory(SPINNERS, bars, 1),
+    length=_int_input_factory(3, 200),
+    spinner=_style_input_factory(SPINNERS, spinners, 0),
+    bar=_style_input_factory(BARS, bars),
+    unknown=_style_input_factory(SPINNERS, bars, 1),
 )
 
 Config = namedtuple('Config', tuple(CONFIG_VARS.keys()))
@@ -66,7 +66,7 @@ def create_config():
         def validator(key, value):
             try:
                 result = CONFIG_VARS[key](value)
-                if not result:
+                if result is None:
                     raise ValueError('invalid option value: {}={}'.format(key, repr(value)))
                 return key, result
             except KeyError:
