@@ -91,7 +91,7 @@ In these modes, you can also optionally provide the `total`, to enter the **manu
 If you don't provide the `total` you get the **manual unknown mode**, where it's not possible to infer the count and throughput values, so a simpler "percent/second" is used for throughput, which can still be used to estimate an eta, nicely calculated to get to 100%.
 
 
-### Use the `bar` handler
+### The `bar` handler
 
 - in **auto** modes: `bar(text=None, incr=1)` ➔ increases the current count (by any positive increment), optionally setting the situational text message, and returns the new count;
 - in **manual** modes: `bar(perc=None, text=None)` ➔ sets the new progress percentage, optionally setting the situational text message, and returns the new percentage.
