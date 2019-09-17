@@ -123,8 +123,9 @@ def alive_bar(total=None, title=None, **options):
                 run.text = str(text)
             return run.percent
     else:
-        def bar(text=None):
-            run.count += 1
+        def bar(text=None, incr=1):
+            if incr > 0:
+                run.count += int(incr)
             if text is not None:
                 run.text = str(text)
             return run.count
