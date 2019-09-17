@@ -20,7 +20,7 @@ __description__ = 'An animated and smart Progress Bar for python.'
 
 __all__ = ['alive_bar', 'standard_bar_factory', 'unknown_bar_factory', 'spinner_player',
            'frame_spinner_factory', 'scrolling_spinner_factory', 'bouncing_spinner_factory',
-           'compound_spinner_factory', 'delayed_spinner_factory', 'BARS', 'SPINNERS',
+           'compound_spinner_factory', 'delayed_spinner_factory', 'BARS', 'SPINNERS', 'THEMES',
            'showtime', 'config_handler']
 
 if sys.version_info <= (3,):
