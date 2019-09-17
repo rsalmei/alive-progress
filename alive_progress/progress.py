@@ -14,7 +14,7 @@ from .spinners import spinner_player
 
 
 @contextmanager
-def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
+def alive_bar(total=None, title=None, calibrate=None, **options):
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, time elapsed, throughput and eta.
     When the operation finishes, a receipt is displayed with statistics.
@@ -70,9 +70,16 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
     Args:
         total (Optional[int]): the total expected count
         title (Optional[str]): the title, will be printed whenever there's no custom message
-        force_tty (bool): runs animations even without a tty (pycharm terminal for example)
-        manual (bool): set to manage progress manually
-        **options: custom configuration options, see config_handler for details
+        calibrate (int): maximum theoretical throughput to calibrate animation speed
+            it cannot be in the global configuration because it depends on the current mode
+        **options: custom configuration options, which override the global configuration:
+            length (int): number of characters to draw the animated progress bar
+            spinner (Union[str | object]): spinner name in alive_progress.SPINNERS or custom
+            bar (Union[str | object]): bar name in alive_progress.BARS or custom
+            unknown (Union[str | object]): bar name in alive_progress.BARS or custom
+            theme (str): theme name in alive_progress.THEMES
+            force_tty (bool): runs animations even without a tty (pycharm terminal for example)
+            manual (bool): set to manually control percentage
 
     """
     config = config_handler(**options)
@@ -110,7 +117,7 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
 
         run.last_line_len = line_len
 
-    if manual:
+    if config.manual:
         def bar(perc=None, text=None):
             if perc is not None:
                 run.percent = float(perc)
@@ -118,8 +125,9 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
                 run.text = str(text)
             return run.percent
     else:
-        def bar(text=None):
-            run.count += 1
+        def bar(text=None, incr=1):
+            if incr > 0:
+                run.count += int(incr)
             if text is not None:
                 run.text = str(text)
             return run.count
@@ -152,7 +160,7 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
         return time.time() - run.init
 
     event = threading.Event()
-    if sys.stdout.isatty() or force_tty:
+    if sys.stdout.isatty() or config.force_tty:
         @contextmanager
         def pause_monitoring():
             offset = stop_monitoring(True)
@@ -171,32 +179,52 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
         run.rate = current() / run.elapsed if run.elapsed else 0.
         run.eta_text = eta_text()
 
-    if total or manual:  # we can track progress and therefore eta.
-        bar_repr = config.bar(config.length)
-        stats = lambda: '({:.1{}}/s, eta: {})'.format(run.rate, format_spec, run.eta_text)
-
+    if total or config.manual:  # we can track progress and therefore eta.
         def eta_text():
             if run.rate:
                 eta = (logic_total - current()) / run.rate
                 if eta >= 0:
                     return '{:.0f}s'.format(eta) if eta < 60 \
-                        else timedelta(seconds=int(eta) + 1)
+                        else timedelta(seconds=math.ceil(eta))
             return '?'
+
+        bar_repr = config.bar(config.length)
+        stats = lambda: '({:.1{}}/s, eta: {})'.format(run.rate, format_spec, run.eta_text)
     else:  # unknown progress.
-        bar_repr = config.unknown(config.length, config.bar)
         eta_text = lambda: None
+        bar_repr = config.unknown(config.length, config.bar)
         stats = lambda: '({:.1f}/s)'.format(run.rate)
     stats_end = lambda: '({:.2{}}/s)'.format(run.rate, format_spec)
 
-    if manual and not total:  # there's only a percentage indication.
-        logic_total, format_spec, current = 1., '%', lambda: run.percent
-        fps = lambda: max(math.log10(run.rate) * 10. + 40, 2.) if run.rate else 10.
-    else:  # there's items being processed.
-        logic_total, format_spec, current = total, 'f', lambda: run.count
-        fps = lambda: max(math.log10(run.rate) * 10., 2.) if run.rate else 10.
+    if total or not config.manual:  # there's items being processed.
+        logic_total, format_spec, factor, current = total, 'f', 1.e6, lambda: run.count
+    else:  # there's only a manual percentage.
+        logic_total, format_spec, factor, current = 1., '%', 1., lambda: run.percent
+
+    # calibration of the dynamic fps engine.
+    # y = log10(x + m) * f + n, where y is fps, (m, n) are horizontal and vertical translation,
+    #   and f is a calibration factor, computed from an user input c.
+    # fps = log10(x + 1) * f + minfps, which must be equal to maxfps for x = c,
+    # so the factor f = (maxfps - minfps) / log10(c + 1), and
+    # fps = log10(x + 1) * (maxfps - minfps) / log10(c + 1) + minfps
+    min_fps, max_fps = 2., 60.
+    calibrate = max(0., calibrate or factor)
+    adjust_log_curve = 100. / min(calibrate, 100.) # adjust curve for small numbers
+    factor = (max_fps - min_fps) / math.log10((calibrate * adjust_log_curve) + 1.)
+
+    def fps():
+        if run.rate <= 0:
+            return 10.  # bootstrap speed
+        if run.rate < calibrate:
+            return math.log10((run.rate * adjust_log_curve) + 1.) * factor + min_fps
+        return max_fps
+
+    end, run.text, run.eta_text, run.stats = False, '', '', stats
+    run.count, run.last_line_len = 0, 0
+    run.percent, run.rate, run.init, run.elapsed = 0., 0., 0., 0.
 
     if total:
-        if manual:
+        if config.manual:
             def update_hook():
                 run.count = int(math.ceil(run.percent * total))
         else:
@@ -206,21 +234,16 @@ def alive_bar(total=None, title=None, force_tty=False, manual=False, **options):
         monitor = lambda: '{}{}/{} [{:.0%}]'.format(
             '(!) ' if end and run.count != total else '', run.count, total, run.percent
         )
-    elif manual:
+    elif config.manual:
         update_hook = lambda: None
         monitor = lambda: '{}{:.0%}'.format(
             '(!) ' if end and run.percent != 1. else '', run.percent
         )
     else:
-        def update_hook():
-            if end:
-                run.percent = 1.
-
+        run.percent = 1.
+        update_hook = lambda: None
         monitor = lambda: '{}'.format(run.count)
 
-    end, run.text, run.eta_text, run.stats = False, '', '', stats
-    run.count, run.last_line_len = 0, 0
-    run.percent, run.rate, run.init, run.elapsed = 0., 0., 0., 0.
     start_monitoring()
     try:
         yield bar

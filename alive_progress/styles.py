@@ -121,6 +121,7 @@ BARS = __create_bars()
 
 def __create_themes():
     smooth = dict(spinner='waves', bar='smooth', unknown='triangles')
+    # noinspection PyShadowingBuiltins
     ascii = dict(spinner='classic', bar='classic', unknown='brackets')
 
     result = {k: v for k, v in locals().items() if not k.startswith('_')}
