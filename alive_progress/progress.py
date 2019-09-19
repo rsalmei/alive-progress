@@ -73,10 +73,10 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         calibrate (int): maximum theoretical throughput to calibrate animation speed
             it cannot be in the global configuration because it depends on the current mode
         **options: custom configuration options, which override the global configuration:
-            length (int): number of characters to draw the animated progress bar
+            length (int): number of characters to render the animated progress bar
             spinner (Union[str | object]): spinner name in alive_progress.SPINNERS or custom
             bar (Union[str | object]): bar name in alive_progress.BARS or custom
-            unknown (Union[str | object]): bar name in alive_progress.BARS or custom
+            unknown (Union[str | object]): spinner name in alive_progress.SPINNERS or custom
             theme (str): theme name in alive_progress.THEMES
             force_tty (bool): runs animations even without a tty (pycharm terminal for example)
             manual (bool): set to manually control percentage

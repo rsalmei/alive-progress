@@ -17,7 +17,7 @@ I've made this cool progress bar thinking about all that, the Alive-Progress bar
 I like to think of it as a new kind of progress bar for python, as it has among other things:
   - a cool live spinner, which makes it clear the process did not hang and your terminal/connection is healthy;
   - a visual feedback of the current speed/throughput, as the spinner runs faster or slower according to the actual processing speed;
-  - an efficient multi-threaded bar, which updates itself at a fraction of the actual speed (1,000,000 iterations per second equates to roughly 60fps refresh rate) to keep CPU usage low and avoid terminal spamming; 📌 new: you can now calibrate this!
+  - an efficient multi-threaded bar, which updates itself at a fraction of the actual speed (1,000,000 iterations per second equates to roughly 60fps refresh rate) to keep CPU usage low and avoid terminal spamming; (📌 new: you can now calibrate this!)
   - an expected time of arrival (eta), that shows the remaining processing time in a friendly way, not anything like `eta: 1584s`, it will nicely show `eta: 0:26:24` as you would expect (but anything less than a minute is indeed `eta: 42s`);
   - a `print()` hook, which allows print statements in the midst of an alive-bar context, nicely cleaning the output of any garbage, and even enriching with the current count when it occurred;
   - after your processing has finished, a nice receipt is printed with the statistics of that run, including the elapsed time and observed throughput;
@@ -49,19 +49,19 @@ with alive_bar(len(items)) as bar:   # declare your expected total
         bar()                        # call after consuming one item
 ```
 
-And it's alive! 😲
+And it's alive! 👏
 
 In general lines, just retrieve the items, enter the `alive_bar()` context manager, and iterate/process normally, calling `bar()` once per item.
 
 
-### Grasp it
+### Understand it
 
 - the `items` can be any iterable, and usually will be some queryset;
 - the first argument of the `alive_bar` is the expected total, it could be a `qs.count()` for querysets, a `len(items)` for iterables which supports it, or any integer/anything that returns an integer;
 - the `bar()` call is what makes the bar go forward -- you usually call it in every iteration after consuming an item, but you can get creative! For example you could call it only when you find something you want, or call it more than once in the same iteration, depending on what you want to monitor. Just adjust the total accordingly to get a useful eta;
 - the `bar()` call also returns the current count/percentage if needed, and enables to pass situational messages to the bar.
 
-So, you could even use it like:
+So, you could even use it without any loops, like:
 
 ```python
 with alive_bar(3) as bar:
@@ -90,8 +90,10 @@ The frames per second will be computed according to the sent progress and the ac
 In these modes, you can also optionally provide the `total`, to enter the **manual definite mode** and get all the same count, throughput and eta statistics as the auto definite mode. The count is dynamically inferred when needed.
 If you don't provide the `total` you get the **manual unknown mode**, where it's not possible to infer the count and throughput values, so a simpler "percent/second" is used for throughput, which can still be used to estimate an eta, nicely calculated to get to 100%.
 
+You can also set manual-mode system-wide in `config_handler`.
 
-### The `bar` handler
+
+### The `bar` signatures
 
 - in **auto** modes: `bar(text=None, incr=1)` ➔ increases the current count (by any positive increment), optionally setting the situational text message, and returns the new count;
 - in **manual** modes: `bar(perc=None, text=None)` ➔ sets the new progress percentage, optionally setting the situational text message, and returns the new percentage.
@@ -121,11 +123,25 @@ There's also a bars `showtime(spinners=False)` ;)
 [![alive-progress bar styles](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/showtime-bars.gif)](https://asciinema.org/a/263491)
 
 
-## Customization
+## Configuration
 
-All of the major components are individually customizable, both globally and per use!
+There are several options to customize behavior, both globally and per use! Just use the `config_handler` object!
 
-And you can mix and match them! (_Click to see it in motion_)
+```python
+from alive_progress import config_handler
+config_handler.set_global(...)
+```
+
+The options are:
+- `length`: number of characters to render the animated progress bar
+- `spinner`: spinner name in alive_progress.SPINNERS or custom
+- `bar`: bar name in alive_progress.BARS or custom
+- `unknown`: spinner name in alive_progress.SPINNERS or custom
+- `theme`: theme name in alive_progress.THEMES
+- `force_tty`: runs animations even without a tty (pycharm terminal for example)
+- `manual`: set to manually control percentage
+
+And you can mix and match them, global and local! (_Click to see it in motion_)
 
 [![alive-progress customization](https://asciinema.org/a/j392MaLz1w0zDw6EVHw4QbLAO.svg)](https://asciinema.org/a/260882)
 
@@ -157,17 +173,31 @@ Adjust the calibration to your liking!
 
 ### Create your own animations
 
-Make your own spinners and bars!
-There's builtin support for frames, scrolling, bouncing, delayed and compound spinners! Get creative! (_Click to see it in motion_)
+Make your own spinners and bars! All of the major components are individually customizable!
+
+There's builtin support for a plethora of special effects, like frames, scrolling, bouncing, delayed and compound spinners! Get creative!
+
+These animations are made by very advanced generators, defined by factories of factory methods: the first level receives and process the styling parameters to create the actual factory; this factory then receives operating parameters like screen length, to build the infinite animation generators.
+
+These generators are stateful, they can render the next frame and yield, until a full animation cycle is complete. But one generator is capable of several animation cycles, when one are exhausted, this allows the next cycle to start. This has all kinds of cool implications! The cycles can have different animation sizes, different screen lengths, they do not need to be synchronized, they can create long different sequences by themselves, they can cooperate with each other to play cycles in sequence or simultaneously, and I can display several at once on screen without any interferences!
+
+The types I've made are:
+- `frames`: draw any sequence of characters, that will be played frame by frame in sequence;
+- `scrolling`: pick a frame or a sequence of characters and make them flow smoothly from side to side, hiding behind or wrapping upon the invisible borders; supports several cycles of distinct characters;
+- `bouncing`: aggregates two `scrolling` in opposing directions, to make two frames or two sequences of characters flow interleaved from/to each side, hiding or immediately bouncing upon the invisible borders; supports several interleaved cycles;
+- `delayed`: get any other animation generator, and copy it multiple times, skipping some frames in the process! very cool effects are made here;
+- `compound` get a handful of generators and play them side by side simultaneously! why choose if you can have them all?
+
+A small example (_Click to see it in motion_)
 
 [![alive-progress creative](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc.svg)](https://asciinema.org/a/260884)
 
 
 ### The Pause mechanism
 
-To use the pause mechanism, you must use a generator to yield the objects you want to interact with. The bar object includes another context manager to do that, just do `with bar.pause(): yield obj`.
+To use the pause mechanism, you must wrap the alive-bar inside a function generator to yield the objects you want to interact with. The `bar` handler includes another context manager to yield anything you want, just do `with bar.pause(): yield obj`.
 
-Let's see an example, suppose you need to reconcile transactions. You need to iterate over thousands of them, detect somehow the faulty ones, and fix them. They could be broken or not synced or invalid or anything else, several different problems. Typically you would have to let the process run, appending to a list each inconsistency found, and waiting, potentially a long time, until the end to be able to do anything. You could mitigate this by processing in chunks, but that has its own implications.
+Suppose you need to reconcile transactions. You need to iterate over thousands of them, detect somehow the faulty ones, and fix them. They could be broken or not synced or invalid or anything else, several different problems. Typically you would have to let the process run, appending to a list each inconsistency found, and waiting, potentially a long time, until the end to be able to do anything. You could mitigate this by processing in chunks, but that has its own shortcomings.
 
 With the Alive-Progress bar and the Pause mechanism, you can inspect these transactions in **real-time**! You wait only until the next one is found! To use it you would do something like this:
 
@@ -182,7 +212,7 @@ def reconcile_transactions():
             bar()
 ```
 
-That's it! Then you could use it in ipython or your preferred _REPL_! Just call the function to instantiate the generator and `next()` with it. The progress bar will run as usual, but as soon as an inconsistency is found, the bar pauses itself and you get the prompt back!
+That's it! Then you could use it in ipython (or your preferred _REPL_)! Just call the function to instantiate the generator and `next()` with it. The progress bar will run as usual, but as soon as an inconsistency is found, the bar pauses itself and you get the prompt back! 😃
 
 ```text
 In [11]: gen = reconcile_transactions()
@@ -192,7 +222,7 @@ In [12]: next(gen, None)
 Out[12]: Transaction<#123>
 ```
 
-How cool is that?! Debug and fix that transaction any way you want, and when you're done, continue the process with the same `next` as before... The bar returns like nothing happened!! :)
+How cool is that?! You have the transaction to debug and fix any way you want, and when you're done, continue the process with the same `next` as before... The bar returns like nothing happened!! :)
 
 ```text
 In [21]: next(gen, None)
@@ -202,7 +232,7 @@ In [21]: next(gen, None)
 
 ### Forcing animations on non-interactive consoles (like Pycharm's)
 
-Pycharm's python console do not report itself as "interactive", so I've included a `force_tty` argument to be able to use the alive-progress bar in it.
+Pycharm's python console for instance do not report itself as "interactive", so I've included a `force_tty` argument to be able to use the alive-progress bar in it.
 
 So, just start it as:
 
@@ -212,6 +242,8 @@ with alive_bar(1000, force_tty=True) as bar:
         time.sleep(.01)
         bar()
 ```
+
+You can also set it system-wide in `config_handler`.
 
 Do note that this console is heavily instrumented and has more overhead, so the outcome may not be as fluid as you would expect.
 
@@ -227,7 +259,7 @@ Do note that this console is heavily instrumented and has more overhead, so the 
 - ~~create an exhibition of spinners and bars, to see them all in motion~~
 - ~~include theme support in configuration~~
 - include colors in spinners and bars
-- try some adaptive algorithm for ETA, like moving average or exponential smoothing
+- try some adaptive algorithm for ETA, like moving average, exponential smoothing or Kalman Filter
 - any other ideas welcome!
 
 
