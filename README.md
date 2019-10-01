@@ -11,7 +11,7 @@ Ever found yourself in a remote ssh session, doing some lengthy operations, and 
 
 I've made this cool progress bar thinking about all that, the Alive-Progress bar! :)
 
-[![alive-progress](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/main.gif)](https://asciinema.org/a/260868)
+![alive-progress](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/main.gif)
 
 
 I like to think of it as a new kind of progress bar for python, as it has among other things:
