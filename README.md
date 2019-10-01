@@ -118,9 +118,9 @@ While in an alive progress bar context, you have two ways to output messages:
   - calling `bar(text='message')`, which sets/overwrites a situational message within the bar line, usually to display something about the items being processed, or the phase the processing is in;
   - calling the usual Python `print('message')`, which will print an enriched message that includes the current position of the alive bar, thus leaving behind a log and continuing the bar below it.
 
-Both methods work the same in **definite**, **unknown** and **manual** modes, and always clear the line appropriately to remove any garbage on screen. (_Click to see it in motion_)
+Both methods work the same in **definite**, **unknown** and **manual** modes, and always clear the line appropriately to remove any garbage on screen.
 
-[![alive-progress messages](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F.svg)](https://asciinema.org/a/260875)
+![alive-progress messages](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/printing.gif)
 
 
 ## Configuration
