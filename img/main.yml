@@ -115,25 +115,25 @@ records:
     content: "\e[?2004h\e[?25l\e[0m\e[?7l\e[0m\e[J\e[0;38;5;28mIn [\e[0;92;1m1\e[0;38;5;28m]: \e[0m                                                                                                               \r\e[119C \r\e[8C\e[?7h\e[0m\e[?12l\e[?25h"
   - delay: 9
     content: "\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
-  - delay: 448
+  - delay: 248
     content: "\e[?25l\e[?7l\e[0mf \b\e[?7h\e[0m\e[?12l\e[?25h\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
   - delay: 82
     content: "\e[?25l\e[?7l\e[0mr \b\e[?7h\e[0m\e[?12l\e[?25h\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
   - delay: 93
     content: "\e[?25l\e[?7l\e[2D\e[0;38;5;28;1mfrom\e[0m \e[0;38;5;32;1malive_progress\e[0m \e[0;38;5;28;1mimport\e[0m alive_bar; \e[0;38;5;28;1mimport\e[0m \e[0;38;5;32;1mtime\e[0m \b\e[?7h\e[0m\e[?12l\e[?25h\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
-  - delay: 442
+  - delay: 242
     content: "\e[?25l\e[?7l\e[57D\e[0m\e[J\e[0;38;5;28mIn [\e[0;92;1m1\e[0;38;5;28m]: \e[0;38;5;28;1mfrom\e[0m \e[0;38;5;32;1malive_progress\e[0m \e[0;38;5;28;1mimport\e[0m alive_bar; \e[0;38;5;28;1mimport\e[0m \e[0;38;5;32;1mtime\e[0m                                                              \r\e[119C \r\e[0m\r\r\n\e[J\e[?7h\e[0m\e[?12l\e[?25h\e[?2004l\r\n\e[?1l\e[6n\e[?2004h\e[?25l\e[0m\e[?7l\e[0m\e[J\e[0;38;5;28mIn [\e[0;92;1m2\e[0;38;5;28m]: \e[0m                                                                                                               \r\e[119C \r\e[8C\e[?7h\e[0m\e[?12l\e[?25h\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
-  - delay: 999
+  - delay: 499
     content: "\e[?25l\e[?7l\e[0mf \b\e[?7h\e[0m\e[?12l\e[?25h\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
-  - delay: 448
+  - delay: 248
     content: "\e[?25l\e[?7l\e[0mo \b\e[?7h\e[0m\e[?12l\e[?25h\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
-  - delay: 190
+  - delay: 90
     content: "\e[?25l\e[?7l\e[10D\e[0;38;5;28mIn [\e[0;92;1m2\e[0;38;5;28m]: \e[0;38;5;28;1mfor\e[0m x \e[0;38;5;129;1min\e[0m \e[0;38;5;28m3000\e[0m, \e[0;38;5;28m4000\e[0m, \e[0;38;5;28m2000\e[0m, \e[0;38;5;28m0\e[0m: \e[0m\e[K\e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m    \e[0;38;5;28;1mwith\e[0m alive_bar(x) \e[0;38;5;28;1mas\e[0m bar: \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m        \e[0;38;5;28;1mfor\e[0m i \e[0;38;5;129;1min\e[0m \e[0;38;5;28mrange\e[0m(\e[0;38;5;28m3000\e[0m): \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m            time.sleep(.\e[0;38;5;28m002\e[0m) \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m            bar\e[0;38;5;16;48;5;152m()\e[0m                                                                                              \r\e[119C \r\e[25C\e[?7h\e[0m\e[?12l\e[?25h"
   - delay: 5
     content: "\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
-  - delay: 690
+  - delay: 390
     content: "\e[?25l\e[?7l\e[25D\e[0;38;5;28m   ...: \e[0m            bar() \e[0m\e[K\e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m                                                                                                               \r\e[119C \r\e[20C\e[?7h\e[0m\e[?12l\e[?25h\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
-  - delay: 391
+  - delay: 191
     content: "\e[?25l\e[?7l\e[5A\e[20D\e[0m\e[J\e[0;38;5;28mIn [\e[0;92;1m2\e[0;38;5;28m]: \e[0;38;5;28;1mfor\e[0m x \e[0;38;5;129;1min\e[0m \e[0;38;5;28m3000\e[0m, \e[0;38;5;28m4000\e[0m, \e[0;38;5;28m2000\e[0m, \e[0;38;5;28m0\e[0m: \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m    \e[0;38;5;28;1mwith\e[0m alive_bar(x) \e[0;38;5;28;1mas\e[0m bar: \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m        \e[0;38;5;28;1mfor\e[0m i \e[0;38;5;129;1min\e[0m \e[0;38;5;28mrange\e[0m(\e[0;38;5;28m3000\e[0m): \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m            time.sleep(.\e[0;38;5;28m002\e[0m) \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m            bar() \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m                                                                                                               \r\e[119C \r\e[0m\r\r\n\e[J\e[?7h\e[0m\e[?12l\e[?25h\e[?2004l|                                        | ▁▃▅ 0/3000 [0%] in 0s (0.0/s, eta: ?) \r"
   - delay: 103
     content: "|▌                                       | ▂▄▆ 42/3000 [1%] in 0s (406.3/s, eta: 7s) \r"
