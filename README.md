@@ -57,7 +57,7 @@ In general lines, just retrieve the items, enter the `alive_bar()` context manag
 ### Understand it
 
 - the `items` can be any iterable, and usually will be some queryset;
-- the first argument of the `alive_bar` is the expected total, it could be a `qs.count()` for querysets, a `len(items)` for iterables which supports it, or any integer/anything that returns an integer;
+- the first argument of the `alive_bar` is the expected total, so it can be anything that returns an integer, like `qs.count()` for querysets, `len(items)` for iterables that supports it, or even a fixed integer;
 - the `bar()` call is what makes the bar go forward -- you usually call it in every iteration after consuming an item, but you can get creative! For example you could call it only when you find something you want, or call it more than once in the same iteration, depending on what you want to monitor. Just adjust the total accordingly to get a useful eta;
 - the `bar()` call also returns the current count/percentage if needed, and enables to pass situational messages to the bar.
 
