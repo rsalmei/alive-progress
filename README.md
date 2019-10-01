@@ -99,6 +99,19 @@ You can also set manual-mode system-wide in `config_handler`.
 - in **manual** modes: `bar(perc=None, text=None)` ➔ sets the new progress percentage, optionally setting the situational text message, and returns the new percentage.
 
 
+## Styles
+
+Wondering what styles does it have bundled? It's `showtime`! ;)
+
+![alive-progress spinner styles](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/showtime-spinners.gif)
+
+I've made these styles to test all combinations of parameters of the factories, but I think some of them ended up very very cool! Use them, or create your own!
+
+There's also a bars `showtime`, check it out! ;)
+
+![alive-progress bar styles](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/showtime-bars.gif)
+
+
 ## Printing messages
 
 While in an alive progress bar context, you have two ways to output messages:
@@ -108,19 +121,6 @@ While in an alive progress bar context, you have two ways to output messages:
 Both methods work the same in **definite**, **unknown** and **manual** modes, and always clear the line appropriately to remove any garbage on screen. (_Click to see it in motion_)
 
 [![alive-progress messages](https://asciinema.org/a/lDM5zGPvPWFHHZOw0DMAMMH5F.svg)](https://asciinema.org/a/260875)
-
-
-## Styles
-
-Wondering what styles does it have bundled? It's `showtime`! ;) (_Click to see it in motion_)
-
-[![alive-progress spinner styles](https://asciinema.org/a/OR83rcm8J06w0OC9pkgnaJmYG.svg)](https://asciinema.org/a/260872)
-
-I've made these styles to test all combinations of parameters of the factories, but I think some of them ended up very very cool! Use them, or create your own!
-
-There's also a bars `showtime(spinners=False)` ;)
-
-[![alive-progress bar styles](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/showtime-bars.gif)](https://asciinema.org/a/263491)
 
 
 ## Configuration
