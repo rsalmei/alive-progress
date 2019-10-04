@@ -267,16 +267,16 @@ Do note that this console is heavily instrumented and has more overhead, so the 
 
 - This whole project was implemented in functional style;
 - It does not declare even a single class;
-- It uses extensively Python _Closures_ and _Generators_, they're in almost all modules;
+- It uses extensively (and very creatively) python _Closures_ and _Generators_, they're in almost all modules (look for instance the [spinners generators and spinner_player](https://github.com/rsalmei/alive-progress/blob/master/alive_progress/spinners.py) 😜);
 - It does not have any dependencies.
 
 
 ## Changelog highlights:
-- 1.3.0: new fps calibration support, include force_tty and manual options in global configuration, multiple increment support
+- 1.3.0: new fps calibration system, support force_tty and manual options in global configuration, multiple increment support in bar handler
 - 1.2.0: filled blanks bar styles, clean underflow representation of filled blanks
 - 1.1.1: optional percentage in manual mode
 - 1.1.0: new manual mode
-- 1.0.1: pycharm console support, improve compatibility with python streams
+- 1.0.1: pycharm console support with force_tty, improve compatibility with python stdio streams
 - 1.0.0: first public release, already very complete and mature
 
 
