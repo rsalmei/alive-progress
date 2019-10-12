@@ -96,6 +96,8 @@ So, to summarize it all:
 | manual definite | ❌ | ✅ | ✅ | ✅ (inferred) | ✅           | ✅ | choose any completion |
 | manual unknown  | ❌ | ❌ | ✅ | ❌            | ⚠️ (simpler) | ✅ | choose any completion |
 
+> Just remember: You do not have to think about which mode you should be using, just pass a `total` if you have one, and use `manual` if your processing needs it! 👏
+
 
 ### Signatures of the `bar()` handler
 
