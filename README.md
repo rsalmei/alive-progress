@@ -97,9 +97,9 @@ So, to summarize it all:
 | manual unknown  | ❌ | ❌ | ✅ | ❌            | ⚠️ (simpler) | ✅ | choose any completion |
 
 
-### The `bar` signatures
+### Signatures of the `bar()` handler
 
-- in **auto** modes: `bar(text=None, incr=1)` ➔ increases the current count (by any positive increment), optionally setting the situational text message, and returns the new count;
+- in **automatic** modes: `bar(text=None, incr=1)` ➔ increases the current count (by any positive increment), optionally setting the situational text message, and returns the new count;
 - in **manual** modes: `bar(perc=None, text=None)` ➔ sets the new progress percentage, optionally setting the situational text message, and returns the new percentage.
 
 
