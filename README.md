@@ -76,26 +76,30 @@ with alive_bar(3) as bar:
 
 ## Alive-Bar modes
 
-Actually the `total` argument is optional. Providing it makes the bar enter the **definite mode**, the one used for well-bounded tasks. This mode has all counter, throughput and eta statistics the bar has to offer.
+Actually, the `total` argument is optional. Providing it makes the bar enter the **definite mode**, the one used for well-bounded tasks. This mode has all statistics widgets the alive-bar has to offer: counter, throughput and eta.
+This is the only mode that tracks and displays overflow and underflow of items.
 
-If you do not provide a `total`, the bar enters the **unknown mode**. In this mode, the whole progress-bar is animated like the cool spinners, as it's not possible to determine the percentage of completion. You still get counter and throughput statistics.
-(the cool spinners are still present in this mode, and each animation runs independently of each other, rendering a unique show in your terminal 😜).
-
-These are the **auto modes**, the ones where the percentage is calculated for you.
+If you do not provide a `total`, the bar enters the **unknown mode**. In this mode, the whole progress-bar is animated like the cool spinners, as it's not possible to determine the percentage of completion. Therefore it's also not possible to compute an eta, but you still get the counter and throughput widgets (note the cool spinners are still present in this mode, and each animation runs independently of each other, rendering a unique show in your terminal 😜).
 
 Then you have the (📌 new) **manual modes**, where you get to manually control the bar!
-Just pass a `manual=True` argument to `alive_bar()`, and you gain the ability to send a percentage (a float between 0 and 1) to the `bar()` handler to put the alive-bar in wherever position you want! Call it as frequently as you need.
-The frames per second will be computed according to the sent progress and the actual elapsed time.
+Just pass a `manual=True` argument to `alive_bar()` or `config_handler.set_global()`, and you get to send a percentage (a float between 0 and 1) to the `bar()` handler, and put the alive-bar in wherever position you want! Call it as frequently as you need, the refresh rate will be asynchronously computed according to the sent progress and the actual elapsed time.
 
-In these modes, you can also optionally provide the `total`, to enter the **manual definite mode** and get all the same count, throughput and eta statistics as the auto definite mode. The count is dynamically inferred when needed.
-If you don't provide the `total` you get the **manual unknown mode**, where it's not possible to infer the count and throughput values, so a simpler "percent/second" is used for throughput, which can still be used to estimate an eta, nicely calculated to get to 100%.
+In these modes, you can also provide the `total` to enter the **manual definite mode**, and get all the same counter, throughput and eta statistics widgets as the _auto definite mode_. The counter is inferred from the supplied percentage.
+Or you can omit the `total` to enter the **manual unknown mode**, where it's not possible to infer neither the counter nor the throughput widgets, and you get a simpler "percent/second" (%/s) and a rough eta, calculated to get to 100%.
 
-You can also set manual-mode system-wide in `config_handler`.
+So, to summarize it all:
+
+| mode | automatic | total | percentage | counter | throughput | eta | outstanding features |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| definite        | ✅ | ✅ | ✅ | ✅            | ✅           | ✅ | overflow and underflow |
+| unknown         | ✅ | ❌ | ❌ | ✅            | ✅           | ❌ | super cool animations |
+| manual definite | ❌ | ✅ | ✅ | ✅ (inferred) | ✅           | ✅ | choose any completion |
+| manual unknown  | ❌ | ❌ | ✅ | ❌            | ⚠️ (simpler) | ✅ | choose any completion |
 
 
-### The `bar` signatures
+### Signatures of the `bar()` handler
 
-- in **auto** modes: `bar(text=None, incr=1)` ➔ increases the current count (by any positive increment), optionally setting the situational text message, and returns the new count;
+- in **automatic** modes: `bar(text=None, incr=1)` ➔ increases the current count (by any positive increment), optionally setting the situational text message, and returns the new count;
 - in **manual** modes: `bar(perc=None, text=None)` ➔ sets the new progress percentage, optionally setting the situational text message, and returns the new percentage.
 
 
