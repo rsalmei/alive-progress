@@ -154,6 +154,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     print_buffer = []
     print_hook.write = print_hook
     print_hook.flush = lambda: None
+    print_hook.isatty = sys.__stdout__.isatty
     print_lock = threading.Lock()
 
     def start_monitoring(offset=0.):
