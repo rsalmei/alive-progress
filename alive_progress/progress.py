@@ -71,7 +71,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         total (Optional[int]): the total expected count
         title (Optional[str]): the title, will be printed whenever there's no custom message
         calibrate (int): maximum theoretical throughput to calibrate animation speed
-            it cannot be in the global configuration because it depends on the current mode
+            (cannot be in the global configuration because it depends on the current mode)
         **options: custom configuration options, which override the global configuration:
             length (int): number of characters to render the animated progress bar
             spinner (Union[str | object]): spinner name in alive_progress.SPINNERS or custom
@@ -218,7 +218,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     # fps = log10(x + 1) * (maxfps - minfps) / log10(c + 1) + minfps
     min_fps, max_fps = 2., 60.
     calibrate = max(0., calibrate or factor)
-    adjust_log_curve = 100. / min(calibrate, 100.) # adjust curve for small numbers
+    adjust_log_curve = 100. / min(calibrate, 100.)  # adjust curve for small numbers
     factor = (max_fps - min_fps) / math.log10((calibrate * adjust_log_curve) + 1.)
 
     def fps():
