@@ -82,7 +82,8 @@ This is the only mode that tracks and displays overflow and underflow of items.
 If you do not provide a `total`, the bar enters the **unknown mode**. In this mode, the whole progress-bar is animated like the cool spinners, as it's not possible to determine the percentage of completion. Therefore it's also not possible to compute an eta, but you still get the counter and throughput widgets (note the cool spinners are still present in this mode, and each animation runs independently of each other, rendering a unique show in your terminal 😜).
 
 Then you have the (📌 new) **manual modes**, where you get to manually control the bar!
-Just pass a `manual=True` argument to `alive_bar()` or `config_handler.set_global()`, and you get to send a percentage (a float between 0 and 1) to the `bar()` handler, and put the alive-bar in wherever position you want! Call it as frequently as you need, the refresh rate will be asynchronously computed according to the sent progress and the actual elapsed time.
+Just pass a `manual=True` argument to `alive_bar()` or `config_handler.set_global()`, and you get to send a percentage to the very same `bar()` handler, and put the alive-bar in wherever position you want! For example to send 15%, you would send 0.15 which is 15 / 100.
+Call it as frequently as you need, the refresh rate will be asynchronously computed according to the sent progress and the actual elapsed time.
 
 In these modes, you can also provide the `total` to enter the **manual definite mode**, and get all the same counter, throughput and eta statistics widgets as the _auto definite mode_. The counter is inferred from the supplied percentage.
 Or you can omit the `total` to enter the **manual unknown mode**, where it's not possible to infer neither the counter nor the throughput widgets, and you get a simpler "percent/second" (%/s) and a rough eta, calculated to get to 100%.
