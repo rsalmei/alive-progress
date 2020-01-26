@@ -1,12 +1,11 @@
 # coding=utf-8
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import sys
-from contextlib import contextmanager
-
 import math
+import sys
 import threading
 import time
+from contextlib import contextmanager
 from datetime import timedelta
 
 from .configuration import config_handler
