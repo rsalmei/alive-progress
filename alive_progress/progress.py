@@ -159,7 +159,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         sys.stdout = sys.__stdout__
         return time.time() - run.init
 
-    event = threading.Event()
+    thread, event = None, threading.Event()
     if sys.stdout.isatty() or config.force_tty:
         @contextmanager
         def pause_monitoring():
@@ -252,8 +252,11 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         sys.__stdout__.write('\n')
         raise
     finally:
-        thread = None
         stop_monitoring(False)
+        if thread:
+            local_copy = thread
+            thread = None  # lets the internal thread terminate gracefully.
+            local_copy.join()
 
     end, run.text, run.stats = True, '', stats_end
     alive_repr()
