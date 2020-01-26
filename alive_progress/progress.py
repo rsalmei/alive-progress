@@ -264,5 +264,5 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             thread = None  # lets the internal thread terminate gracefully.
             local_copy.join()
 
-    end, run.text, run.stats = True, '', stats_end
-    alive_repr()
+        end, run.text, run.stats = True, '', stats_end
+        alive_repr()
