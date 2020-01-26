@@ -71,7 +71,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         total (Optional[int]): the total expected count
         title (Optional[str]): the title, will be printed whenever there's no custom message
         calibrate (int): maximum theoretical throughput to calibrate animation speed
-            it cannot be in the global configuration because it depends on the current mode
+            (cannot be in the global configuration because it depends on the current mode)
         **options: custom configuration options, which override the global configuration:
             length (int): number of characters to render the animated progress bar
             spinner (Union[str | object]): spinner name in alive_progress.SPINNERS or custom
@@ -82,9 +82,12 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             manual (bool): set to manually control percentage
 
     """
+    if total is not None:
+        if not isinstance(total, int):
+            raise TypeError("integer argument expected, got '{}'.".format(type(total).__name__))
+        if total <= 0:
+            total = None
     config = config_handler(**options)
-    if total and total <= 0:
-        total = None
 
     def to_elapsed():
         return timedelta(seconds=int(run.elapsed)) if run.elapsed >= 60 else \
@@ -117,9 +120,14 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
 
         run.last_line_len = line_len
 
+    def flush_buffer():
+        if print_buffer:
+            print()
+
     if config.manual:
         def bar(perc=None, text=None):
             if perc is not None:
+                flush_buffer()
                 run.percent = float(perc)
             if text is not None:
                 run.text = str(text)
@@ -127,6 +135,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     else:
         def bar(text=None, incr=1):
             if incr > 0:
+                flush_buffer()
                 run.count += int(incr)
             if text is not None:
                 run.text = str(text)
@@ -159,7 +168,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         sys.stdout = sys.__stdout__
         return time.time() - run.init
 
-    event = threading.Event()
+    thread, event = None, threading.Event()
     if sys.stdout.isatty() or config.force_tty:
         @contextmanager
         def pause_monitoring():
@@ -209,7 +218,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     # fps = log10(x + 1) * (maxfps - minfps) / log10(c + 1) + minfps
     min_fps, max_fps = 2., 60.
     calibrate = max(0., calibrate or factor)
-    adjust_log_curve = 100. / min(calibrate, 100.) # adjust curve for small numbers
+    adjust_log_curve = 100. / min(calibrate, 100.)  # adjust curve for small numbers
     factor = (max_fps - min_fps) / math.log10((calibrate * adjust_log_curve) + 1.)
 
     def fps():
@@ -247,13 +256,13 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     start_monitoring()
     try:
         yield bar
-    except BaseException:
-        # makes visible the point where an exception is thrown.
-        sys.__stdout__.write('\n')
-        raise
     finally:
-        thread = None
+        flush_buffer()
         stop_monitoring(False)
+        if thread:
+            local_copy = thread
+            thread = None  # lets the internal thread terminate gracefully.
+            local_copy.join()
 
     end, run.text, run.stats = True, '', stats_end
     alive_repr()
