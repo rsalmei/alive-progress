@@ -1,12 +1,11 @@
 # coding=utf-8
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import sys
-from contextlib import contextmanager
-
 import math
+import sys
 import threading
 import time
+from contextlib import contextmanager
 from datetime import timedelta
 
 from .configuration import config_handler
@@ -264,5 +263,5 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             thread = None  # lets the internal thread terminate gracefully.
             local_copy.join()
 
-    end, run.text, run.stats = True, '', stats_end
-    alive_repr()
+        end, run.text, run.stats = True, '', stats_end
+        alive_repr()
