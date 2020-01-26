@@ -11,7 +11,7 @@ from .spinners import bouncing_spinner_factory, compound_spinner_factory, delaye
     frame_spinner_factory, scrolling_spinner_factory, spinner_player
 from .styles import BARS, SPINNERS, THEMES
 
-VERSION = (1, 3, 0)
+VERSION = (1, 3, 1)
 
 __author__ = 'Rogério Sampaio de Almeida'
 __email__ = 'rsalmei@gmail.com'

@@ -278,6 +278,7 @@ Do note that this console is heavily instrumented and has more overhead, so the 
 
 
 ## Changelog highlights:
+- 1.3.1: fix a subtle race condition that could leave artifacts if ended very fast, flush print buffer if changing position or terminating
 - 1.3.0: new fps calibration system, support force_tty and manual options in global configuration, multiple increment support in bar handler
 - 1.2.0: filled blanks bar styles, clean underflow representation of filled blanks
 - 1.1.1: optional percentage in manual mode
