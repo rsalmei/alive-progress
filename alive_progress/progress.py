@@ -117,9 +117,14 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
 
         run.last_line_len = line_len
 
+    def flush_buffer():
+        if print_buffer:
+            print()
+
     if config.manual:
         def bar(perc=None, text=None):
             if perc is not None:
+                flush_buffer()
                 run.percent = float(perc)
             if text is not None:
                 run.text = str(text)
@@ -127,6 +132,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     else:
         def bar(text=None, incr=1):
             if incr > 0:
+                flush_buffer()
                 run.count += int(incr)
             if text is not None:
                 run.text = str(text)
@@ -247,11 +253,8 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     start_monitoring()
     try:
         yield bar
-    except BaseException:
-        # makes visible the point where an exception is thrown.
-        sys.__stdout__.write('\n')
-        raise
     finally:
+        flush_buffer()
         stop_monitoring(False)
         if thread:
             local_copy = thread
