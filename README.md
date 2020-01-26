@@ -278,6 +278,7 @@ Do note that this console is heavily instrumented and has more overhead, so the 
 
 
 ## Changelog highlights:
+- 1.3.3: further improve stream compatibility with isatty
 - 1.3.2: beautifully finalize bar in case of unexpected errors
 - 1.3.1: fix a subtle race condition that could leave artifacts if ended very fast, flush print buffer when position changes or bar terminates, keep total argument from unexpected types
 - 1.3.0: new fps calibration system, support force_tty and manual options in global configuration, multiple increment support in bar handler
