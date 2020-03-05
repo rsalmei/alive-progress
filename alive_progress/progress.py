@@ -7,6 +7,7 @@ import threading
 import time
 from contextlib import contextmanager
 from datetime import timedelta
+from itertools import chain, islice, repeat
 
 from .configuration import config_handler
 from .spinners import spinner_player
@@ -142,13 +143,16 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
 
     def print_hook(part):
         if part != '\n':
-            print_buffer.extend([u for x in part.splitlines(True) for u in (x, None)][:-1])
+            # this will generate a sequence of lines interspersed with None, which will later
+            # be rendered as the indent filler to align additional lines under the same header.
+            gen = chain.from_iterable(zip(repeat(None), part.splitlines(True)))
+            print_buffer.extend(islice(gen, 1, None))
         else:
             header = 'on {}: '.format(run.count)
-            nested = (line or ' ' * len(header) for line in print_buffer)
+            nested = ''.join(line or ' ' * len(header) for line in print_buffer)
             with print_lock:
                 clear_traces()
-                sys.__stdout__.write('{}{}\n'.format(header, ''.join(nested)))
+                sys.__stdout__.write('{}{}\n'.format(header, nested))
             print_buffer[:] = []
 
     print_buffer = []
