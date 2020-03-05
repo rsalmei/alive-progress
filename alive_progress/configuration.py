@@ -47,6 +47,7 @@ CONFIG_VARS = dict(
     unknown=_style_input_factory(SPINNERS, bars, 1),
     force_tty=_bool_input_factory(),
     manual=_bool_input_factory(),
+    enrich_print=_bool_input_factory(),
 )
 
 Config = namedtuple('Config', tuple(CONFIG_VARS.keys()))
@@ -61,6 +62,7 @@ def create_config():
             theme='smooth',  # includes spinner, bar and unknown.
             force_tty=False,
             manual=False,
+            enrich_print=True,
         )
 
     def set_global(theme=None, **options):
