@@ -217,11 +217,14 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         logic_total, format_spec, factor, current = 1., '%', 1., lambda: run.percent
 
     # calibration of the dynamic fps engine.
-    # y = log10(x + m) * f + n, where y is fps, (m, n) are horizontal and vertical translation,
-    #   and f is a calibration factor, computed from an user input c.
-    # fps = log10(x + 1) * f + minfps, which must be equal to maxfps for x = c,
-    # so the factor f = (maxfps - minfps) / log10(c + 1), and
-    # fps = log10(x + 1) * (maxfps - minfps) / log10(c + 1) + minfps
+    # I've started with the equation y = log10(x + m) * k + n, where:
+    #   y is the desired fps, m and n are horizontal and vertical translation,
+    #   k is a calibration factor, computed from some user input c (see readme for details).
+    # considering minfps and maxfps as given constants, I came to:
+    #   fps = log10(x + 1) * k + minfps, which must be equal to maxfps for x = c,
+    # so the factor k = (maxfps - minfps) / log10(c + 1), and
+    #   fps = log10(x + 1) * (maxfps - minfps) / log10(c + 1) + minfps
+    # neat! ;)
     min_fps, max_fps = 2., 60.
     calibrate = max(0., calibrate or factor)
     adjust_log_curve = 100. / min(calibrate, 100.)  # adjust curve for small numbers
