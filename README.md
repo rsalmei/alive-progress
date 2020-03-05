@@ -118,6 +118,17 @@ There's also a bars `showtime`, check it out! ;)
 
 ![alive-progress bar styles](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/showtime-bars.gif)
 
+(📌 new) Now there's new commands in exhibition! Try the `show_bars()` and `show_spinners()`! Just:
+ 
+```python
+from alive_progress import show_bars, show_spinners
+# call them!
+```
+
+Enjoy ;)
+
+There's also a new utility called `print_chars`, to help finding that cool one to put in your customized spinner or bar, or to determine if your terminal support unicode chars.
+
 
 ## Printing messages
 
@@ -147,6 +158,7 @@ The options are:
 - `theme`: theme name in alive_progress.THEMES
 - `force_tty`: runs animations even without a tty (pycharm terminal for example)
 - `manual`: set to manually control percentage
+- `enrich_print`: enabled by default, unset to remove the bar position from print() messages
 
 And you can mix and match them, global and local! (_Click to see it in motion_)
 
@@ -279,6 +291,7 @@ Do note that this console is heavily instrumented and has more overhead, so the 
 
 
 ## Changelog highlights:
+- 1.4.0: print() enrichment can now be disabled (locally and globally), exhibits now have a real time fps indicator, new exhibit functions `show_spinners` and `show_bars`, new utility `print_chars`, `show_bars` gains some advanced demonstrations (try it again!)
 - 1.3.3: further improve stream compatibility with isatty
 - 1.3.2: beautifully finalize bar in case of unexpected errors
 - 1.3.1: fix a subtle race condition that could leave artifacts if ended very fast, flush print buffer when position changes or bar terminates, keep total argument from unexpected types
