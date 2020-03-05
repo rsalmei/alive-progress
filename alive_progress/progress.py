@@ -148,30 +148,28 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             gen = chain.from_iterable(zip(repeat(None), part.splitlines(True)))
             print_buffer.extend(islice(gen, 1, None))
         else:
-            header = 'on {}: '.format(run.count)
+            header = header_template.format(run.count)
             nested = ''.join(line or ' ' * len(header) for line in print_buffer)
             with print_lock:
                 clear_traces()
                 sys.__stdout__.write('{}{}\n'.format(header, nested))
             print_buffer[:] = []
 
-    print_buffer = []
+    print_buffer, print_lock = [], threading.Lock()
+    header_template = 'on {}: ' if config.enrich_print else ''
     print_hook.write = print_hook
     print_hook.flush = lambda: None
     print_hook.isatty = sys.__stdout__.isatty
-    print_lock = threading.Lock()
 
     def start_monitoring(offset=0.):
-        if config.enrich_print:
-            sys.stdout = print_hook
+        sys.stdout = print_hook
         event.set()
         run.init = time.time() - offset
 
     def stop_monitoring(clear):
         if clear:
             event.clear()
-        if config.enrich_print:
-            sys.stdout = sys.__stdout__
+        sys.stdout = sys.__stdout__
         return time.time() - run.init
 
     thread, event = None, threading.Event()
