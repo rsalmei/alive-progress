@@ -158,14 +158,16 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     print_lock = threading.Lock()
 
     def start_monitoring(offset=0.):
-        sys.stdout = print_hook
+        if config.enrich_print:
+            sys.stdout = print_hook
         event.set()
         run.init = time.time() - offset
 
     def stop_monitoring(clear):
         if clear:
             event.clear()
-        sys.stdout = sys.__stdout__
+        if config.enrich_print:
+            sys.stdout = sys.__stdout__
         return time.time() - run.init
 
     thread, event = None, threading.Event()
