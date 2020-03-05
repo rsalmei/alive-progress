@@ -56,6 +56,7 @@ def show_bars(fps=None, **options):
 
 
 def _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, **options):
+    fps = min(300., max(2., float(fps or 15.)))  # since one can't set the total, max_fps is higher.
     sleep, config = 1. / fps, config_handler(**options)
 
     print('Welcome to alive-progress, enjoy! (ctrl+c to stop :)')
@@ -66,16 +67,23 @@ def _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, **op
     # initialize the generators, sending fps and config params (list comprehension is discarded).
     [(next(gen), gen.send((fps, config))) for gen in prepared_gen.values()]
 
+    timer = time.perf_counter if sys.version_info >= (3, 3) else time.time
+
     total_lines += 1  # frames per second indicator.
     up_command = '\033[{}A'.format(total_lines)  # ANSI escape sequence for Cursor Up.
     start, frame = timer(), 0
     start, current = start - sleep, start  # simulates the first frame took exactly "sleep" ms.
     try:
         while True:
-            for name, gens in prepared_gen.items():
-                print(line_pattern.format(name, *next(gens)))
+            print('fps: {:.2f} (goal: {:.1f})  '  # the blanks at the end remove artifacts.
+                  .format(frame / (current - start), fps))
 
-            time.sleep(sleep)
+            for name, gen in prepared_gen.items():
+                print(line_pattern.format(name, *next(gen)))
+
+            frame += 1
+            current = timer()
+            time.sleep(max(0., start + frame * sleep - current))
             print(up_command)
     except KeyboardInterrupt:
         pass
