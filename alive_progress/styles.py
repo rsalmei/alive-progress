@@ -103,10 +103,10 @@ def __create_bars():
     smooth = standard_bar_factory(chars='▏▎▍▌▋▊▉█', tip=None, errors='⚠✗')
     blocks = standard_bar_factory(chars='▏▎▍▌▋▊▉', tip=None, errors='⚠✗')
     bubbles = standard_bar_factory(chars='∙○⦿●', borders='<>', tip='', errors='⚠✗')
-    hollow = standard_bar_factory(chars='❒', borders='<>', tip='▷', errors='⚠✗')
-    solid = standard_bar_factory(chars='■', borders='<>', tip='►', errors='⚠✗')
     circles = standard_bar_factory(blank='○', chars='●', borders='<>', tip='', errors='⚠✗')
+    hollow = standard_bar_factory(chars='❒', borders='<>', tip='▷', errors='⚠✗')
     squares = standard_bar_factory(blank='❒', chars='■', borders='<>', tip='', errors='⚠✗')
+    solid = standard_bar_factory(chars='■', borders='<>', tip='►', errors='⚠✗')
     checks = standard_bar_factory(chars='✓', tip='', errors='⚠✗')
     filling = standard_bar_factory(chars='▁▂▃▄▅▆▇█', tip=None, errors='⚠✗')
 
