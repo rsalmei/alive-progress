@@ -24,5 +24,5 @@ __all__ = ['alive_bar', 'standard_bar_factory', 'unknown_bar_factory', 'spinner_
            'compound_spinner_factory', 'delayed_spinner_factory', 'BARS', 'SPINNERS', 'THEMES',
            'show_bars', 'show_chars', 'show_spinners', 'showtime', 'config_handler']
 
-if sys.version_info <= (3,):
+if sys.version_info < (3,):
     __all__ = [bytes(x) for x in __all__]
