@@ -290,6 +290,11 @@ Do note that this console is heavily instrumented and has more overhead, so the 
 - It does not have any dependencies.
 
 
+## Python 2 EOL
+
+The version 1.4.0 is the last one to support Python 2.
+
+
 ## Changelog highlights:
 - 1.4.0: print() enrichment can now be disabled (locally and globally), exhibits now have a real time fps indicator, new exhibit functions `show_spinners` and `show_bars`, new utility `print_chars`, `show_bars` gains some advanced demonstrations (try it again!)
 - 1.3.3: further improve stream compatibility with isatty
