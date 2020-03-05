@@ -56,10 +56,10 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
 
     If the bar is over or underused, it will warn you!
     To test all supported scenarios, you can do this:
-    >>> for x in 3000, 4000, 2000, 0:
+    >>> for x in 1000, 1500, 700, 0:
     ...    with alive_bar(x) as bar:
-    ...        for i in range(3000):
-    ...            time.sleep(.002)
+    ...        for i in range(1000):
+    ...            time.sleep(.005)
     ...            bar()
     Expected results are these (but you have to see them in motion!):
 [========================================] 3000/3000 [100%] in 7.4s (408.09/s)
