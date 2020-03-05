@@ -20,7 +20,7 @@ I like to think of it as a new kind of progress bar for python, as it has among 
   - a visual feedback of the current speed/throughput, as the spinner runs faster or slower according to the actual processing speed;
   - an efficient multi-threaded bar, which updates itself at a fraction of the actual speed (1,000,000 iterations per second equates to roughly 60fps refresh rate) to keep CPU usage low and avoid terminal spamming; (📌 new: you can now calibrate this!)
   - an expected time of arrival (eta), that shows the remaining processing time in a friendly way, not anything like `eta: 1584s`, it will nicely show `eta: 0:26:24` as you would expect (but anything less than a minute is indeed `eta: 42s`);
-  - a `print()` hook, which allows print statements in the midst of an alive-bar context, nicely cleaning the output of any garbage, and even enriching with the current count when it occurred;
+  - a `print()` hook, which allows print statements in the midst of an alive-bar context, nicely cleaning the output of any garbage, and even enriching with the current position when it occurred;
   - after your processing has finished, a nice receipt is printed with the statistics of that run, including the elapsed time and observed throughput;
   - it tracks the actual count in regard of the expected count, so it will look different if you send in more or less than expected;
   - it automatically detects if there's really an allocated tty, and if there isn't, only the final receipt is printed, so you can safely include the alive-bar in all and any code and rest assure your log file won't get 60fps garbage;
@@ -78,32 +78,31 @@ with alive_bar(3) as bar:
 ## Alive-Bar modes
 
 Actually, the `total` argument is optional. Providing it makes the bar enter the **definite mode**, the one used for well-bounded tasks. This mode has all statistics widgets the alive-bar has to offer: counter, throughput and eta.
-This is the only mode that tracks and displays overflow and underflow of items.
 
-If you do not provide a `total`, the bar enters the **unknown mode**. In this mode, the whole progress-bar is animated like the cool spinners, as it's not possible to determine the percentage of completion. Therefore it's also not possible to compute an eta, but you still get the counter and throughput widgets (note the cool spinners are still present in this mode, and each animation runs independently of each other, rendering a unique show in your terminal 😜).
+If you do not provide a `total`, the bar enters the **unknown mode**. In this mode, the whole progress-bar is animated like the cool spinners, as it's not possible to determine the percentage of completion. Therefore it's also not possible to compute an eta, but you still get the counter and throughput widgets. And the cool spinners are still present in this mode, so each animation runs independently of each other, rendering a unique show in your terminal 😜.
 
-Then you have the (📌 new) **manual modes**, where you get to manually control the bar!
-Just pass a `manual=True` argument to `alive_bar()` or `config_handler.set_global()`, and you get to send a percentage to the very same `bar()` handler, and put the alive-bar in wherever position you want! For example to send 15%, you would send 0.15 which is 15 / 100.
-Call it as frequently as you need, the refresh rate will be asynchronously computed according to the sent progress and the actual elapsed time.
+Then you have the (📌 new) **manual mode**, where you get to actually control the bar! That way, you can put it in whatever position you want, like make it go backwards, or act like a gauge of some sort!
+Just pass a `manual=True` argument to `alive_bar()` (or `config_handler.set_global()`), and you get to send a percentage to the very same `bar()` handler to put the alive-bar where you want! For example to send 15%, you would call `bar(0.15)` (which is 15 / 100).
+Call it as frequently as you need, the refresh rate will be asynchronously computed according to the progress and the elapsed time, not the update rate.
 
-In these modes, you can also provide the `total` to enter the **manual definite mode**, and get all the same counter, throughput and eta statistics widgets as the _auto definite mode_. The counter is inferred from the supplied percentage.
-Or you can omit the `total` to enter the **manual unknown mode**, where it's not possible to infer neither the counter nor the throughput widgets, and you get a simpler "percent/second" (%/s) and a rough eta, calculated to get to 100%.
+And of course, in this mode you can also provide the `total`, and get all the same counter, throughput and eta statistics widgets as the _definite mode_. The counter is inferred from the supplied percentage.
+If you omit the `total`, it's not possible to infer neither the counter nor the throughput widgets, and you get a simpler "percent/second" (%/s) and a rough eta, calculated to get to 100%.
 
-So, to summarize it all:
+> Just remember: You do not have to think about which mode you should be using, just always pass a `total` if you know it, and use `manual` if you need it! It will just work! 👏
 
-| mode | automatic | total | percentage | counter | throughput | eta | outstanding features |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| definite        | ✅ | ✅ | ✅ | ✅            | ✅           | ✅ | overflow and underflow |
-| unknown         | ✅ | ❌ | ❌ | ✅            | ✅           | ❌ | super cool animations |
-| manual definite | ❌ | ✅ | ✅ | ✅ (inferred) | ✅           | ✅ | choose any completion |
-| manual unknown  | ❌ | ❌ | ✅ | ❌            | ⚠️ (simpler) | ✅ | choose any completion |
+To summarize it all:
 
-> Just remember: You do not have to think about which mode you should be using, just pass a `total` if you have one, and use `manual` if your processing needs it! 👏
+| mode | positioning | counter | throughput | eta | overflow and underflow |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| definite (with total)   | ✅ automatic  | ✅          | ✅           | ✅ | ✅ |
+| unknown (without total) | ❌            | ✅          | ✅           | ❌ | ❌ |
+| manual (with total)     | ✅ you choose | ✅ inferred | ✅           | ✅ | ✅ |
+| manual (without total)  | ✅ you choose | ❌          | ⚠️ simpler | ⚠️ rough | ✅ |
 
 
 ### Signatures of the `bar()` handler
 
-- in **automatic** modes: `bar(text=None, incr=1)` ➔ increases the current count (by any positive increment), optionally setting the situational text message, and returns the new count;
+- in **definite and unknown** modes: `bar(text=None, incr=1)` ➔ increases the current count (by any positive increment), optionally setting the situational text message, and returns the new count;
 - in **manual** modes: `bar(perc=None, text=None)` ➔ sets the new progress percentage, optionally setting the situational text message, and returns the new percentage.
 
 
@@ -113,7 +112,7 @@ Wondering what styles does it have bundled? It's `showtime`! ;)
 
 ![alive-progress spinner styles](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/showtime-spinners.gif)
 
-I've made these styles to test all combinations of parameters of the factories, but I think some of them ended up very very cool! Use them, or create your own!
+Actually I've made these styles just to put to use all combinations of the factories I've created, but I think some of them ended up very very cool! Use them at will, or create your own!
 
 There's also a bars `showtime`, check it out! ;)
 
@@ -124,9 +123,9 @@ There's also a bars `showtime`, check it out! ;)
 
 While in an alive progress bar context, you have two ways to output messages:
   - calling `bar(text='message')`, which sets/overwrites a situational message within the bar line, usually to display something about the items being processed, or the phase the processing is in;
-  - calling the usual Python `print('message')`, which will print an enriched message that includes the current position of the alive bar, thus leaving behind a log and continuing the bar below it.
+  - calling the usual Python `print()` statement, which will print an enriched message that includes the current position of the alive bar, thus leaving behind a cool log and continuing the bar below it.
 
-Both methods work the same in **definite**, **unknown** and **manual** modes, and always clear the line appropriately to remove any garbage on screen.
+Both methods work the same in all modes, and always clear the line appropriately to remove any garbage on screen.
 
 ![alive-progress messages](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/printing.gif)
 
