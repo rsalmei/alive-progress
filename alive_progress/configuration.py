@@ -84,14 +84,14 @@ def create_config():
             try:
                 result = CONFIG_VARS[key](value)
                 if result is None:
-                    raise ValueError('invalid option value: {}={}'.format(key, repr(value)))
+                    raise ValueError('invalid config value: {}={}'.format(key, repr(value)))
                 return key, result
             except KeyError:
-                raise ValueError('invalid option name: ' + key)
+                raise ValueError('invalid config name: {}'.format(key))
 
         if theme:
             if theme not in THEMES:
-                raise ValueError('invalid theme={}'.format(repr(theme)))
+                raise ValueError('invalid theme name={}'.format(repr(theme)))
             swap = options
             options = deepcopy(THEMES[theme])
             options.update(swap)
