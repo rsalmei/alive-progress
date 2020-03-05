@@ -41,7 +41,7 @@ def standard_bar_factory(chars='=', borders='||', blank=' ', tip='>', errors='!x
 def unknown_bar_factory(spinner_factory):
     def inner_factory(length, receipt_bar_factory=None):
         # noinspection PyUnusedLocal
-        def draw_bar(percent, end=False):
+        def draw_bar(percent=None, end=False):
             if end:
                 return receipt_bar(1., end=True)
             # noinspection PyUnresolvedReferences
