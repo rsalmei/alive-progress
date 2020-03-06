@@ -47,6 +47,7 @@ CONFIG_VARS = dict(
     unknown=_style_input_factory(SPINNERS, bars, 1),
     force_tty=_bool_input_factory(),
     manual=_bool_input_factory(),
+    enrich_print=_bool_input_factory(),
 )
 
 Config = namedtuple('Config', tuple(CONFIG_VARS.keys()))
@@ -61,6 +62,7 @@ def create_config():
             theme='smooth',  # includes spinner, bar and unknown.
             force_tty=False,
             manual=False,
+            enrich_print=True,
         )
 
     def set_global(theme=None, **options):
@@ -82,14 +84,14 @@ def create_config():
             try:
                 result = CONFIG_VARS[key](value)
                 if result is None:
-                    raise ValueError('invalid option value: {}={}'.format(key, repr(value)))
+                    raise ValueError('invalid config value: {}={}'.format(key, repr(value)))
                 return key, result
             except KeyError:
-                raise ValueError('invalid option name: ' + key)
+                raise ValueError('invalid config name: {}'.format(key))
 
         if theme:
             if theme not in THEMES:
-                raise ValueError('invalid theme={}'.format(repr(theme)))
+                raise ValueError('invalid theme name={}'.format(repr(theme)))
             swap = options
             options = deepcopy(THEMES[theme])
             options.update(swap)

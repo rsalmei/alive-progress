@@ -7,6 +7,7 @@ import threading
 import time
 from contextlib import contextmanager
 from datetime import timedelta
+from itertools import chain, islice, repeat
 
 from .configuration import config_handler
 from .spinners import spinner_player
@@ -55,10 +56,10 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
 
     If the bar is over or underused, it will warn you!
     To test all supported scenarios, you can do this:
-    >>> for x in 3000, 4000, 2000, 0:
+    >>> for x in 1000, 1500, 700, 0:
     ...    with alive_bar(x) as bar:
-    ...        for i in range(3000):
-    ...            time.sleep(.002)
+    ...        for i in range(1000):
+    ...            time.sleep(.005)
     ...            bar()
     Expected results are these (but you have to see them in motion!):
 [========================================] 3000/3000 [100%] in 7.4s (408.09/s)
@@ -142,20 +143,23 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
 
     def print_hook(part):
         if part != '\n':
-            print_buffer.extend([u for x in part.splitlines(True) for u in (x, None)][:-1])
+            # this will generate a sequence of lines interspersed with None, which will later
+            # be rendered as the indent filler to align additional lines under the same header.
+            gen = chain.from_iterable(zip(repeat(None), part.splitlines(True)))
+            print_buffer.extend(islice(gen, 1, None))
         else:
-            header = 'on {}: '.format(run.count)
-            nested = (line or ' ' * len(header) for line in print_buffer)
+            header = header_template.format(run.count)
+            nested = ''.join(line or ' ' * len(header) for line in print_buffer)
             with print_lock:
                 clear_traces()
-                sys.__stdout__.write('{}{}\n'.format(header, ''.join(nested)))
+                sys.__stdout__.write('{}{}\n'.format(header, nested))
             print_buffer[:] = []
 
-    print_buffer = []
+    print_buffer, print_lock = [], threading.Lock()
+    header_template = 'on {}: ' if config.enrich_print else ''
     print_hook.write = print_hook
     print_hook.flush = lambda: None
     print_hook.isatty = sys.__stdout__.isatty
-    print_lock = threading.Lock()
 
     def start_monitoring(offset=0.):
         sys.stdout = print_hook
@@ -211,11 +215,14 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         logic_total, format_spec, factor, current = 1., '%', 1., lambda: run.percent
 
     # calibration of the dynamic fps engine.
-    # y = log10(x + m) * f + n, where y is fps, (m, n) are horizontal and vertical translation,
-    #   and f is a calibration factor, computed from an user input c.
-    # fps = log10(x + 1) * f + minfps, which must be equal to maxfps for x = c,
-    # so the factor f = (maxfps - minfps) / log10(c + 1), and
-    # fps = log10(x + 1) * (maxfps - minfps) / log10(c + 1) + minfps
+    # I've started with the equation y = log10(x + m) * k + n, where:
+    #   y is the desired fps, m and n are horizontal and vertical translation,
+    #   k is a calibration factor, computed from some user input c (see readme for details).
+    # considering minfps and maxfps as given constants, I came to:
+    #   fps = log10(x + 1) * k + minfps, which must be equal to maxfps for x = c,
+    # so the factor k = (maxfps - minfps) / log10(c + 1), and
+    #   fps = log10(x + 1) * (maxfps - minfps) / log10(c + 1) + minfps
+    # neat! ;)
     min_fps, max_fps = 2., 60.
     calibrate = max(0., calibrate or factor)
     adjust_log_curve = 100. / min(calibrate, 100.)  # adjust curve for small numbers
