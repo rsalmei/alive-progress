@@ -198,13 +198,13 @@ There's builtin support for a plethora of special effects, like frames, scrollin
 
 These animations are made by very advanced generators, defined by factories of factory methods: the first level receives and process the styling parameters to create the actual factory; this factory then receives operating parameters like screen length, to build the infinite animation generators.
 
-These generators are stateful, they can render the next frame and yield, until a full animation cycle is complete. But one generator is capable of several animation cycles, when one are exhausted, this allows the next cycle to start. This has all kinds of cool implications! The cycles can have different animation sizes, different screen lengths, they do not need to be synchronized, they can create long different sequences by themselves, they can cooperate with each other to play cycles in sequence or simultaneously, and I can display several at once on screen without any interferences!
+These generators are capable of several different animation cycles, for example a bouncing ball has a cycle to the right and another to the left. They continually yield the next rendered animation frame in a cycle until it is exhausted. This just enables the next one, but does not start it! That has all kinds of cool implications: the cycles can have different animation sizes, different screen lengths, they do not need to be synchronized, they can create long different sequences by themselves, they can cooperate with each other to play cycles in sequence or simultaneously, and I can display several at once on the screen without any interferences! It's almost like they are _alive_! 😉
 
 The types I've made are:
 - `frames`: draw any sequence of characters, that will be played frame by frame in sequence;
-- `scrolling`: pick a frame or a sequence of characters and make them flow smoothly from side to side, hiding behind or wrapping upon the invisible borders; supports several cycles of distinct characters;
-- `bouncing`: aggregates two `scrolling` in opposing directions, to make two frames or two sequences of characters flow interleaved from/to each side, hiding or immediately bouncing upon the invisible borders; supports several interleaved cycles;
-- `delayed`: get any other animation generator, and copy it multiple times, skipping some frames in the process! very cool effects are made here;
+- `scrolling`: pick a frame or a sequence of characters and make it flow smoothly from one side to the other, hiding behind or wrapping upon the invisible borders; if using a sequence, generates several cycles of distinct characters;
+- `bouncing`: aggregates two `scrolling` in opposite directions, to make two frames or two sequences of characters flow interleaved from/to each side, hiding or immediately bouncing upon the invisible borders; supports several interleaved cycles too;
+- `delayed`: get any other animation generator, and copy it multiple times, skipping some frames at the start! very cool effects are made here;
 - `compound` get a handful of generators and play them side by side simultaneously! why choose if you can have them all?
 
 A small example (_Click to see it in motion_)
