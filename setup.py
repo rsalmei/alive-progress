@@ -54,6 +54,7 @@ setup(
     keywords='progress bar progress-bar progressbar spinner eta monitoring python terminal '
              'multi-threaded REPL alive animated visual feedback'.split(),
     packages=find_packages(),
+    data_files=[('', ['LICENSE'])],
     python_requires='>=2.7, <4',
     install_requires=[],
 )
