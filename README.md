@@ -292,7 +292,7 @@ Do note that this console is heavily instrumented and has more overhead, so the 
 
 ## Python 2 EOL
 
-The version 1.4.0 is the last one to support Python 2.
+The versions 1.4.x are the last ones to support Python 2.
 
 
 ## Changelog highlights:
