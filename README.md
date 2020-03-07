@@ -296,6 +296,7 @@ The version 1.4.0 is the last one to support Python 2.
 
 
 ## Changelog highlights:
+- 1.4.1: include license file in source distribution
 - 1.4.0: print() enrichment can now be disabled (locally and globally), exhibits now have a real time fps indicator, new exhibit functions `show_spinners` and `show_bars`, new utility `print_chars`, `show_bars` gains some advanced demonstrations (try it again!)
 - 1.3.3: further improve stream compatibility with isatty
 - 1.3.2: beautifully finalize bar in case of unexpected errors
