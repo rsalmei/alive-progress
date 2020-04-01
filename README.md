@@ -1,5 +1,7 @@
 ![alive!](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/alive.gif)
 
+[<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
+
 # alive-progress :)
 ## An animated and smart Progress Bar for python!
 
