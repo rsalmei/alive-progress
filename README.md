@@ -1,14 +1,15 @@
-![alive!](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/alive.gif)
-
 [<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
 
-# alive-progress :)
-## An animated and smart Progress Bar for python!
+![alive!](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/alive.gif)
 
+# alive-progress :)
+### A new kind of Progress Bar, with real-time throughput, eta and very cool animations!
+
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://gitHub.com/rsalmei/alive-progress/graphs/commit-activity)
 [![PyPI version](https://img.shields.io/pypi/v/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
 [![PyPI status](https://img.shields.io/pypi/status/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
-[![PyPI status](https://img.shields.io/pypi/dm/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
 
 Ever found yourself in a remote ssh session, doing some lengthy operations, and every now and then you feel the need to hit [enter] just to ensure you didn't lose the connection? Ever wondered where your processing is in, and when will it finish? Ever needed to *pause* the progress bar for a while, return to the python REPL for a manual inspection or fixing an item, and then *resume* the process like it never happened? I did...
 
@@ -288,7 +289,7 @@ Do note that this console is heavily instrumented and has more overhead, so the 
 
 - This whole project was implemented in functional style;
 - It does not declare even a single class;
-- It uses extensively (and very creatively) python _Closures_ and _Generators_, they're in almost all modules (look for instance the [spinners generators and spinner_player](https://github.com/rsalmei/alive-progress/blob/master/alive_progress/spinners.py) 😜);
+- It uses extensively (and very creatively) python _Closures_ and _Generators_, they're in almost all modules (look for instance the [spinners factories and spinner_player](https://github.com/rsalmei/alive-progress/blob/master/alive_progress/spinners.py) 😜);
 - It does not have any dependencies.
 
 
