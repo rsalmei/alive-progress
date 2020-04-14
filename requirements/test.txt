@@ -1,0 +1,5 @@
+pytest
+pytest-cov
+pytest-sugar
+pytest-watch
+mock; python_version < '3'
