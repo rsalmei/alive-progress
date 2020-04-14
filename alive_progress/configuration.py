@@ -66,8 +66,11 @@ def create_config():
         )
 
     def set_global(theme=None, **options):
-        """Update global configuration, to be used in subsequent alive bars.
-        See alive_progress.alive_bar(**options) for details.
+        """Update the global configuration, to be used in subsequent alive bars.
+
+        See Also:
+            alive_progress#alive_bar(**options)
+
         """
         global_config.update(_parse(theme, options))
 
