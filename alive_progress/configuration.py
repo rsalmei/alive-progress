@@ -84,8 +84,8 @@ def create_config():
             try:
                 result = CONFIG_VARS[key](value)
                 if result is None:
-                return key, result
                     raise ValueError
+                return result
             except KeyError:
                 raise ValueError('invalid config name: {}'.format(key))
             except Exception:
@@ -97,7 +97,7 @@ def create_config():
             swap = options
             options = deepcopy(THEMES[theme])
             options.update(swap)
-        return dict(validator(k, v) for k, v in options.items())
+        return {k: validator(k, v) for k, v in options.items()}
 
     global_config = {}
     reset()
