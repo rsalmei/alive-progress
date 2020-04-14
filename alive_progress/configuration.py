@@ -84,10 +84,12 @@ def create_config():
             try:
                 result = CONFIG_VARS[key](value)
                 if result is None:
-                    raise ValueError('invalid config value: {}={}'.format(key, repr(value)))
                 return key, result
+                    raise ValueError
             except KeyError:
                 raise ValueError('invalid config name: {}'.format(key))
+            except Exception:
+                raise ValueError('invalid config value: {}={}'.format(key, repr(value)))
 
         if theme:
             if theme not in THEMES:
