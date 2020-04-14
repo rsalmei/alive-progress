@@ -41,7 +41,7 @@ def _bool_input_factory():
 
 # noinspection PyTypeChecker
 CONFIG_VARS = dict(
-    length=_int_input_factory(3, 200),
+    length=_int_input_factory(3, 300),
     spinner=_style_input_factory(SPINNERS, spinners, 0),
     bar=_style_input_factory(BARS, bars),
     unknown=_style_input_factory(SPINNERS, bars, 1),
@@ -66,8 +66,11 @@ def create_config():
         )
 
     def set_global(theme=None, **options):
-        """Update global configuration, to be used in subsequent alive bars.
-        See alive_progress.alive_bar(**options) for details.
+        """Update the global configuration, to be used in subsequent alive bars.
+
+        See Also:
+            alive_progress#alive_bar(**options)
+
         """
         global_config.update(_parse(theme, options))
 
@@ -75,6 +78,7 @@ def create_config():
         """Create an immutable copy of the current configuration, with optional customization."""
         local_config = deepcopy(global_config)
         local_config.update(_parse(theme, options))
+        # noinspection PyArgumentList
         return Config(**local_config)
 
     def _parse(theme, options):
@@ -84,10 +88,12 @@ def create_config():
             try:
                 result = CONFIG_VARS[key](value)
                 if result is None:
-                    raise ValueError('invalid config value: {}={}'.format(key, repr(value)))
-                return key, result
+                    raise ValueError
+                return result
             except KeyError:
                 raise ValueError('invalid config name: {}'.format(key))
+            except Exception:
+                raise ValueError('invalid config value: {}={}'.format(key, repr(value)))
 
         if theme:
             if theme not in THEMES:
@@ -95,7 +101,7 @@ def create_config():
             swap = options
             options = deepcopy(THEMES[theme])
             options.update(swap)
-        return dict(validator(k, v) for k, v in options.items())
+        return {k: validator(k, v) for k, v in options.items()}
 
     global_config = {}
     reset()

@@ -94,7 +94,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             '{:.1f}s'.format(run.elapsed) if end else '{}s'.format(int(run.elapsed))
 
     def clear_traces():
-        sys.__stdout__.write('\033[2K\r')
+        sys.__stdout__.write('\033[2K\r')  # noqa
 
     def run():
         player = spinner_player(config.spinner())
@@ -115,7 +115,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         with print_lock:
             if line_len < run.last_line_len:
                 clear_traces()
-            sys.__stdout__.write(line + (spin and '\r' or '\n'))
+            sys.__stdout__.write(line + (spin and '\r' or '\n'))  # noqa
             sys.__stdout__.flush()
 
         run.last_line_len = line_len
@@ -155,7 +155,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             nested = ''.join(line or ' ' * len(header) for line in print_buffer)
             with print_lock:
                 clear_traces()
-                sys.__stdout__.write('{}{}\n'.format(header, nested))
+                sys.__stdout__.write('{}{}\n'.format(header, nested))  # noqa
             print_buffer[:] = []
 
     print_buffer, print_lock = [], threading.Lock()
@@ -205,17 +205,17 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             return '?'
 
         bar_repr = config.bar(config.length)
-        stats = lambda: '({:.1{}}/s, eta: {})'.format(run.rate, format_spec, run.eta_text)
+        stats = lambda: '({:.1{}}/s, eta: {})'.format(run.rate, format_spec, run.eta_text)  # noqa
     else:  # unknown progress.
-        eta_text = lambda: None
+        eta_text = lambda: None  # noqa
         bar_repr = config.unknown(config.length, config.bar)
-        stats = lambda: '({:.1f}/s)'.format(run.rate)
-    stats_end = lambda: '({:.2{}}/s)'.format(run.rate, format_spec)
+        stats = lambda: '({:.1f}/s)'.format(run.rate)  # noqa
+    stats_end = lambda: '({:.2{}}/s)'.format(run.rate, format_spec)  # noqa
 
-    if total or not config.manual:  # there's items being processed.
-        logic_total, format_spec, factor, current = total, 'f', 1.e6, lambda: run.count
+    if total or not config.manual:  # we can count items.
+        logic_total, format_spec, factor, current = total, 'f', 1.e6, lambda: run.count  # noqa
     else:  # there's only a manual percentage.
-        logic_total, format_spec, factor, current = 1., '%', 1., lambda: run.percent
+        logic_total, format_spec, factor, current = 1., '%', 1., lambda: run.percent  # noqa
 
     # calibration of the dynamic fps engine.
     # I've started with the equation y = log10(x + m) * k + n, where:
@@ -250,18 +250,18 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             def update_hook():
                 run.percent = run.count / total
 
-        monitor = lambda: '{}{}/{} [{:.0%}]'.format(
+        monitor = lambda: '{}{}/{} [{:.0%}]'.format(  # noqa
             '(!) ' if end and run.count != total else '', run.count, total, run.percent
         )
     elif config.manual:
-        update_hook = lambda: None
-        monitor = lambda: '{}{:.0%}'.format(
+        update_hook = lambda: None  # noqa
+        monitor = lambda: '{}{:.0%}'.format(  # noqa
             '(!) ' if end and run.percent != 1. else '', run.percent
         )
     else:
         run.percent = 1.
-        update_hook = lambda: None
-        monitor = lambda: '{}'.format(run.count)
+        update_hook = lambda: None  # noqa
+        monitor = lambda: '{}'.format(run.count)  # noqa
 
     start_monitoring()
     try:

@@ -299,6 +299,7 @@ The versions 1.4.x are the last ones to support Python 2.
 
 
 ## Changelog highlights:
+- 1.4.3: protect configuration system against other errors (length='a' for example); first automated tests, 100% branch coverage of configuration system
 - 1.4.2: sanitize text input, keeping \n from entering and replicating bar on screen
 - 1.4.1: include license file in source distribution
 - 1.4.0: print() enrichment can now be disabled (locally and globally), exhibits now have a real time fps indicator, new exhibit functions `show_spinners` and `show_bars`, new utility `print_chars`, `show_bars` gains some advanced demonstrations (try it again!)

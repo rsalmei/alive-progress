@@ -101,7 +101,7 @@ def _bar_gen(bar_factory):
                 yield bar(percent), '\n'
             # generates a small pause in movement between cases, based on fps.
             percent = float(t) / total
-            for pos in range(int(fps * 2)):
+            for _ in range(int(fps * 2)):
                 yield bar(percent, end=True), '\n'
 
         # advanced use cases, which do not go only forward.
@@ -132,7 +132,7 @@ def print_chars(line_length=32, max_char=0x2e80):
             this goes up to 0x10ffff, but after the default value, it seems to return
             only japanese ideograms, increase this if would like to see them.
     """
-    char = chr if sys.version_info >= (3,) else unichr
+    char = chr if sys.version_info >= (3,) else unichr  # noqa
     max_char = min(0x10ffff, max(0, max_char))
     num_lines = int(max_char / line_length)
     for i in map(lambda x: x * line_length + 32, range(num_lines)):
