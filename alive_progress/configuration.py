@@ -78,6 +78,7 @@ def create_config():
         """Create an immutable copy of the current configuration, with optional customization."""
         local_config = deepcopy(global_config)
         local_config.update(_parse(theme, options))
+        # noinspection PyArgumentList
         return Config(**local_config)
 
     def _parse(theme, options):
