@@ -1,4 +1,4 @@
-.PHONY: clean build release
+.PHONY: all install clean build release
 
 # coverage related
 SRC = alive_progress
@@ -6,6 +6,9 @@ COV = --cov=$(SRC) --cov-branch --cov-report=term-missing
 
 all:
 	@grep -E "^\w+:" makefile | cut -d: -f1
+
+install:
+	pip install -r requirements/dev.txt -r requirements/test.txt -e .
 
 clean: clean-build clean-pyc
 
