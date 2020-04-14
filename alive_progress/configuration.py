@@ -41,7 +41,7 @@ def _bool_input_factory():
 
 # noinspection PyTypeChecker
 CONFIG_VARS = dict(
-    length=_int_input_factory(3, 200),
+    length=_int_input_factory(3, 300),
     spinner=_style_input_factory(SPINNERS, spinners, 0),
     bar=_style_input_factory(BARS, bars),
     unknown=_style_input_factory(SPINNERS, bars, 1),
