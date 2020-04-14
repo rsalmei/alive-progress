@@ -43,7 +43,7 @@ def frame_spinner_factory(*frames):
     def inner_factory(length=None):
         @_ensure_length(length, inner_factory.natural)
         def inner_spinner():
-            for frame in frames:
+            for frame in frames:  # TODO change to yield from, when dropping python 2.7
                 yield frame
 
         inner_spinner.cycles = len(frames)
@@ -170,7 +170,7 @@ def compound_spinner_factory(*spinner_factories):
         # but they will usually be the same types of factories.
         each_length = int(math.ceil(length / len(spinner_factories))) if length else None
         spinners = [factory(each_length) for factory in spinner_factories]
-        op_cycles = operator.attrgetter('cycles')
+        op_cycles = operator.attrgetter('cycles')  # noqa
         longest = max(spinners, key=op_cycles)
         players = [spinner_player(x) for x in spinners]
 
@@ -179,7 +179,7 @@ def compound_spinner_factory(*spinner_factories):
         inner_spinner.players = players
         return inner_spinner
 
-    op_natural = operator.attrgetter('natural')
+    op_natural = operator.attrgetter('natural')  # noqa
     inner_factory.natural = sum(map(op_natural, spinner_factories))
     return inner_factory
 
@@ -189,7 +189,7 @@ def spinner_player(spinner):
 
     def inner_play():
         while True:
-            for c in spinner():
+            for c in spinner():  # TODO change to yield from, when dropping python 2.7
                 yield c
 
     return inner_play()  # returns an already initiated generator.
