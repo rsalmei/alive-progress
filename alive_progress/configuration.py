@@ -6,7 +6,7 @@ from collections import namedtuple
 from copy import deepcopy
 from types import FunctionType
 
-from . import bars, spinners
+from .animations import bars, spinners
 from .styles import BARS, SPINNERS, THEMES
 
 

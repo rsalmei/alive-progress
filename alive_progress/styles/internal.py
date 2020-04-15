@@ -4,9 +4,9 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import sys
 from collections import OrderedDict
 
-from .bars import standard_bar_factory, unknown_bar_factory
-from .spinners import bouncing_spinner_factory, compound_spinner_factory, delayed_spinner_factory, \
-    frame_spinner_factory, scrolling_spinner_factory
+from ..animations.bars import standard_bar_factory, unknown_bar_factory
+from ..animations.spinners import bouncing_spinner_factory, compound_spinner_factory, \
+    delayed_spinner_factory, frame_spinner_factory, scrolling_spinner_factory
 
 
 def _wrap_ordered(result, desired_order):

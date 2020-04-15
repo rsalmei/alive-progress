@@ -3,13 +3,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import sys
 
-from .bars import standard_bar_factory, unknown_bar_factory
+from .animations.bars import standard_bar_factory, unknown_bar_factory
+from .animations.spinners import bouncing_spinner_factory, compound_spinner_factory, \
+    delayed_spinner_factory, frame_spinner_factory, scrolling_spinner_factory, spinner_player
 from .configuration import config_handler
-from .exhibit import print_chars, show_bars, show_spinners, showtime
 from .progress import alive_bar
-from .spinners import bouncing_spinner_factory, compound_spinner_factory, delayed_spinner_factory, \
-    frame_spinner_factory, scrolling_spinner_factory, spinner_player
 from .styles import BARS, SPINNERS, THEMES
+from .styles.exhibit import print_chars, show_bars, show_spinners, showtime
 
 VERSION = (1, 4, 3)
 
