@@ -2,7 +2,7 @@
 [run]
 branch = True
 omit =
-    alive_progress/styles.py
+    alive_progress/styles/*
 
 [report]
 ignore_errors = True
