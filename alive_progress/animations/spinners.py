@@ -11,8 +11,8 @@ from .utils import repeating, sliding_window_factory, spinner_player
 def frame_spinner_factory(*frames):
     """Create a factory of a spinner that delivers frames in sequence."""
 
-    def inner_factory(length=None):
-        @repeating(length, inner_factory.natural)
+    def inner_factory(length_actual=None):
+        @repeating(length_actual, inner_factory.natural)
         def inner_spinner():
             for frame in frames:  # TODO change to yield from, when dropping python 2.7
                 yield frame
@@ -116,9 +116,9 @@ def delayed_spinner_factory(spinner_factory, copies, offset):
     with an increasing iteration offset between them.
     """
 
-    def inner_factory(length=None):
-        copies_actual = int(math.ceil(length / spinner_factory.natural)) if length else copies
-        result = compound_spinner_factory(*((spinner_factory,) * copies_actual))(length)
+    def inner_factory(length_actual=None):
+        copies_actual = length_actual and int(math.ceil(length_actual / spinner_factory.natural))
+        result = compound_spinner_factory(*((spinner_factory,) * copies_actual))(length_actual)
         for i, s in enumerate(result.players):
             for _ in range(i * offset):
                 next(s)
@@ -131,15 +131,15 @@ def delayed_spinner_factory(spinner_factory, copies, offset):
 def compound_spinner_factory(*spinner_factories):
     """Create a factory of a spinner that combines any other spinners together."""
 
-    def inner_factory(length=None):
-        @repeating(length)
+    def inner_factory(length_actual=None):
+        @repeating(length_actual)
         def inner_spinner():
             for fills in zip(range(inner_spinner.cycles), *players):
                 yield ''.join(fills[1:])
 
         # this could be weighted on the natural length of the factories,
         # but they will usually be the same types of factories.
-        each_length = int(math.ceil(length / len(spinner_factories))) if length else None
+        each_length = length_actual and int(math.ceil(length_actual / len(spinner_factories)))
         spinners = [factory(each_length) for factory in spinner_factories]
         op_cycles = operator.attrgetter('cycles')  # noqa
         longest = max(spinners, key=op_cycles)
