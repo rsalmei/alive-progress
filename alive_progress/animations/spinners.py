@@ -3,38 +3,9 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import math
 import operator
-from functools import wraps
 from itertools import chain, repeat
 
-
-def repeating(length, natural=0):
-    def wrapper(fn):
-        @wraps(fn)
-        def inner(*args, **kwargs):
-            for text in fn(*args, **kwargs):
-                text = ''.join((text,) * ratio)
-                yield text[:length]
-
-        return inner if length else fn
-
-    ratio = length // natural + 1 if length and natural else 1
-    return wrapper
-
-
-def _sliding_window_factory(length, content, step, initial):
-    def sliding_window():
-        pos = initial
-        while True:
-            if pos < 0:
-                pos += original
-            elif pos >= original:
-                pos -= original
-            yield content[pos:pos + length]
-            pos += step
-
-    original, window = len(content), sliding_window()
-    content += content[:length]
-    return window
+from .utils import repeating, sliding_window_factory
 
 
 def frame_spinner_factory(*frames):
@@ -91,7 +62,7 @@ def scrolling_spinner_factory(chars, length=None, block=None, blank=' ', right=T
         else:
             content = ''.join(chain(blank * gap, chars))
 
-        infinite_ribbon = _sliding_window_factory(length_actual, content, step, initial)
+        infinite_ribbon = sliding_window_factory(length_actual, content, step, initial)
 
         inner_spinner.cycles = gap + block_size
         return inner_spinner
