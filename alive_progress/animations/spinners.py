@@ -5,7 +5,7 @@ import math
 import operator
 from itertools import chain, repeat
 
-from .utils import repeating, sliding_window_factory
+from .utils import repeating, sliding_window_factory, spinner_player
 
 
 def frame_spinner_factory(*frames):
@@ -153,14 +153,3 @@ def compound_spinner_factory(*spinner_factories):
     op_natural = operator.attrgetter('natural')  # noqa
     inner_factory.natural = sum(map(op_natural, spinner_factories))
     return inner_factory
-
-
-def spinner_player(spinner):
-    """Create an infinite generator that plays all cycles of a spinner indefinitely."""
-
-    def inner_play():
-        while True:
-            for c in spinner():  # TODO change to yield from, when dropping python 2.7
-                yield c
-
-    return inner_play()  # returns an already initiated generator.

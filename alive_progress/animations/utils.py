@@ -33,3 +33,14 @@ def sliding_window_factory(length, content, step, initial):
     assert length <= original, 'window slides inside content, length must be <= len(content)'
     content += content[:length]
     return window
+
+
+def spinner_player(spinner):
+    """Create an infinite generator that plays all cycles of a spinner indefinitely."""
+
+    def inner_play():
+        while True:
+            for c in spinner():  # TODO change to yield from, when dropping python 2.7
+                yield c
+
+    return inner_play()  # returns an already initiated generator.
