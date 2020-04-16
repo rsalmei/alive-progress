@@ -30,5 +30,6 @@ def sliding_window_factory(length, content, step, initial):
             pos += step
 
     original, window = len(content), sliding_window()
+    assert length <= original, 'window slides inside content, length must be <= len(content)'
     content += content[:length]
     return window
