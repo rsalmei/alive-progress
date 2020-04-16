@@ -1,6 +1,6 @@
 import pytest
 
-from alive_progress.animations.utils import repeating, sliding_window_factory
+from alive_progress.animations.utils import repeating, sliding_window_factory, spinner_player
 
 
 @pytest.mark.parametrize('length, natural, text, expected', [
@@ -42,3 +42,20 @@ def test_sliding_window(length, content, step, expected_3):
 def test_sliding_window_error():
     with pytest.raises(AssertionError):
         sliding_window_factory(100, 'window that slides', 1, 0)
+
+
+def spinner_cycle_test():
+    # noinspection PyUnusedLocal
+    def inner_factory(length=None):
+        def inner_spinner():
+            for c in '123':  # TODO python 2.7...
+                yield c
+
+        return inner_spinner
+
+    return inner_factory
+
+
+def test_spinner_player():
+    player = spinner_player(spinner_cycle_test()())
+    assert tuple(next(player) for _ in range(4)) == ('1', '2', '3', '1')
