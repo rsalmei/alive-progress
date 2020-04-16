@@ -5,6 +5,8 @@ from functools import wraps
 
 
 def repeating(length, natural=0):
+    """Decorator to repeat a return value until a certain length."""
+
     def wrapper(fn):
         @wraps(fn)
         def inner(*args, **kwargs):
@@ -19,6 +21,8 @@ def repeating(length, natural=0):
 
 
 def sliding_window_factory(length, content, step, initial):
+    """Implement a sliding window over a text content, which can go left or right."""
+
     def sliding_window():
         pos = initial
         while True:
