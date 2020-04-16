@@ -7,7 +7,7 @@ from functools import wraps
 from itertools import chain, repeat
 
 
-def _ensure_length(length, natural=0):
+def repeating(length, natural=0):
     def wrapper(fn):
         @wraps(fn)
         def inner(*args, **kwargs):
@@ -41,7 +41,7 @@ def frame_spinner_factory(*frames):
     """Create a factory of a spinner that delivers frames in sequence."""
 
     def inner_factory(length=None):
-        @_ensure_length(length, inner_factory.natural)
+        @repeating(length, inner_factory.natural)
         def inner_spinner():
             for frame in frames:  # TODO change to yield from, when dropping python 2.7
                 yield frame
@@ -66,7 +66,7 @@ def scrolling_spinner_factory(chars, length=None, block=None, blank=' ', right=T
         ratio = float(length_actual) / length if length and length_actual else 1
         length_actual = length_actual or inner_factory.natural
 
-        @_ensure_length(length_actual)
+        @repeating(length_actual)
         def inner_spinner():
             for _ in range(inner_spinner.cycles):
                 yield next(infinite_ribbon)
@@ -115,7 +115,7 @@ def bouncing_spinner_factory(right_chars, length, block=None, left_chars=None,
         ratio = float(length_actual) / length if length and length_actual else 1
         length_actual = length_actual or inner_factory.natural
 
-        @_ensure_length(length_actual)
+        @repeating(length_actual)
         def inner_spinner():
             for i, fill in enumerate(right_scroll()):
                 if i < right_direction_size:
@@ -161,7 +161,7 @@ def compound_spinner_factory(*spinner_factories):
     """Create a factory of a spinner that combines any other spinners together."""
 
     def inner_factory(length=None):
-        @_ensure_length(length)
+        @repeating(length)
         def inner_spinner():
             for fills in zip(range(inner_spinner.cycles), *players):
                 yield ''.join(fills[1:])
