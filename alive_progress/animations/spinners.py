@@ -31,23 +31,22 @@ def scrolling_spinner_factory(chars, length=None, block=None, blank=' ', right=T
     """Create a factory of a spinner that scrolls characters alongside a line."""
 
     def inner_factory(length_actual=None):
-        if block and not (length_actual or length):
+        if block and not (length_actual or length):  # pragma: no cover
             raise ValueError('length must be set with block')
 
         ratio = float(length_actual) / length if length and length_actual else 1
         length_actual = length_actual or inner_factory.natural
+
+        if not hiding and block and block >= length_actual:  # pragma: no cover
+            raise ValueError('cannot animate with block >= length')
 
         @repeating(length_actual)
         def inner_spinner():
             for _ in range(inner_spinner.cycles):
                 yield next(infinite_ribbon)
 
-        if not hiding and block and block >= length_actual:
-            block_size = length_actual - 1
-        else:
-            block_size = int((block or 0) * ratio) or len(chars)
-
         initial = 0
+        block_size = int((block or 0) * ratio) or len(chars)
         if hiding:
             gap = length_actual
         else:
