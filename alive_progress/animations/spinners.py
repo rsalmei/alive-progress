@@ -116,7 +116,8 @@ def delayed_spinner_factory(spinner_factory, copies, offset):
     """
 
     def inner_factory(length_actual=None):
-        copies_actual = length_actual and int(math.ceil(length_actual / spinner_factory.natural))
+        copies_actual = int(math.ceil(length_actual / spinner_factory.natural)) \
+            if length_actual else copies
         result = compound_spinner_factory(*((spinner_factory,) * copies_actual))(length_actual)
         for i, s in enumerate(result.players):
             for _ in range(i * offset):
