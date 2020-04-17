@@ -141,15 +141,14 @@ def compound_spinner_factory(*spinner_factories):
         # but they will usually be the same types of factories.
         each_length = length_actual and int(math.ceil(length_actual / len(spinner_factories)))
         spinners = [factory(each_length) for factory in spinner_factories]
-        op_cycles = operator.attrgetter('cycles')  # noqa
+        op_cycles = operator.attrgetter('cycles')
         longest = max(spinners, key=op_cycles)
         players = [spinner_player(x) for x in spinners]
 
-        # noinspection PyUnresolvedReferences
         inner_spinner.cycles = longest.cycles
         inner_spinner.players = players
         return inner_spinner
 
-    op_natural = operator.attrgetter('natural')  # noqa
+    op_natural = operator.attrgetter('natural')
     inner_factory.natural = sum(map(op_natural, spinner_factories))
     return inner_factory
