@@ -11,7 +11,7 @@ from .progress import alive_bar
 from .styles import BARS, SPINNERS, THEMES
 from .styles.exhibit import print_chars, show_bars, show_spinners, showtime
 
-VERSION = (1, 4, 3)
+VERSION = (1, 4, 4)
 
 __author__ = 'Rogério Sampaio de Almeida'
 __email__ = 'rsalmei@gmail.com'
