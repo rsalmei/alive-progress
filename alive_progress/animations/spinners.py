@@ -110,24 +110,6 @@ def bouncing_spinner_factory(right_chars, length, block=None, left_chars=None,
     return inner_factory
 
 
-def delayed_spinner_factory(spinner_factory, copies, offset):
-    """Create a factory of a spinner that copies itself several times,
-    with an increasing iteration offset between them.
-    """
-
-    def inner_factory(length_actual=None):
-        copies_actual = int(math.ceil(length_actual / spinner_factory.natural)) \
-            if length_actual else copies
-        result = compound_spinner_factory(*((spinner_factory,) * copies_actual))(length_actual)
-        for i, s in enumerate(result.players):
-            for _ in range(i * offset):
-                next(s)
-        return result
-
-    inner_factory.natural = spinner_factory.natural * copies
-    return inner_factory
-
-
 def compound_spinner_factory(*spinner_factories):
     """Create a factory of a spinner that combines any other spinners together."""
 
@@ -151,4 +133,26 @@ def compound_spinner_factory(*spinner_factories):
 
     op_natural = operator.attrgetter('natural')
     inner_factory.natural = sum(map(op_natural, spinner_factories))
+    return inner_factory
+
+
+def delayed_spinner_factory(spinner_factory, copies, offset):
+    """Create a factory of a spinner that copies itself several times,
+    with an increasing iteration offset between them.
+    """
+
+    # this spinner is not actually a spinner, it is more a helper factory method.
+    # it does not define an inner_spinner, only creates a compound spinner internally.
+    def inner_factory(length_actual=None):
+        # it needed to have two levels to wait for the length_actual, since this
+        # argument can change the number of copies.
+        copies_actual = int(math.ceil(length_actual / spinner_factory.natural)) \
+            if length_actual else copies
+        result = compound_spinner_factory(*((spinner_factory,) * copies_actual))(length_actual)
+        for i, s in enumerate(result.players):
+            for _ in range(i * offset):
+                next(s)
+        return result
+
+    inner_factory.natural = spinner_factory.natural * copies
     return inner_factory
