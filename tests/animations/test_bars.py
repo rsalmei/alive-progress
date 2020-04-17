@@ -24,21 +24,10 @@ def test_standard_bar(percent, end, expected):
     assert bar_gen(percent=percent, end=end) == expected
 
 
-def spinner_test():
-    # noinspection PyUnusedLocal
-    def inner_factory(length=None):
-        def inner_spinner():
-            yield '1234567890'
-
-        return inner_spinner
-
-    return inner_factory
-
-
 @pytest.mark.parametrize('end, expected', [
     (False, '|1234567890|'),
     (True, '|==========|'),
 ])
-def test_unknown_bar(end, expected):
-    bar_gen = unknown_bar_factory(spinner_test())(length=10)
+def test_unknown_bar(end, expected, spinner_test):
+    bar_gen = unknown_bar_factory(spinner_test(('1234567890',)))(length=10)
     assert bar_gen(end=end) == expected
