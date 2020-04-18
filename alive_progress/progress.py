@@ -9,8 +9,8 @@ from contextlib import contextmanager
 from datetime import timedelta
 from itertools import chain, islice, repeat
 
+from .animations.utils import spinner_player
 from .configuration import config_handler
-from .spinners import spinner_player
 
 
 @contextmanager
@@ -94,7 +94,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             '{:.1f}s'.format(run.elapsed) if end else '{}s'.format(int(run.elapsed))
 
     def clear_traces():
-        sys.__stdout__.write('\033[2K\r')  # noqa
+        sys.__stdout__.write('\033[2K\r')
 
     def run():
         player = spinner_player(config.spinner())
@@ -115,7 +115,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         with print_lock:
             if line_len < run.last_line_len:
                 clear_traces()
-            sys.__stdout__.write(line + (spin and '\r' or '\n'))  # noqa
+            sys.__stdout__.write(line + (spin and '\r' or '\n'))
             sys.__stdout__.flush()
 
         run.last_line_len = line_len
@@ -155,7 +155,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             nested = ''.join(line or ' ' * len(header) for line in print_buffer)
             with print_lock:
                 clear_traces()
-                sys.__stdout__.write('{}{}\n'.format(header, nested))  # noqa
+                sys.__stdout__.write('{}{}\n'.format(header, nested))
             print_buffer[:] = []
 
     print_buffer, print_lock = [], threading.Lock()

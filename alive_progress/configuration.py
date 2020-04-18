@@ -6,8 +6,8 @@ from collections import namedtuple
 from copy import deepcopy
 from types import FunctionType
 
-from . import bars, spinners
-from .styles import BARS, SPINNERS, THEMES
+from .animations import bars, spinners
+from .styles.internal import BARS, SPINNERS, THEMES
 
 
 def _style_input_factory(name_lookup, func_lookup, name_index=None):

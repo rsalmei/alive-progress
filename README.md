@@ -295,10 +295,11 @@ Do note that this console is heavily instrumented and has more overhead, so the 
 
 ## Python 2 EOL
 
-The versions 1.4.x are the last ones to support Python 2.
+The versions 1.4.x are the last ones to support Python 2. Just implementing unit tests, that are long overdue.
 
 
 ## Changelog highlights:
+- 1.4.4: restructure internal packages; 100% branch coverage of all animations systems, i.e., bars and spinners
 - 1.4.3: protect configuration system against other errors (length='a' for example); first automated tests, 100% branch coverage of configuration system
 - 1.4.2: sanitize text input, keeping \n from entering and replicating bar on screen
 - 1.4.1: include license file in source distribution

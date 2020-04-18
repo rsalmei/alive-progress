@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from itertools import chain
 
-from .spinners import spinner_player
+from .utils import spinner_player
 
 
 def standard_bar_factory(chars='=', borders='||', blank=' ', tip='>', errors='!x'):
@@ -22,8 +22,8 @@ def standard_bar_factory(chars='=', borders='||', blank=' ', tip='>', errors='!x
                 return fill, True  # no tip, with border
             return fill + overflow, False  # no border
 
-        def draw_bar(pos, end=False):
-            bar, right = inner_standard_bar(pos, end)
+        def draw_bar(percent, end=False):
+            bar, right = inner_standard_bar(percent, end)
             return draw_bar.left_border + bar + (draw_bar.right_border if right else '')
 
         virtual_length = length * len(chars)

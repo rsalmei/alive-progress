@@ -3,45 +3,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import math
 import operator
-from functools import wraps
 from itertools import chain, repeat
 
-
-def _ensure_length(length, natural=0):
-    def wrapper(fn):
-        @wraps(fn)
-        def inner(*args, **kwargs):
-            for text in fn(*args, **kwargs):
-                text = ''.join((text,) * ratio)
-                yield text[:length]
-
-        return inner if length else fn
-
-    ratio = length // natural + 1 if length and natural else 1
-    return wrapper
-
-
-def _sliding_window_factory(length, content, step, initial):
-    def sliding_window():
-        pos = initial
-        while True:
-            if pos < 0:
-                pos += original
-            elif pos >= original:
-                pos -= original
-            yield content[pos:pos + length]
-            pos += step
-
-    original, window = len(content), sliding_window()
-    content += content[:length]
-    return window
+from .utils import repeating, sliding_window_factory, spinner_player
 
 
 def frame_spinner_factory(*frames):
     """Create a factory of a spinner that delivers frames in sequence."""
 
-    def inner_factory(length=None):
-        @_ensure_length(length, inner_factory.natural)
+    def inner_factory(length_actual=None):
+        @repeating(length_actual, inner_factory.natural)
         def inner_spinner():
             for frame in frames:  # TODO change to yield from, when dropping python 2.7
                 yield frame
@@ -60,23 +31,22 @@ def scrolling_spinner_factory(chars, length=None, block=None, blank=' ', right=T
     """Create a factory of a spinner that scrolls characters alongside a line."""
 
     def inner_factory(length_actual=None):
-        if block and not (length_actual or length):
+        if block and not (length_actual or length):  # pragma: no cover
             raise ValueError('length must be set with block')
 
         ratio = float(length_actual) / length if length and length_actual else 1
         length_actual = length_actual or inner_factory.natural
 
-        @_ensure_length(length_actual)
+        if not hiding and block and block >= length_actual:  # pragma: no cover
+            raise ValueError('cannot animate with block >= length')
+
+        @repeating(length_actual)
         def inner_spinner():
             for _ in range(inner_spinner.cycles):
                 yield next(infinite_ribbon)
 
-        if not hiding and block and block >= length_actual:
-            block_size = length_actual - 1
-        else:
-            block_size = int((block or 0) * ratio) or len(chars)
-
         initial = 0
+        block_size = int((block or 0) * ratio) or len(chars)
         if hiding:
             gap = length_actual
         else:
@@ -91,7 +61,7 @@ def scrolling_spinner_factory(chars, length=None, block=None, blank=' ', right=T
         else:
             content = ''.join(chain(blank * gap, chars))
 
-        infinite_ribbon = _sliding_window_factory(length_actual, content, step, initial)
+        infinite_ribbon = sliding_window_factory(length_actual, content, step, initial)
 
         inner_spinner.cycles = gap + block_size
         return inner_spinner
@@ -115,7 +85,7 @@ def bouncing_spinner_factory(right_chars, length, block=None, left_chars=None,
         ratio = float(length_actual) / length if length and length_actual else 1
         length_actual = length_actual or inner_factory.natural
 
-        @_ensure_length(length_actual)
+        @repeating(length_actual)
         def inner_spinner():
             for i, fill in enumerate(right_scroll()):
                 if i < right_direction_size:
@@ -140,14 +110,45 @@ def bouncing_spinner_factory(right_chars, length, block=None, left_chars=None,
     return inner_factory
 
 
+def compound_spinner_factory(*spinner_factories):
+    """Create a factory of a spinner that combines any other spinners together."""
+
+    def inner_factory(length_actual=None):
+        @repeating(length_actual)
+        def inner_spinner():
+            for fills in zip(range(inner_spinner.cycles), *players):
+                yield ''.join(fills[1:])
+
+        # this could be weighted on the natural length of the factories,
+        # but they will usually be the same types of factories.
+        each_length = length_actual and int(math.ceil(length_actual / len(spinner_factories)))
+        spinners = [factory(each_length) for factory in spinner_factories]
+        op_cycles = operator.attrgetter('cycles')
+        longest = max(spinners, key=op_cycles)
+        players = [spinner_player(x) for x in spinners]
+
+        inner_spinner.cycles = longest.cycles
+        inner_spinner.players = players
+        return inner_spinner
+
+    op_natural = operator.attrgetter('natural')
+    inner_factory.natural = sum(map(op_natural, spinner_factories))
+    return inner_factory
+
+
 def delayed_spinner_factory(spinner_factory, copies, offset):
     """Create a factory of a spinner that copies itself several times,
     with an increasing iteration offset between them.
     """
 
-    def inner_factory(length=None):
-        copies_actual = int(math.ceil(length / spinner_factory.natural)) if length else copies
-        result = compound_spinner_factory(*((spinner_factory,) * copies_actual))(length)
+    # this spinner is not actually a spinner, it is more a helper factory method.
+    # it does not define an inner_spinner, only creates a compound spinner internally.
+    def inner_factory(length_actual=None):
+        # it needed to have two levels to wait for the length_actual, since this
+        # argument can change the number of copies.
+        copies_actual = int(math.ceil(length_actual / spinner_factory.natural)) \
+            if length_actual else copies
+        result = compound_spinner_factory(*((spinner_factory,) * copies_actual))(length_actual)
         for i, s in enumerate(result.players):
             for _ in range(i * offset):
                 next(s)
@@ -155,41 +156,3 @@ def delayed_spinner_factory(spinner_factory, copies, offset):
 
     inner_factory.natural = spinner_factory.natural * copies
     return inner_factory
-
-
-def compound_spinner_factory(*spinner_factories):
-    """Create a factory of a spinner that combines any other spinners together."""
-
-    def inner_factory(length=None):
-        @_ensure_length(length)
-        def inner_spinner():
-            for fills in zip(range(inner_spinner.cycles), *players):
-                yield ''.join(fills[1:])
-
-        # this could be weighted on the natural length of the factories,
-        # but they will usually be the same types of factories.
-        each_length = int(math.ceil(length / len(spinner_factories))) if length else None
-        spinners = [factory(each_length) for factory in spinner_factories]
-        op_cycles = operator.attrgetter('cycles')  # noqa
-        longest = max(spinners, key=op_cycles)
-        players = [spinner_player(x) for x in spinners]
-
-        # noinspection PyUnresolvedReferences
-        inner_spinner.cycles = longest.cycles
-        inner_spinner.players = players
-        return inner_spinner
-
-    op_natural = operator.attrgetter('natural')  # noqa
-    inner_factory.natural = sum(map(op_natural, spinner_factories))
-    return inner_factory
-
-
-def spinner_player(spinner):
-    """Create an infinite generator that plays all cycles of a spinner indefinitely."""
-
-    def inner_play():
-        while True:
-            for c in spinner():  # TODO change to yield from, when dropping python 2.7
-                yield c
-
-    return inner_play()  # returns an already initiated generator.

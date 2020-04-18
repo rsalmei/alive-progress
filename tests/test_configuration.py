@@ -1,3 +1,6 @@
+# coding=utf-8
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import pytest
 
 try:
@@ -5,20 +8,17 @@ try:
 except ImportError:
     import mock  # noqa
 
-from alive_progress import BARS, SPINNERS, THEMES
+from alive_progress.styles.internal import BARS, SPINNERS, THEMES
 # noinspection PyProtectedMember
 from alive_progress.configuration import Config, _bool_input_factory, _int_input_factory, \
     _style_input_factory, create_config
 
 
 @pytest.mark.parametrize('lower, upper, num, expected', [
-    (0, 10, 0, 0),
-    (0, 10, 10, 10),
-    (0, 10, -1, None),
-    (0, 10, 11, None),
-    (100, 100, 100, 100),
-    (100, 100, 99, None),
-    (100, 100, 101, None),
+    (100, 110, 100, 100),
+    (100, 110, 110, 110),
+    (100, 110, -1, None),
+    (100, 110, 111, None),
 ])
 def test_int_input_factory(lower, upper, num, expected):
     func = _int_input_factory(lower, upper)
@@ -27,10 +27,10 @@ def test_int_input_factory(lower, upper, num, expected):
 
 @pytest.mark.parametrize('param, expected', [
     (False, False),
-    (True, True),
     (0, False),
     ('', False),
     (None, False),
+    (True, True),
     (1, True),
     ('asd', True),
 ])
