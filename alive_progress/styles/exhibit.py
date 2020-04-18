@@ -7,7 +7,7 @@ import time
 from collections import OrderedDict
 
 from .internal import BARS, SPINNERS
-from ..animations.spinners import spinner_player
+from ..animations.utils import spinner_player
 from ..configuration import config_handler
 
 

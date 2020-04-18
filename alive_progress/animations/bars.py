@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from itertools import chain
 
-from .spinners import spinner_player
+from .utils import spinner_player
 
 
 def standard_bar_factory(chars='=', borders='||', blank=' ', tip='>', errors='!x'):

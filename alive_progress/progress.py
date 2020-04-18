@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from datetime import timedelta
 from itertools import chain, islice, repeat
 
-from .animations.spinners import spinner_player
+from .animations.utils import spinner_player
 from .configuration import config_handler
 
 
