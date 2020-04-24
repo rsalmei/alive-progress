@@ -324,5 +324,4 @@ This software is licensed under the MIT License. See the LICENSE file in the top
 Thank you for your interest!
 
 I've put much ❤️ and effort into this.
-
-Hope you like it.
+<br>If you appreciate my work you can sponsor me, buy me a coffee! The button is on the top right of the page (the big orange one, it's hard to miss 😊)
