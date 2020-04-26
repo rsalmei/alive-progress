@@ -1,6 +1,6 @@
 [<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
 
-![alive!](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/alive.gif)
+![alive!](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/alive-logo.gif)
 
 # alive-progress :)
 ### A new kind of Progress Bar, with real-time throughput, eta and very cool animations!
@@ -15,20 +15,21 @@ Ever found yourself in a remote ssh session, doing some lengthy operations, and 
 
 I've made this cool progress bar thinking about all that, the Alive-Progress bar! :)
 
-![alive-progress](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/main.gif)
+![alive-progress](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/alive-demo.gif)
 
 
 I like to think of it as a new kind of progress bar for python, as it has among other things:
-  - a cool live spinner, which makes it clear the process did not hang and your terminal/connection is healthy;
-  - a visual feedback of the current speed/throughput, as the spinner runs faster or slower according to the actual processing speed;
-  - an efficient multi-threaded bar, which updates itself at a fraction of the actual speed (1,000,000 iterations per second equates to roughly 60fps refresh rate) to keep CPU usage low and avoid terminal spamming; (📌 new: you can now calibrate this!)
-  - an expected time of arrival (eta), that shows the remaining processing time in a friendly way, not anything like `eta: 1584s`, it will nicely show `eta: 0:26:24` as you would expect (but anything less than a minute is indeed `eta: 42s`);
-  - a `print()` hook, which allows print statements in the midst of an alive-bar context, nicely cleaning the output of any garbage, and even enriching with the current position when it occurred;
-  - after your processing has finished, a nice receipt is printed with the statistics of that run, including the elapsed time and observed throughput;
-  - it tracks the actual count in regard of the expected count, so it will look different if you send in more or less than expected;
-  - it automatically detects if there's really an allocated tty, and if there isn't, only the final receipt is printed, so you can safely include the alive-bar in all and any code and rest assure your log file won't get 60fps garbage;
-  - you can pause the alive-bar! I think that's an unprecedented feature for a progress-bar, it's incredible to orchestrate operations that require manual interaction on some items;
-  - it is customizable, with a growing smorgasbord of different bar and spinner styles, as well as several factories to easily generate yours!
+
+  - a **cool live spinner**, which makes it clear the process did not hang and your terminal/connection is healthy;
+  - a **visual feedback** of the current speed/throughput, as the spinner runs faster or slower according to the actual processing speed;
+  - an **efficient** multi-threaded bar, which updates itself at a fraction of the actual speed (1,000,000 iterations per second equates to roughly 60fps refresh rate) to keep CPU usage low and avoid terminal spamming; (📌 new: you can now calibrate this!)
+  - an expected time of arrival (**ETA**), that shows the remaining processing time in a friendly way, not anything like `eta: 1584s`, it will nicely show `eta: 0:26:24` as you would expect (but anything less than a minute is indeed `eta: 42s`);
+  - a `print()` hook, which allows print statements in the midst of an alive-bar context **without any hassle**, automatically cleaning the screen, and even enriching with the current position when it occurred;
+  - after your processing has finished, a **nice receipt** is printed with the statistics of that run, including the elapsed time and observed throughput;
+  - it tracks the actual count to detect **under and overflows**, so it will look different if you send in less or more than expected;
+  - it automatically detects if there's an **allocated tty**, and if there isn't, only the final receipt is printed, so you can safely include the alive-bar in any code, and rest assure your log file won't get 60fps progress lines;
+  - you can **pause** the alive-bar! I think that's an unprecedented feature for a progress bar! It's incredible to be able to manually operate on some items while inside a running progress bar context, and get the bar back like it had never stopped whenever you want;
+  - it is **customizable**, with a growing smorgasbord of different bar and spinner styles, as well as several factories to easily generate yours!
 
 
 ## Get it
@@ -141,7 +142,7 @@ While in an alive progress bar context, you have two ways to output messages:
 
 Both methods work the same in all modes, and always clear the line appropriately to remove any garbage on screen.
 
-![alive-progress messages](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/printing.gif)
+![alive-progress messages](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/print-hook.gif)
 
 
 ## Configuration

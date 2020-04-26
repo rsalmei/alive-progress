@@ -1,0 +1,587 @@
+# The configurations that used for the recording, feel free to edit them
+config:
+
+  # Specify a command to be executed
+  # like `/bin/bash -l`, `ls`, or any other commands
+  # the default is bash for Linux
+  # or powershell.exe for Windows
+  command: ipython
+
+  # Specify the current working directory path
+  # the default is the current working directory path
+  cwd: /Users/rogerio/Documents/projects/alive-progress
+
+  # Export additional ENV variables
+  env:
+    recording: true
+
+  # Explicitly set the number of columns
+  # or use `auto` to take the current
+  # number of columns of your shell
+  cols: 90
+
+  # Explicitly set the number of rows
+  # or use `auto` to take the current
+  # number of rows of your shell
+  rows: 16
+
+  # Amount of times to repeat GIF
+  # If value is -1, play once
+  # If value is 0, loop indefinitely
+  # If value is a positive number, loop n times
+  repeat: 0
+
+  # Quality
+  # 1 - 100
+  quality: 100
+
+  # Delay between frames in ms
+  # If the value is `auto` use the actual recording delays
+  frameDelay: auto
+
+  # Maximum delay between frames in ms
+  # Ignored if the `frameDelay` isn't set to `auto`
+  # Set to `auto` to prevent limiting the max idle time
+  maxIdleTime: 2000
+
+  # The surrounding frame box
+  # The `type` can be null, window, floating, or solid`
+  # To hide the title use the value null
+  # Don't forget to add a backgroundColor style with a null as type
+  frameBox:
+    type: floating
+    title: Alive Progress Bar - printing
+    style: []
+      # border: 0px black solid
+      # boxShadow: none
+      # margin: 0px
+
+  # Add a watermark image to the rendered gif
+  # You need to specify an absolute path for
+  # the image on your machine or a URL, and you can also
+  # add your own CSS styles
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: 0.9
+
+  # Cursor style can be one of
+  # `block`, `underline`, or `bar`
+  cursorStyle: block
+
+  # Font family
+  # You can use any font that is installed on your machine
+  # in CSS-like syntax
+  fontFamily: "SauceCodePro Nerd Font"
+
+  # The size of the font
+  fontSize: 16
+
+  # The height of lines
+  lineHeight: 1
+
+  # The spacing between letters
+  letterSpacing: 0
+
+  # Theme
+  theme:
+    background: "transparent"
+    foreground: "#ffffff"
+    cursor: "#c7c7c7"
+    black: "#232628"
+    red: "#fc4384"
+    green: "#b3e33b"
+    yellow: "#ffa727"
+    blue: "#75dff2"
+    magenta: "#ae89fe"
+    cyan: "#708387"
+    white: "#d5d5d0"
+    brightBlack: "#626566"
+    brightRed: "#ff7fac"
+    brightGreen: "#c8ed71"
+    brightYellow: "#ebdf86"
+    brightBlue: "#75dff2"
+    brightMagenta: "#ae89fe"
+    brightCyan: "#b1c6ca"
+    brightWhite: "#f9f9f4"
+  
+# Records, feel free to edit them
+records:
+  - delay: 6
+    content: "\e[?2004h\e[?25l\e[0m\e[?7l\e[0m\e[J\e[0;38;5;28mIn [\e[0;92;1m1\e[0;38;5;28m]: \e[0m                                                                                                  \r\e[106C \r\e[8C\e[?7h\e[0m\e[?12l\e[?25h"
+  - delay: 11
+    content: "\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
+  - delay: 63
+    content: "\e[?25l\e[?7l\e[0mf \b\e[?7h\e[0m\e[?12l\e[?25h\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
+  - delay: 100
+    content: "\e[?25l\e[?7l\e[0mr \b\e[?7h\e[0m\e[?12l\e[?25h\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
+  - delay: 136
+    content: "\e[?25l\e[?7l\e[2D\e[0;38;5;28;1mfrom\e[0m \e[0;38;5;32;1malive_progress\e[0m \e[0;38;5;28;1mimport\e[0m alive_bar; \e[0;38;5;28;1mimport\e[0m \e[0;38;5;32;1mtime\e[0m \b\e[?7h\e[0m\e[?12l\e[?25h\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
+  - delay: 131
+    content: "\e[?25l\e[?7l\e[57D\e[0m\e[J\e[0;38;5;28mIn [\e[0;92;1m1\e[0;38;5;28m]: \e[0;38;5;28;1mfrom\e[0m \e[0;38;5;32;1malive_progress\e[0m \e[0;38;5;28;1mimport\e[0m alive_bar; \e[0;38;5;28;1mimport\e[0m \e[0;38;5;32;1mtime\e[0m                                                 \r\e[106C \r\e[0m\r\r\n\e[J\e[?7h\e[0m\e[?12l\e[?25h\e[?2004l"
+  - delay: 9
+    content: "\r\n\e[?1l\e[6n\e[?2004h\e[?25l\e[0m\e[?7l\e[0m\e[J\e[0;38;5;28mIn [\e[0;92;1m2\e[0;38;5;28m]: \e[0m                                                                                                  \r\e[106C \r\e[8C\e[?7h\e[0m\e[?12l\e[?25h\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
+  - delay: 157
+    content: "\e[?25l\e[?7l\e[0mw \b\e[?7h\e[0m\e[?12l\e[?25h\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
+  - delay: 152
+    content: "\e[?25l\e[?7l\e[9D\e[0;38;5;28mIn [\e[0;92;1m2\e[0;38;5;28m]: \e[0;38;5;28;1mwith\e[0m alive_bar(\e[0;38;5;28m1000\e[0m) \e[0;38;5;28;1mas\e[0m bar: \e[0m\e[K\e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m    \e[0;38;5;28;1mfor\e[0m i \e[0;38;5;129;1min\e[0m \e[0;38;5;28mrange\e[0m(\e[0;38;5;28m1000\e[0m): \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m        \e[0;38;5;28;1mif\e[0m i % \e[0;38;5;28m300\e[0m == \e[0;38;5;28m0\e[0m: \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m            \e[0;38;5;28mprint\e[0m(\e[0;38;5;130m'found!'\e[0m) \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m        time.sleep(.\e[0;38;5;28m01\e[0m) \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m        bar\e[0;38;5;16;48;5;152m()\e[0m                                                                                     \r\e[106C \r\e[21C\e[?7h\e[0m\e[?12l\e[?25h"
+  - delay: 5
+    content: "\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
+  - delay: 151
+    content: "\e[?25l\e[?7l\e[21D\e[0;38;5;28m   ...: \e[0m        bar() \e[0m\e[K\e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m                                                                                                  \r\e[106C \r\e[16C\e[?7h\e[0m\e[?12l\e[?25h"
+  - delay: 7
+    content: "\e[?25l\e[?7l\e[?7h\e[0m\e[?12l\e[?25h"
+  - delay: 277
+    content: "\e[?25l\e[?7l\e[6A\e[16D\e[0m\e[J\e[0;38;5;28mIn [\e[0;92;1m2\e[0;38;5;28m]: \e[0;38;5;28;1mwith\e[0m alive_bar(\e[0;38;5;28m1000\e[0m) \e[0;38;5;28;1mas\e[0m bar: \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m    \e[0;38;5;28;1mfor\e[0m i \e[0;38;5;129;1min\e[0m \e[0;38;5;28mrange\e[0m(\e[0;38;5;28m1000\e[0m): \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m        \e[0;38;5;28;1mif\e[0m i % \e[0;38;5;28m300\e[0m == \e[0;38;5;28m0\e[0m: \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m            \e[0;38;5;28mprint\e[0m(\e[0;38;5;130m'found!'\e[0m) \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m        time.sleep(.\e[0;38;5;28m01\e[0m) \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m        bar() \e[0m\r\r\n\e[0;38;5;28m   ...: \e[0m                                                                                                  \r\e[106C \r\e[0m\r\r\n\e[J\e[?7h\e[0m\e[?12l\e[?25h\e[?2004l\e[2K\ron 0: found!\r\n|                                        | ▁▃▅ 0/1000 [0%] in 0s (0.0/s, eta: ?) \r"
+  - delay: 104
+    content: "|▎                                       | ▂▄▆ 9/1000 [1%] in 0s (86.2/s, eta: 11s) \r"
+  - delay: 52
+    content: "|▌                                       | ▃▅▇ 13/1000 [1%] in 0s (83.4/s, eta: 12s) \r"
+  - delay: 53
+    content: "|▋                                       | ▄▆█ 18/1000 [2%] in 0s (86.1/s, eta: 11s) \r"
+  - delay: 52
+    content: "|▉                                       | ▅▇▇ 23/1000 [2%] in 0s (87.9/s, eta: 11s) \r"
+  - delay: 53
+    content: "|█                                       | ▆█▆ 27/1000 [3%] in 0s (85.8/s, eta: 11s) \r"
+  - delay: 53
+    content: "|█▎                                      | ▇▇▅ 32/1000 [3%] in 0s (87.3/s, eta: 11s) \r"
+  - delay: 48
+    content: "|█▍                                      | █▆▄ 37/1000 [4%] in 0s (89.1/s, eta: 11s) \r"
+  - delay: 52
+    content: "|█▋                                      | ▇▅▃ 41/1000 [4%] in 0s (87.7/s, eta: 11s) \r"
+  - delay: 50
+    content: "|█▊                                      | ▆▄▂ 46/1000 [5%] in 0s (88.9/s, eta: 11s) \r"
+  - delay: 50
+    content: "|██                                      | ▅▃▁ 50/1000 [5%] in 0s (88.2/s, eta: 11s) \r"
+  - delay: 50
+    content: "|██▏                                     | ▄▂▂ 55/1000 [6%] in 0s (89.1/s, eta: 11s) \r"
+  - delay: 50
+    content: "|██▎                                     | ▃▁▃ 59/1000 [6%] in 0s (88.4/s, eta: 11s) \r"
+  - delay: 50
+    content: "|██▌                                     | ▂▂▄ 64/1000 [6%] in 0s (89.2/s, eta: 10s) \r"
+  - delay: 51
+    content: "|██▋                                     | ▁▃▅ 68/1000 [7%] in 0s (88.5/s, eta: 11s) \r"
+  - delay: 50
+    content: "|██▉                                     | ▂▄▆ 73/1000 [7%] in 0s (89.2/s, eta: 10s) \r"
+  - delay: 51
+    content: "|███                                     | ▃▅▇ 77/1000 [8%] in 0s (88.6/s, eta: 10s) \r"
+  - delay: 53
+    content: "|███▎                                    | ▄▆█ 82/1000 [8%] in 0s (88.9/s, eta: 10s) \r"
+  - delay: 51
+    content: "|███▍                                    | ▅▇▇ 87/1000 [9%] in 0s (89.4/s, eta: 10s) \r"
+  - delay: 49
+    content: "|███▋                                    | ▆█▆ 91/1000 [9%] in 1s (89.0/s, eta: 10s) \r"
+  - delay: 53
+    content: "|███▊                                    | ▇▇▅ 95/1000 [10%] in 1s (88.4/s, eta: 10s) \r"
+  - delay: 48
+    content: "|████                                    | █▆▄ 100/1000 [10%] in 1s (89.0/s, eta: 10s) \r"
+  - delay: 51
+    content: "|████▏                                   | ▇▅▃ 104/1000 [10%] in 1s (88.6/s, eta: 10s) \r"
+  - delay: 50
+    content: "|████▎                                   | ▆▄▂ 108/1000 [11%] in 1s (88.2/s, eta: 10s) \r"
+  - delay: 52
+    content: "|████▌                                   | ▅▃▁ 113/1000 [11%] in 1s (88.6/s, eta: 10s) \r"
+  - delay: 52
+    content: "|████▋                                   | ▄▂▂ 117/1000 [12%] in 1s (88.1/s, eta: 10s) \r"
+  - delay: 53
+    content: "|████▉                                   | ▃▁▃ 122/1000 [12%] in 1s (88.4/s, eta: 10s) \r"
+  - delay: 50
+    content: "|█████                                   | ▂▂▄ 127/1000 [13%] in 1s (88.7/s, eta: 10s) \r"
+  - delay: 53
+    content: "|█████▏                                  | ▁▃▅ 131/1000 [13%] in 1s (88.3/s, eta: 10s) \r"
+  - delay: 49
+    content: "|█████▍                                  | ▂▄▆ 136/1000 [14%] in 1s (88.7/s, eta: 10s) \r"
+  - delay: 51
+    content: "|█████▌                                  | ▃▅▇ 140/1000 [14%] in 1s (88.4/s, eta: 10s) \r"
+  - delay: 50
+    content: "|█████▊                                  | ▄▆█ 145/1000 [14%] in 1s (88.7/s, eta: 10s) \r"
+  - delay: 50
+    content: "|██████                                  | ▅▇▇ 150/1000 [15%] in 1s (89.1/s, eta: 10s) \r"
+  - delay: 51
+    content: "|██████▏                                 | ▆█▆ 154/1000 [15%] in 1s (88.8/s, eta: 10s) \r"
+  - delay: 52
+    content: "\e[2K\r|██████▎                                 | ▇▇▅ 159/1000 [16%] in 1s (89.0/s, eta: 9s) \r"
+  - delay: 52
+    content: "|██████▌                                 | █▆▄ 163/1000 [16%] in 1s (88.6/s, eta: 9s) \r"
+  - delay: 49
+    content: "|██████▋                                 | ▇▅▃ 168/1000 [17%] in 1s (89.0/s, eta: 9s) \r"
+  - delay: 52
+    content: "|██████▉                                 | ▆▄▂ 173/1000 [17%] in 1s (89.2/s, eta: 9s) \r"
+  - delay: 49
+    content: "|███████                                 | ▅▃▁ 177/1000 [18%] in 1s (89.0/s, eta: 9s) \r"
+  - delay: 51
+    content: "|███████▏                                | ▄▂▂ 181/1000 [18%] in 2s (88.7/s, eta: 9s) \r"
+  - delay: 52
+    content: "|███████▍                                | ▃▁▃ 186/1000 [19%] in 2s (88.9/s, eta: 9s) \r"
+  - delay: 51
+    content: "|███████▋                                | ▂▂▄ 191/1000 [19%] in 2s (89.1/s, eta: 9s) \r"
+  - delay: 48
+    content: "|███████▊                                | ▁▃▅ 195/1000 [20%] in 2s (89.0/s, eta: 9s) \r"
+  - delay: 51
+    content: "|████████                                | ▂▄▆ 200/1000 [20%] in 2s (89.2/s, eta: 9s) \r"
+  - delay: 50
+    content: "|████████▏                               | ▃▅▇ 204/1000 [20%] in 2s (89.0/s, eta: 9s) \r"
+  - delay: 49
+    content: "|████████▎                               | ▄▆█ 209/1000 [21%] in 2s (89.3/s, eta: 9s) \r"
+  - delay: 50
+    content: "|████████▌                               | ▅▇▇ 213/1000 [21%] in 2s (89.1/s, eta: 9s) \r"
+  - delay: 49
+    content: "|████████▋                               | ▆█▆ 218/1000 [22%] in 2s (89.3/s, eta: 9s) \r"
+  - delay: 51
+    content: "|████████▉                               | ▇▇▅ 222/1000 [22%] in 2s (89.1/s, eta: 9s) \r"
+  - delay: 51
+    content: "|█████████                               | █▆▄ 227/1000 [23%] in 2s (89.3/s, eta: 9s) \r"
+  - delay: 49
+    content: "|█████████▏                              | ▇▅▃ 231/1000 [23%] in 2s (89.1/s, eta: 9s) \r"
+  - delay: 50
+    content: "|█████████▍                              | ▆▄▂ 235/1000 [24%] in 2s (89.0/s, eta: 9s) \r"
+  - delay: 53
+    content: "|█████████▌                              | ▅▃▁ 240/1000 [24%] in 2s (89.1/s, eta: 9s) \r"
+  - delay: 50
+    content: "|█████████▊                              | ▄▂▂ 244/1000 [24%] in 2s (88.9/s, eta: 9s) \r"
+  - delay: 50
+    content: "|█████████▉                              | ▃▁▃ 249/1000 [25%] in 2s (89.1/s, eta: 8s) \r"
+  - delay: 50
+    content: "|██████████▏                             | ▂▂▄ 254/1000 [25%] in 2s (89.3/s, eta: 8s) \r"
+  - delay: 50
+    content: "|██████████▎                             | ▁▃▅ 258/1000 [26%] in 2s (89.1/s, eta: 8s) \r"
+  - delay: 53
+    content: "|██████████▌                             | ▂▄▆ 263/1000 [26%] in 2s (89.2/s, eta: 8s) \r"
+  - delay: 50
+    content: "|██████████▋                             | ▃▅▇ 267/1000 [27%] in 2s (89.1/s, eta: 8s) \r"
+  - delay: 50
+    content: "|██████████▉                             | ▄▆█ 272/1000 [27%] in 3s (89.3/s, eta: 8s) \r"
+  - delay: 52
+    content: "|███████████                             | ▅▇▇ 276/1000 [28%] in 3s (89.1/s, eta: 8s) \r"
+  - delay: 52
+    content: "|███████████▏                            | ▆█▆ 281/1000 [28%] in 3s (89.2/s, eta: 8s) \r"
+  - delay: 49
+    content: "|███████████▍                            | ▇▇▅ 285/1000 [28%] in 3s (89.1/s, eta: 8s) \r"
+  - delay: 53
+    content: "|███████████▌                            | █▆▄ 290/1000 [29%] in 3s (89.1/s, eta: 8s) \r"
+  - delay: 50
+    content: "|███████████▊                            | ▇▅▃ 295/1000 [30%] in 3s (89.3/s, eta: 8s) \r"
+  - delay: 51
+    content: "|███████████▉                            | ▆▄▂ 299/1000 [30%] in 3s (89.1/s, eta: 8s) \r\e[2K\ron 300: found!\r\n"
+  - delay: 50
+    content: "|████████████▏                           | ▅▃▁ 304/1000 [30%] in 3s (89.3/s, eta: 8s) \r"
+  - delay: 50
+    content: "|████████████▎                           | ▄▂▂ 309/1000 [31%] in 3s (89.4/s, eta: 8s) \r"
+  - delay: 52
+    content: "|████████████▌                           | ▃▁▃ 313/1000 [31%] in 3s (89.2/s, eta: 8s) \r"
+  - delay: 50
+    content: "|████████████▋                           | ▂▂▄ 318/1000 [32%] in 3s (89.4/s, eta: 8s) \r"
+  - delay: 51
+    content: "|████████████▉                           | ▁▃▅ 323/1000 [32%] in 3s (89.5/s, eta: 8s) \r"
+  - delay: 48
+    content: "|█████████████                           | ▂▄▆ 327/1000 [33%] in 3s (89.4/s, eta: 8s) \r"
+  - delay: 49
+    content: "|█████████████▎                          | ▃▅▇ 332/1000 [33%] in 3s (89.6/s, eta: 7s) \r"
+  - delay: 52
+    content: "|█████████████▍                          | ▄▆█ 336/1000 [34%] in 3s (89.4/s, eta: 7s) \r"
+  - delay: 52
+    content: "|█████████████▋                          | ▅▇▇ 341/1000 [34%] in 3s (89.5/s, eta: 7s) \r"
+  - delay: 48
+    content: "|█████████████▊                          | ▆█▆ 345/1000 [34%] in 3s (89.4/s, eta: 7s) \r"
+  - delay: 50
+    content: "|██████████████                          | ▇▇▅ 350/1000 [35%] in 3s (89.6/s, eta: 7s) \r"
+  - delay: 51
+    content: "|██████████████▏                         | █▆▄ 355/1000 [36%] in 3s (89.7/s, eta: 7s) \r"
+  - delay: 48
+    content: "|██████████████▎                         | ▇▅▃ 359/1000 [36%] in 4s (89.6/s, eta: 7s) \r"
+  - delay: 52
+    content: "|██████████████▌                         | ▆▄▂ 364/1000 [36%] in 4s (89.7/s, eta: 7s) \r"
+  - delay: 49
+    content: "|██████████████▋                         | ▅▃▁ 368/1000 [37%] in 4s (89.6/s, eta: 7s) \r"
+  - delay: 49
+    content: "|██████████████▉                         | ▄▂▂ 373/1000 [37%] in 4s (89.7/s, eta: 7s) \r"
+  - delay: 51
+    content: "|███████████████                         | ▃▁▃ 377/1000 [38%] in 4s (89.6/s, eta: 7s) \r"
+  - delay: 50
+    content: "|███████████████▎                        | ▂▂▄ 382/1000 [38%] in 4s (89.7/s, eta: 7s) \r"
+  - delay: 50
+    content: "|███████████████▍                        | ▁▃▅ 386/1000 [39%] in 4s (89.6/s, eta: 7s) \r"
+  - delay: 53
+    content: "|███████████████▋                        | ▂▄▆ 391/1000 [39%] in 4s (89.7/s, eta: 7s) \r"
+  - delay: 50
+    content: "|███████████████▊                        | ▃▅▇ 396/1000 [40%] in 4s (89.8/s, eta: 7s) \r"
+  - delay: 49
+    content: "|████████████████                        | ▄▆█ 400/1000 [40%] in 4s (89.7/s, eta: 7s) \r"
+  - delay: 52
+    content: "|████████████████▏                       | ▅▇▇ 404/1000 [40%] in 4s (89.5/s, eta: 7s) \r"
+  - delay: 49
+    content: "|████████████████▎                       | ▆█▆ 409/1000 [41%] in 4s (89.7/s, eta: 7s) \r"
+  - delay: 48
+    content: "|████████████████▌                       | ▇▇▅ 413/1000 [41%] in 4s (89.6/s, eta: 7s) \r"
+  - delay: 53
+    content: "|████████████████▋                       | █▆▄ 418/1000 [42%] in 4s (89.7/s, eta: 6s) \r"
+  - delay: 49
+    content: "|████████████████▉                       | ▇▅▃ 422/1000 [42%] in 4s (89.6/s, eta: 6s) \r"
+  - delay: 50
+    content: "|█████████████████                       | ▆▄▂ 427/1000 [43%] in 4s (89.7/s, eta: 6s) \r"
+  - delay: 48
+    content: "|█████████████████▏                      | ▅▃▁ 431/1000 [43%] in 4s (89.6/s, eta: 6s) \r"
+  - delay: 49
+    content: "|█████████████████▍                      | ▄▂▂ 435/1000 [44%] in 4s (89.5/s, eta: 6s) \r"
+  - delay: 50
+    content: "|█████████████████▌                      | ▃▁▃ 440/1000 [44%] in 4s (89.6/s, eta: 6s) \r"
+  - delay: 49
+    content: "|█████████████████▊                      | ▂▂▄ 444/1000 [44%] in 4s (89.6/s, eta: 6s) \r"
+  - delay: 51
+    content: "|█████████████████▉                      | ▁▃▅ 449/1000 [45%] in 5s (89.7/s, eta: 6s) \r"
+  - delay: 51
+    content: "|██████████████████                      | ▂▄▆ 453/1000 [45%] in 5s (89.5/s, eta: 6s) \r"
+  - delay: 49
+    content: "|██████████████████▎                     | ▃▅▇ 458/1000 [46%] in 5s (89.7/s, eta: 6s) \r"
+  - delay: 50
+    content: "|██████████████████▍                     | ▄▆█ 462/1000 [46%] in 5s (89.6/s, eta: 6s) \r"
+  - delay: 50
+    content: "|██████████████████▋                     | ▅▇▇ 467/1000 [47%] in 5s (89.7/s, eta: 6s) \r"
+  - delay: 48
+    content: "|██████████████████▊                     | ▆█▆ 471/1000 [47%] in 5s (89.6/s, eta: 6s) \r"
+  - delay: 52
+    content: "|███████████████████                     | ▇▇▅ 476/1000 [48%] in 5s (89.7/s, eta: 6s) \r"
+  - delay: 52
+    content: "|███████████████████▏                    | █▆▄ 481/1000 [48%] in 5s (89.7/s, eta: 6s) \r"
+  - delay: 51
+    content: "|███████████████████▍                    | ▇▅▃ 485/1000 [48%] in 5s (89.6/s, eta: 6s) \r"
+  - delay: 48
+    content: "|███████████████████▌                    | ▆▄▂ 490/1000 [49%] in 5s (89.8/s, eta: 6s) \r"
+  - delay: 48
+    content: "|███████████████████▊                    | ▅▃▁ 494/1000 [49%] in 5s (89.7/s, eta: 6s) \r"
+  - delay: 49
+    content: "|███████████████████▉                    | ▄▂▂ 499/1000 [50%] in 5s (89.8/s, eta: 6s) \r"
+  - delay: 52
+    content: "|████████████████████                    | ▃▁▃ 503/1000 [50%] in 5s (89.7/s, eta: 6s) \r"
+  - delay: 48
+    content: "|████████████████████▎                   | ▂▂▄ 507/1000 [51%] in 5s (89.6/s, eta: 6s) \r"
+  - delay: 51
+    content: "|████████████████████▍                   | ▁▃▅ 512/1000 [51%] in 5s (89.7/s, eta: 5s) \r"
+  - delay: 52
+    content: "|████████████████████▋                   | ▂▄▆ 516/1000 [52%] in 5s (89.6/s, eta: 5s) \r"
+  - delay: 51
+    content: "|████████████████████▊                   | ▃▅▇ 521/1000 [52%] in 5s (89.7/s, eta: 5s) \r"
+  - delay: 50
+    content: "|█████████████████████                   | ▄▆█ 526/1000 [53%] in 5s (89.8/s, eta: 5s) \r"
+  - delay: 51
+    content: "|█████████████████████▏                  | ▅▇▇ 530/1000 [53%] in 5s (89.7/s, eta: 5s) \r"
+  - delay: 52
+    content: "|█████████████████████▍                  | ▆█▆ 535/1000 [54%] in 5s (89.7/s, eta: 5s) \r"
+  - delay: 51
+    content: "|█████████████████████▌                  | ▇▇▅ 540/1000 [54%] in 6s (89.8/s, eta: 5s) \r"
+  - delay: 53
+    content: "|█████████████████████▊                  | █▆▄ 545/1000 [55%] in 6s (89.8/s, eta: 5s) \r"
+  - delay: 50
+    content: "|█████████████████████▉                  | ▇▅▃ 549/1000 [55%] in 6s (89.7/s, eta: 5s) \r"
+  - delay: 50
+    content: "|██████████████████████▏                 | ▆▄▂ 554/1000 [55%] in 6s (89.8/s, eta: 5s) \r"
+  - delay: 50
+    content: "|██████████████████████▎                 | ▅▃▁ 558/1000 [56%] in 6s (89.7/s, eta: 5s) \r"
+  - delay: 50
+    content: "|██████████████████████▍                 | ▄▂▂ 562/1000 [56%] in 6s (89.7/s, eta: 5s) \r"
+  - delay: 50
+    content: "|██████████████████████▋                 | ▃▁▃ 567/1000 [57%] in 6s (89.8/s, eta: 5s) \r"
+  - delay: 50
+    content: "|██████████████████████▊                 | ▂▂▄ 571/1000 [57%] in 6s (89.7/s, eta: 5s) \r"
+  - delay: 50
+    content: "|███████████████████████                 | ▁▃▅ 576/1000 [58%] in 6s (89.8/s, eta: 5s) \r"
+  - delay: 50
+    content: "|███████████████████████▏                | ▂▄▆ 580/1000 [58%] in 6s (89.7/s, eta: 5s) \r"
+  - delay: 50
+    content: "|███████████████████████▍                | ▃▅▇ 585/1000 [58%] in 6s (89.8/s, eta: 5s) \r"
+  - delay: 50
+    content: "|███████████████████████▌                | ▄▆█ 589/1000 [59%] in 6s (89.7/s, eta: 5s) \r"
+  - delay: 51
+    content: "|███████████████████████▊                | ▅▇▇ 594/1000 [59%] in 6s (89.8/s, eta: 5s) \r"
+  - delay: 49
+    content: "|███████████████████████▉                | ▆█▆ 598/1000 [60%] in 6s (89.7/s, eta: 4s) \r"
+  - delay: 13
+    content: "\e[2K\ron 600: found!\r\n"
+  - delay: 38
+    content: "|████████████████████████                | ▇▇▅ 603/1000 [60%] in 6s (89.8/s, eta: 4s) \r"
+  - delay: 51
+    content: "|████████████████████████▎               | █▆▄ 607/1000 [61%] in 6s (89.7/s, eta: 4s) \r"
+  - delay: 48
+    content: "|████████████████████████▍               | ▇▅▃ 611/1000 [61%] in 6s (89.6/s, eta: 4s) \r"
+  - delay: 50
+    content: "|████████████████████████▋               | ▆▄▂ 616/1000 [62%] in 6s (89.7/s, eta: 4s) \r"
+  - delay: 54
+    content: "|████████████████████████▊               | ▅▃▁ 621/1000 [62%] in 6s (89.7/s, eta: 4s) \r"
+  - delay: 52
+    content: "|█████████████████████████               | ▄▂▂ 625/1000 [62%] in 6s (89.6/s, eta: 4s) \r"
+  - delay: 51
+    content: "|█████████████████████████▏              | ▃▁▃ 630/1000 [63%] in 7s (89.7/s, eta: 4s) \r"
+  - delay: 52
+    content: "|█████████████████████████▎              | ▂▂▄ 634/1000 [63%] in 7s (89.6/s, eta: 4s) \r"
+  - delay: 48
+    content: "|█████████████████████████▌              | ▁▃▅ 639/1000 [64%] in 7s (89.7/s, eta: 4s) \r"
+  - delay: 51
+    content: "|█████████████████████████▊              | ▂▄▆ 644/1000 [64%] in 7s (89.8/s, eta: 4s) \r"
+  - delay: 48
+    content: "|█████████████████████████▉              | ▃▅▇ 648/1000 [65%] in 7s (89.7/s, eta: 4s) \r"
+  - delay: 50
+    content: "|██████████████████████████              | ▄▆█ 653/1000 [65%] in 7s (89.8/s, eta: 4s) \r"
+  - delay: 51
+    content: "|██████████████████████████▎             | ▅▇▇ 657/1000 [66%] in 7s (89.7/s, eta: 4s) \r"
+  - delay: 49
+    content: "|██████████████████████████▍             | ▆█▆ 662/1000 [66%] in 7s (89.8/s, eta: 4s) \r"
+  - delay: 50
+    content: "|██████████████████████████▋             | ▇▇▅ 667/1000 [67%] in 7s (89.9/s, eta: 4s) \r"
+  - delay: 49
+    content: "|██████████████████████████▊             | █▆▄ 671/1000 [67%] in 7s (89.8/s, eta: 4s) \r"
+  - delay: 51
+    content: "|███████████████████████████             | ▇▅▃ 676/1000 [68%] in 7s (89.9/s, eta: 4s) \r"
+  - delay: 52
+    content: "|███████████████████████████▏            | ▆▄▂ 680/1000 [68%] in 7s (89.8/s, eta: 4s) \r"
+  - delay: 47
+    content: "|███████████████████████████▍            | ▅▃▁ 685/1000 [68%] in 7s (89.9/s, eta: 4s) \r"
+  - delay: 52
+    content: "|███████████████████████████▌            | ▄▂▂ 689/1000 [69%] in 7s (89.8/s, eta: 3s) \r"
+  - delay: 51
+    content: "|███████████████████████████▊            | ▃▁▃ 694/1000 [69%] in 7s (89.8/s, eta: 3s) \r"
+  - delay: 50
+    content: "|███████████████████████████▉            | ▂▂▄ 698/1000 [70%] in 7s (89.8/s, eta: 3s) \r"
+  - delay: 52
+    content: "|████████████████████████████            | ▁▃▅ 703/1000 [70%] in 7s (89.8/s, eta: 3s) \r"
+  - delay: 53
+    content: "|████████████████████████████▎           | ▂▄▆ 707/1000 [71%] in 7s (89.7/s, eta: 3s) \r"
+  - delay: 49
+    content: "|████████████████████████████▍           | ▃▅▇ 712/1000 [71%] in 7s (89.8/s, eta: 3s) \r"
+  - delay: 50
+    content: "|████████████████████████████▋           | ▄▆█ 717/1000 [72%] in 7s (89.9/s, eta: 3s) \r"
+  - delay: 50
+    content: "|████████████████████████████▊           | ▅▇▇ 721/1000 [72%] in 8s (89.8/s, eta: 3s) \r"
+  - delay: 53
+    content: "|█████████████████████████████           | ▆█▆ 725/1000 [72%] in 8s (89.7/s, eta: 3s) \r"
+  - delay: 52
+    content: "|█████████████████████████████▏          | ▇▇▅ 730/1000 [73%] in 8s (89.7/s, eta: 3s) \r"
+  - delay: 50
+    content: "|█████████████████████████████▍          | █▆▄ 735/1000 [74%] in 8s (89.8/s, eta: 3s) \r"
+  - delay: 50
+    content: "|█████████████████████████████▌          | ▇▅▃ 739/1000 [74%] in 8s (89.8/s, eta: 3s) \r"
+  - delay: 48
+    content: "|█████████████████████████████▊          | ▆▄▂ 744/1000 [74%] in 8s (89.8/s, eta: 3s) \r"
+  - delay: 49
+    content: "|█████████████████████████████▉          | ▅▃▁ 748/1000 [75%] in 8s (89.8/s, eta: 3s) \r"
+  - delay: 53
+    content: "|██████████████████████████████          | ▄▂▂ 753/1000 [75%] in 8s (89.8/s, eta: 3s) \r"
+  - delay: 49
+    content: "|██████████████████████████████▎         | ▃▁▃ 757/1000 [76%] in 8s (89.8/s, eta: 3s) \r"
+  - delay: 51
+    content: "|██████████████████████████████▍         | ▂▂▄ 762/1000 [76%] in 8s (89.8/s, eta: 3s) \r"
+  - delay: 50
+    content: "|██████████████████████████████▋         | ▁▃▅ 766/1000 [77%] in 8s (89.8/s, eta: 3s) \r"
+  - delay: 50
+    content: "|██████████████████████████████▊         | ▂▄▆ 771/1000 [77%] in 8s (89.8/s, eta: 3s) \r"
+  - delay: 49
+    content: "|███████████████████████████████         | ▃▅▇ 775/1000 [78%] in 8s (89.8/s, eta: 3s) \r"
+  - delay: 51
+    content: "|███████████████████████████████▏        | ▄▆█ 780/1000 [78%] in 8s (89.8/s, eta: 2s) \r"
+  - delay: 50
+    content: "|███████████████████████████████▍        | ▅▇▇ 785/1000 [78%] in 8s (89.9/s, eta: 2s) \r"
+  - delay: 50
+    content: "|███████████████████████████████▌        | ▆█▆ 789/1000 [79%] in 8s (89.8/s, eta: 2s) \r"
+  - delay: 50
+    content: "|███████████████████████████████▊        | ▇▇▅ 794/1000 [79%] in 8s (89.9/s, eta: 2s) \r"
+  - delay: 50
+    content: "|███████████████████████████████▉        | █▆▄ 798/1000 [80%] in 8s (89.8/s, eta: 2s) \r"
+  - delay: 51
+    content: "|████████████████████████████████        | ▇▅▃ 803/1000 [80%] in 8s (89.9/s, eta: 2s) \r"
+  - delay: 52
+    content: "|████████████████████████████████▎       | ▆▄▂ 807/1000 [81%] in 8s (89.8/s, eta: 2s) \r"
+  - delay: 52
+    content: "|████████████████████████████████▍       | ▅▃▁ 812/1000 [81%] in 9s (89.8/s, eta: 2s) \r"
+  - delay: 51
+    content: "|████████████████████████████████▋       | ▄▂▂ 816/1000 [82%] in 9s (89.8/s, eta: 2s) \r"
+  - delay: 50
+    content: "|████████████████████████████████▊       | ▃▁▃ 821/1000 [82%] in 9s (89.8/s, eta: 2s) \r"
+  - delay: 49
+    content: "|█████████████████████████████████       | ▂▂▄ 826/1000 [83%] in 9s (89.9/s, eta: 2s) \r"
+  - delay: 50
+    content: "|█████████████████████████████████▏      | ▁▃▅ 830/1000 [83%] in 9s (89.8/s, eta: 2s) \r"
+  - delay: 51
+    content: "|█████████████████████████████████▎      | ▂▄▆ 834/1000 [83%] in 9s (89.8/s, eta: 2s) \r"
+  - delay: 49
+    content: "|█████████████████████████████████▌      | ▃▅▇ 839/1000 [84%] in 9s (89.8/s, eta: 2s) \r"
+  - delay: 52
+    content: "|█████████████████████████████████▋      | ▄▆█ 843/1000 [84%] in 9s (89.8/s, eta: 2s) \r"
+  - delay: 51
+    content: "|█████████████████████████████████▉      | ▅▇▇ 848/1000 [85%] in 9s (89.8/s, eta: 2s) \r"
+  - delay: 49
+    content: "|██████████████████████████████████      | ▆█▆ 853/1000 [85%] in 9s (89.9/s, eta: 2s) \r"
+  - delay: 51
+    content: "|██████████████████████████████████▎     | ▇▇▅ 857/1000 [86%] in 9s (89.8/s, eta: 2s) \r"
+  - delay: 52
+    content: "|██████████████████████████████████▍     | █▆▄ 862/1000 [86%] in 9s (89.8/s, eta: 2s) \r"
+  - delay: 50
+    content: "|██████████████████████████████████▋     | ▇▅▃ 866/1000 [87%] in 9s (89.8/s, eta: 1s) \r"
+  - delay: 52
+    content: "|██████████████████████████████████▊     | ▆▄▂ 871/1000 [87%] in 9s (89.8/s, eta: 1s) \r"
+  - delay: 51
+    content: "|███████████████████████████████████     | ▅▃▁ 876/1000 [88%] in 9s (89.9/s, eta: 1s) \r"
+  - delay: 50
+    content: "|███████████████████████████████████▏    | ▄▂▂ 880/1000 [88%] in 9s (89.8/s, eta: 1s) \r"
+  - delay: 50
+    content: "|███████████████████████████████████▍    | ▃▁▃ 885/1000 [88%] in 9s (89.9/s, eta: 1s) \r"
+  - delay: 54
+    content: "|███████████████████████████████████▌    | ▂▂▄ 889/1000 [89%] in 9s (89.8/s, eta: 1s) \r"
+  - delay: 50
+    content: "|███████████████████████████████████▊    | ▁▃▅ 894/1000 [89%] in 9s (89.8/s, eta: 1s) \r"
+  - delay: 49
+    content: "|███████████████████████████████████▉    | ▂▄▆ 899/1000 [90%] in 10s (89.9/s, eta: 1s) \r"
+  - delay: 13
+    content: "\e[2K\ron 900: found!\r\n"
+  - delay: 38
+    content: "|████████████████████████████████████    | ▃▅▇ 903/1000 [90%] in 10s (89.8/s, eta: 1s) \r"
+  - delay: 53
+    content: "|████████████████████████████████████▎   | ▄▆█ 907/1000 [91%] in 10s (89.8/s, eta: 1s) \r"
+  - delay: 52
+    content: "|████████████████████████████████████▍   | ▅▇▇ 912/1000 [91%] in 10s (89.8/s, eta: 1s) \r"
+  - delay: 52
+    content: "|████████████████████████████████████▋   | ▆█▆ 917/1000 [92%] in 10s (89.8/s, eta: 1s) \r"
+  - delay: 50
+    content: "|████████████████████████████████████▉   | ▇▇▅ 922/1000 [92%] in 10s (89.9/s, eta: 1s) \r"
+  - delay: 48
+    content: "|█████████████████████████████████████   | █▆▄ 926/1000 [93%] in 10s (89.8/s, eta: 1s) \r"
+  - delay: 53
+    content: "|█████████████████████████████████████▏  | ▇▅▃ 931/1000 [93%] in 10s (89.9/s, eta: 1s) \r"
+  - delay: 48
+    content: "|█████████████████████████████████████▍  | ▆▄▂ 935/1000 [94%] in 10s (89.8/s, eta: 1s) \r"
+  - delay: 51
+    content: "|█████████████████████████████████████▌  | ▅▃▁ 940/1000 [94%] in 10s (89.9/s, eta: 1s) \r"
+  - delay: 51
+    content: "|█████████████████████████████████████▊  | ▄▂▂ 944/1000 [94%] in 10s (89.8/s, eta: 1s) \r"
+  - delay: 51
+    content: "|█████████████████████████████████████▉  | ▃▁▃ 949/1000 [95%] in 10s (89.9/s, eta: 1s) \r"
+  - delay: 48
+    content: "|██████████████████████████████████████  | ▂▂▄ 953/1000 [95%] in 10s (89.8/s, eta: 1s) \r"
+  - delay: 51
+    content: "|██████████████████████████████████████▎ | ▁▃▅ 957/1000 [96%] in 10s (89.8/s, eta: 0s) \r"
+  - delay: 52
+    content: "|██████████████████████████████████████▍ | ▂▄▆ 962/1000 [96%] in 10s (89.8/s, eta: 0s) \r"
+  - delay: 49
+    content: "|██████████████████████████████████████▋ | ▃▅▇ 967/1000 [97%] in 10s (89.9/s, eta: 0s) \r"
+  - delay: 51
+    content: "|██████████████████████████████████████▉ | ▄▆█ 972/1000 [97%] in 10s (89.9/s, eta: 0s) \r"
+  - delay: 49
+    content: "|███████████████████████████████████████ | ▅▇▇ 976/1000 [98%] in 10s (89.9/s, eta: 0s) \r"
+  - delay: 50
+    content: "|███████████████████████████████████████▏| ▆█▆ 981/1000 [98%] in 10s (89.9/s, eta: 0s) \r"
+  - delay: 50
+    content: "|███████████████████████████████████████▍| ▇▇▅ 985/1000 [98%] in 10s (89.9/s, eta: 0s) \r"
+  - delay: 49
+    content: "|███████████████████████████████████████▌| █▆▄ 990/1000 [99%] in 11s (89.9/s, eta: 0s) \r"
+  - delay: 49
+    content: "|███████████████████████████████████████▊| ▇▅▃ 994/1000 [99%] in 11s (89.9/s, eta: 0s) \r"
+  - delay: 52
+    content: "|███████████████████████████████████████▉| ▆▄▂ 999/1000 [100%] in 11s (89.9/s, eta: 0s) \r"
+  - delay: 50
+    content: "|████████████████████████████████████████| 1000/1000 [100%] in 11.1s (89.96/s)          \r\n\r\n"
+  - delay: 50
+    content: "\e[?1l\e[6n\e[?2004h\e[?25l\e[0m\e[?7l\e[0m\e[J\e[0;38;5;28mIn [\e[0;92;1m3\e[0;38;5;28m]: \e[0m"
+  - delay: 5000
+    content: " "
