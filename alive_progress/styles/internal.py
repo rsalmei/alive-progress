@@ -108,10 +108,11 @@ def __create_bars():
     solid = standard_bar_factory(chars='■', borders='<>', tip='►', errors='⚠✗')
     checks = standard_bar_factory(chars='✓', tip='', errors='⚠✗')
     filling = standard_bar_factory(chars='▁▂▃▄▅▆▇█', tip=None, errors='⚠✗')
+    pacman = standard_bar_factory(chars='Cc-', background="  o", borders="[]", tip=None, errors='⚠✗')
 
     result = {k: v for k, v in locals().items() if not k.startswith('_')}
     desired_order = 'classic classic2 smooth blocks bubbles circles hollow squares solid checks ' \
-                    'filling'.split()
+                    'filling pacman'.split()
     return _wrap_ordered(result, desired_order)
 
 
