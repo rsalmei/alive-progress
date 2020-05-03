@@ -1,12 +1,13 @@
 # coding=utf-8
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import math
 from itertools import chain
 
 from .utils import spinner_player
 
 
-def standard_bar_factory(chars='=', borders='||', blank=' ', tip='>', errors='!x'):
+def standard_bar_factory(chars='=', borders='||', background=' ', tip='>', errors='!x'):
     def inner_factory(length):
         def inner_standard_bar(percent, end):
             virtual_fill = int(virtual_length * max(0., min(1., percent)))
@@ -16,7 +17,7 @@ def standard_bar_factory(chars='=', borders='||', blank=' ', tip='>', errors='!x
                 fill += chars[filling - 1]
 
             if percent < 1.:
-                texts = (underflow, blanks) if end else (tip, padding)
+                texts = (underflow, blanks) if end else (tip, padding[len(fill):])
                 return ''.join(chain((fill,), texts))[:length], True  # with border
             if percent == 1.:
                 return fill, True  # no tip, with border
@@ -27,7 +28,8 @@ def standard_bar_factory(chars='=', borders='||', blank=' ', tip='>', errors='!x
             return draw_bar.left_border + bar + (draw_bar.right_border if right else '')
 
         virtual_length = length * len(chars)
-        padding, blanks = (c * (length - len(tip)) for c in (blank, ' '))
+        padding = background * math.ceil((length - len(tip)) / len(background))
+        blanks = ' ' * (length - len(tip))
 
         draw_bar.left_border, draw_bar.right_border = borders
         return draw_bar
