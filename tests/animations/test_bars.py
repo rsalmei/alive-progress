@@ -19,7 +19,7 @@ from alive_progress.animations.bars import standard_bar_factory, unknown_bar_fac
     (1.1, True, '|==========x'),
 ])
 def test_standard_bar(percent, end, expected):
-    bar_gen = standard_bar_factory(chars='-=', borders='||', blank='.', tip='>', errors='!x')
+    bar_gen = standard_bar_factory(chars='-=', borders='||', background='.', tip='>', errors='!x')
     bar_gen = bar_gen(length=10)
     assert bar_gen(percent=percent, end=end) == expected
 

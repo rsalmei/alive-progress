@@ -300,6 +300,7 @@ The versions 1.4.x are the last ones to support Python 2. Just implementing unit
 
 
 ## Changelog highlights:
+- 1.5.0: standard_bar accepts a background parameter instead of blank, which accepts arbitrarily sized strings and remains fixed in the background, simulating a bar going "over it"
 - 1.4.4: restructure internal packages; 100% branch coverage of all animations systems, i.e., bars and spinners
 - 1.4.3: protect configuration system against other errors (length='a' for example); first automated tests, 100% branch coverage of configuration system
 - 1.4.2: sanitize text input, keeping \n from entering and replicating bar on screen
