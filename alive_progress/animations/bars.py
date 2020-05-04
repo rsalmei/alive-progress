@@ -28,7 +28,7 @@ def standard_bar_factory(chars='=', borders='||', background=' ', tip='>', error
             return draw_bar.left_border + bar + (draw_bar.right_border if right else '')
 
         virtual_length = length * len(chars)
-        padding = background * math.ceil((length - len(tip)) / len(background))
+        padding = background * int(math.ceil((length - len(tip)) / len(background)))
         blanks = ' ' * (length - len(tip))
 
         draw_bar.left_border, draw_bar.right_border = borders
