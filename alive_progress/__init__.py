@@ -8,7 +8,7 @@ from .animations.spinners import bouncing_spinner_factory, compound_spinner_fact
     delayed_spinner_factory, frame_spinner_factory, scrolling_spinner_factory
 from .animations.utils import spinner_player
 from .configuration import config_handler
-from .progress import alive_bar
+from .core.progress import alive_bar
 from .styles.exhibit import print_chars, show_bars, show_spinners, showtime
 from .styles.internal import BARS, SPINNERS, THEMES
 
