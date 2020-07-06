@@ -9,6 +9,7 @@ from contextlib import contextmanager
 from datetime import timedelta
 from itertools import chain, islice, repeat
 
+from .utils import clear_traces, sanitize_text
 from ..animations.utils import spinner_player
 from ..configuration import config_handler
 
@@ -93,9 +94,6 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         return timedelta(seconds=int(run.elapsed)) if run.elapsed >= 60 else \
             '{:.1f}s'.format(run.elapsed) if end else '{}s'.format(int(run.elapsed))
 
-    def clear_traces():
-        sys.__stdout__.write('\033[2K\r')
-
     def run():
         player = spinner_player(config.spinner())
         while thread:
@@ -123,9 +121,6 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     def flush_buffer():
         if print_buffer:
             print()
-
-    def sanitize_text(text):
-        return ' '.join(str(text).splitlines())
 
     if config.manual:
         def bar(perc=None, text=None):
