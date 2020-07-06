@@ -9,6 +9,7 @@ from contextlib import contextmanager
 from datetime import timedelta
 from itertools import chain, islice, repeat
 
+from .timming import to_elapsed_text
 from .utils import clear_traces, sanitize_text
 from ..animations.utils import spinner_player
 from ..configuration import config_handler
@@ -90,10 +91,6 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             total = None
     config = config_handler(**options)
 
-    def to_elapsed():
-        return timedelta(seconds=int(run.elapsed)) if run.elapsed >= 60 else \
-            '{:.1f}s'.format(run.elapsed) if end else '{}s'.format(int(run.elapsed))
-
     def run():
         player = spinner_player(config.spinner())
         while thread:
@@ -102,11 +99,14 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             time.sleep(1. / fps())
 
     def alive_repr(spin=''):
-        update_data()
+        update_hook()
+        elapsed = time.time() - run.init
+        run.rate = current() / elapsed if elapsed else 0.
+        run.eta_text = eta_text()
 
         line = '{} {}{}{} in {} {} {}'.format(
-            bar_repr(run.percent, end), spin, spin and ' ' or '',
-            monitor(), to_elapsed(), run.stats(), run.text or title or ''
+            bar_repr(run.percent, end), spin, spin and ' ' or '', monitor(),
+            to_elapsed_text(elapsed, end), run.stats(), run.text or title or ''
         )
 
         line_len = len(line)
@@ -184,12 +184,6 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         thread.daemon = True
         thread.start()
 
-    def update_data():
-        update_hook()
-        run.elapsed = time.time() - run.init
-        run.rate = current() / run.elapsed if run.elapsed else 0.
-        run.eta_text = eta_text()
-
     if total or config.manual:  # we can track progress and therefore eta.
         def eta_text():
             if run.rate:
@@ -235,7 +229,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
 
     end, run.text, run.eta_text, run.stats = False, '', '', stats
     run.count, run.last_line_len = 0, 0
-    run.percent, run.rate, run.init, run.elapsed = 0., 0., 0., 0.
+    run.percent, run.rate, run.init = 0., 0., 0.
 
     if total:
         if config.manual:
