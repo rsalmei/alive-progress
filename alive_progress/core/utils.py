@@ -9,5 +9,15 @@ def clear_traces():
     sys.__stdout__.write('\033[2K\r')
 
 
+def hide_cursor():
+    # Ansi escape sequence for hiding the cursor: CSI ? 25 l.
+    sys.__stdout__.write('\033[?25l')
+
+
+def show_cursor():
+    # Ansi escape sequence for showing the cursor: CSI ? 25 h.
+    sys.__stdout__.write('\033[?25h')
+
+
 def sanitize_text(text):
     return ' '.join(str(text).splitlines())

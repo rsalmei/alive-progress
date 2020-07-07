@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from itertools import chain, islice, repeat
 
 from .timming import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
-from .utils import clear_traces, sanitize_text
+from .utils import clear_traces, hide_cursor, sanitize_text, show_cursor
 from ..animations.utils import spinner_player
 from ..configuration import config_handler
 
@@ -158,6 +158,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     print_hook.isatty = sys.__stdout__.isatty
 
     def start_monitoring(offset=0.):
+        hide_cursor()
         sys.stdout = print_hook
         event.set()
         run.init = time.time() - offset
@@ -165,6 +166,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     def stop_monitoring(clear):
         if clear:
             event.clear()
+        show_cursor()
         sys.stdout = sys.__stdout__
         return time.time() - run.init
 
