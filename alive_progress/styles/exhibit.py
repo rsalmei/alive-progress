@@ -8,7 +8,7 @@ from collections import OrderedDict
 
 from .internal import BARS, SPINNERS
 from ..animations.utils import spinner_player
-from ..configuration import config_handler
+from ..core.configuration import config_handler
 
 
 def showtime(fps=None, spinners=True, **options):
