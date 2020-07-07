@@ -6,10 +6,9 @@ import sys
 import threading
 import time
 from contextlib import contextmanager
-from datetime import timedelta
 from itertools import chain, islice, repeat
 
-from .timming import to_elapsed_text
+from .timming import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
 from .utils import clear_traces, sanitize_text
 from ..animations.utils import spinner_player
 from ..configuration import config_handler
@@ -102,7 +101,6 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         update_hook()
         elapsed = time.time() - run.init
         run.rate = current() / elapsed if elapsed else 0.
-        run.eta_text = eta_text()
 
         line = '{} {}{}{} in {} {} {}'.format(
             bar_repr(run.percent, end), spin, spin and ' ' or '', monitor(),
@@ -184,27 +182,22 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         thread.daemon = True
         thread.start()
 
-    if total or config.manual:  # we can track progress and therefore eta.
-        def eta_text():
-            if run.rate:
-                eta = (logic_total - current()) / run.rate
-                if eta >= 0:
-                    return '{:.0f}s'.format(eta) if eta < 60 \
-                        else timedelta(seconds=math.ceil(eta))
-            return '?'
+    if total or not config.manual:  # we can count items.
+        logic_total, rate_spec, factor, current = total, 'f', 1.e6, lambda: run.count  # noqa
+    else:  # there's only a manual percentage.
+        logic_total, rate_spec, factor, current = 1., '%', 1., lambda: run.percent  # noqa
 
+    if total or config.manual:  # we can track progress and therefore eta.
+        spec = '({{:.1{}}}/s, eta: {{}})'.format(rate_spec)
+        gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
+        gen_eta.send(None)
+        stats = lambda: spec.format(run.rate, to_eta_text(gen_eta.send((current(), run.rate))))
         bar_repr = config.bar(config.length)
-        stats = lambda: '({:.1{}}/s, eta: {})'.format(run.rate, format_spec, run.eta_text)  # noqa
     else:  # unknown progress.
         eta_text = lambda: None  # noqa
         bar_repr = config.unknown(config.length, config.bar)
         stats = lambda: '({:.1f}/s)'.format(run.rate)  # noqa
-    stats_end = lambda: '({:.2{}}/s)'.format(run.rate, format_spec)  # noqa
-
-    if total or not config.manual:  # we can count items.
-        logic_total, format_spec, factor, current = total, 'f', 1.e6, lambda: run.count  # noqa
-    else:  # there's only a manual percentage.
-        logic_total, format_spec, factor, current = 1., '%', 1., lambda: run.percent  # noqa
+    stats_end = lambda: '({:.2{}}/s)'.format(run.rate, rate_spec)  # noqa
 
     # calibration of the dynamic fps engine.
     # I've started with the equation y = log10(x + m) * k + n, where:
