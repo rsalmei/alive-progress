@@ -8,6 +8,7 @@ import time
 from contextlib import contextmanager
 from itertools import chain, islice, repeat
 
+from .logging_hook import install_logging_hook, uninstall_logging_hook
 from .timming import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
 from .utils import clear_traces, hide_cursor, sanitize_text, show_cursor, terminal_columns
 from ..animations.utils import spinner_player
@@ -159,12 +160,14 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     def start_monitoring(offset=0.):
         hide_cursor()
         sys.stdout = print_hook
+        run.before_handlers = install_logging_hook()
         release_thread.set()
         run.init = time.time() - offset
 
     def stop_monitoring():
         show_cursor()
         sys.stdout = sys.__stdout__
+        uninstall_logging_hook(run.before_handlers)  # noqa
         return time.time() - run.init
 
     thread, release_thread = None, threading.Event()
