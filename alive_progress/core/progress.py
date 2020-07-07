@@ -10,7 +10,7 @@ from itertools import chain, islice, repeat
 
 from .configuration import config_handler
 from .logging_hook import install_logging_hook, uninstall_logging_hook
-from .timming import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
+from .timing import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
 from .utils import clear_traces, hide_cursor, sanitize_text, show_cursor, terminal_columns
 from ..animations.utils import spinner_player
 
