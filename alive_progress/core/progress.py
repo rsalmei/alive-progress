@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from itertools import chain, islice, repeat
 
 from .timming import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
-from .utils import clear_traces, hide_cursor, sanitize_text, show_cursor
+from .utils import clear_traces, hide_cursor, sanitize_text, show_cursor, terminal_columns
 from ..animations.utils import spinner_player
 from ..configuration import config_handler
 
@@ -107,11 +107,11 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             to_elapsed_text(elapsed, end), run.stats(), run.text or title or ''
         )
 
-        line_len = len(line)
+        line_len, cols = len(line), terminal_columns()
         with print_lock:
             if line_len < run.last_line_len:
                 clear_traces()
-            sys.__stdout__.write(line + (spin and '\r' or '\n'))
+            sys.__stdout__.write(line[:cols] + (spin and '\r' or '\n'))
             sys.__stdout__.flush()
 
         run.last_line_len = line_len
