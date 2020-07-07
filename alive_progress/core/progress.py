@@ -102,10 +102,9 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         elapsed = time.time() - run.init
         run.rate = current() / elapsed if elapsed else 0.
 
-        line = '{} {}{}{} in {} {} {}'.format(
-            bar_repr(run.percent, end), spin, spin and ' ' or '', monitor(),
-            to_elapsed_text(elapsed, end), run.stats(), run.text or title or ''
-        )
+        line = ' '.join(filter(None, (
+            title, bar_repr(run.percent, end), spin, monitor(), 'in',
+            to_elapsed_text(elapsed, end), run.stats(), run.text)))
 
         line_len, cols = len(line), terminal_columns()
         with print_lock:
