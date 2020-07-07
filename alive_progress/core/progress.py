@@ -93,7 +93,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     def run():
         player = spinner_player(config.spinner())
         while thread:
-            event.wait()
+            release_thread.wait()
             alive_repr(next(player))
             time.sleep(1. / fps())
 
@@ -160,21 +160,20 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     def start_monitoring(offset=0.):
         hide_cursor()
         sys.stdout = print_hook
-        event.set()
+        release_thread.set()
         run.init = time.time() - offset
 
-    def stop_monitoring(clear):
-        if clear:
-            event.clear()
+    def stop_monitoring():
         show_cursor()
         sys.stdout = sys.__stdout__
         return time.time() - run.init
 
-    thread, event = None, threading.Event()
+    thread, release_thread = None, threading.Event()
     if sys.stdout.isatty() or config.force_tty:
         @contextmanager
         def pause_monitoring():
-            offset = stop_monitoring(True)
+            release_thread.clear()
+            offset = stop_monitoring()
             alive_repr()
             yield
             start_monitoring(offset)
@@ -252,7 +251,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         yield bar
     finally:
         flush_buffer()
-        stop_monitoring(False)
+        stop_monitoring()
         if thread:
             local_copy = thread
             thread = None  # lets the internal thread terminate gracefully.
