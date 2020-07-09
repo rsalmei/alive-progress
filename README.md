@@ -20,16 +20,26 @@ I've made this cool progress bar thinking about all that, the **Alive-Progress**
 
 I like to think of it as a new kind of progress bar for python, as it has among other things:
 
-  - a **cool live spinner**, which makes it clear the process did not hang and your terminal/connection is healthy;
-  - a **visual feedback** of the current speed/throughput, as the spinner runs faster or slower according to the actual processing speed;
-  - an **efficient** multi-threaded bar, which updates itself at a fraction of the actual speed (1,000,000 iterations per second equates to roughly 60fps refresh rate) to keep CPU usage low and avoid terminal spamming; (📌 new: you can now calibrate this!)
-  - an expected time of arrival (**ETA**), that shows the remaining processing time in a friendly way, not anything like `eta: 1584s`, it will nicely show `eta: 0:26:24` as you would expect (but anything less than a minute is indeed `eta: 42s`);
-  - a `print()` hook, which allows print statements in the midst of an `alive-progress` context **without any hassle**, automatically cleaning the screen, and even enriching with the current position when it occurred;
-  - after your processing has finished, a **nice receipt** is printed with the statistics of that run, including the elapsed time and observed throughput;
-  - it tracks the actual count to detect **under and overflows**, so it will look different if you send in less or more than expected;
-  - it automatically detects if there's an **allocated tty**, and if there isn't, only the final receipt is printed, so you can safely include `alive-progress` in any code, and rest assure your log file won't get 60fps progress lines;
-  - you can **pause** `alive-progress` bars! I think that's an unprecedented feature for a progress bar! It's incredible to be able to manually operate on some items while inside a running progress bar context, and get the bar back like it had never stopped whenever you want;
-  - it is **customizable**, with a growing smorgasbord of different bar and spinner styles, as well as several factories to easily generate yours!
+- a **cool live spinner**, which clearly shows your lengthy process did not hang and your ssh connection is healthy;
+- a **visual feedback** of the current speed/throughput, as the spinner runs faster or slower according to the actual processing speed;
+- an **efficient** multi-threaded bar, which updates itself at a fraction of the actual speed (1,000,000 iterations per second equates to roughly 60 frames per second refresh rate) to keep CPU usage low and avoid terminal spamming; (📌 new: you can now calibrate this!)
+- an expected time of arrival (**ETA**), with a smart exponential smoothing algorithm that shows the remaining processing time in the most friendly way;
+- a _print() hook_ and (📌 new) _logging support_, which allows print statements and logging messages **effortlessly** in the midst of an animated bar, automatically cleaning the screen and even enriching it with the current position when that occurred;
+- after your processing has finished, a **nice receipt** is printed with the statistics of that run, including the elapsed time and observed throughput;
+- it tracks your desired count, not necessarily the actual iterations, to detect **under and overflows**, so it will look different if you send in less or more than expected;
+- it automatically detects if there's an **allocated tty**, and if there isn't (like in a pipe redirection), only the final receipt is printed, so you can safely include it in any code and rest assure your log file won't get thousands of progress lines;
+- you can **pause** it! I think that's an unprecedented feature for a progress bar! It's incredible to be able to manually operate on some items while inside a running progress bar context, and get the bar back like it had never stopped whenever you want;
+- it is **customizable**, with a growing smorgasbord of different bar and spinner styles, as well as several factories to easily generate yours!
+
+> ### 📌 New in 1.6 series!
+> - soft wrapping support - it won't go desperately up if it doesn't fit the line anymore!
+> - hiding cursor support - more beautiful and professional appearance!
+> - python logging support - adequately clean and enriched messages from logging!
+> - exponential smoothing of ETA - way smoother when you need them the most!
+> - proper bar title - left aligned always visible title so you know what is expected from that processing!
+> - enhanced elapsed time and ETA representation - the smallest rendition possible, so you can maximize the animations!
+> - new `bar.text()` dedicated method - now you can change the situational message without making the bar going forward!
+> - performance optimizations - even less overhead, your processing won't even notice it!
 
 
 ## Get it
@@ -140,55 +150,61 @@ There's also a (📌 new) utility called `print_chars`, to help finding that coo
 ## Displaying messages
 
 While in any alive progress context, you can display messages with:
-- the usual Python `print()` statement, which will properly clean the line, print an enriched message (including the current bar position) and continue the bar right below it;
+- the usual Python `print()` statement and `logging` framework, which properly clean the line, print or log an enriched message (including the current bar position) and continues the bar right below it;
 - the (📌 new) `bar.text('message')` call, which sets a situational message right within the bar, usually to display something about the items being processed or the phase the processing is in.
 
-> Deprecated: there's still a `bar(text='message')` to update the situational message, but that did not allow you to update it without also updating the bar position, which was inconvenient.
+> Deprecated: there's still a `bar(text='message')` to update the situational message, but that did not allow you to update it without also changing the bar position, which was inconvenient.
 > Now they are separate methods, and the message can be changed whenever you want.
-> `DeprecationWarning`s should be displayed to alert you, please update your software to `bar.text('message')`, since this will be removed in the next version.
+> `DeprecationWarning`s should be displayed to alert you if needed, please update your software to `bar.text('message')`, since this will be removed in the next version.
 
 ![alive-progress messages](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/print-hook.gif)
 
 
 ## Appearance and behavior
 
-There are several options to customize appearance and behavior, both locally and globally!
+There are several options to customize appearance and behavior, most of them usable both locally and globally. But there's a few that only make sense locally, these are:
 
-Locally just send the option to `alive_bar`:
+- `title`: an optional yet always visible title if defined, that represents what is that processing;
+- `calibrate`: the engine calibration system (more details [here](#calibration--new))
 
-```python
-from alive_progress import alive_bar
-with alive_bar(total, 'Title here', options...):
-    ...
-```
-
-Globally just use the `config_handler` object!
-
-```python
-from alive_progress import alive_bar, config_handler
-config_handler.set_global(options...)
-
-with alive_bar(total, 'Title here', other_options...):
-    # both sets of options will be active here!
-    ...
-```
-
-Those options are:
+Those used anywhere are:
 - `length`: number of characters to render the animated progress bar
-- `spinner`: the spinner to be used in all renditions,
-    it's a predefined name in `show_spinners()`, or a custom spinner
+- `spinner`: the spinner to be used in all renditions
+<br>    it's a predefined name in `show_spinners()`, or a custom spinner
 - `bar`: bar to be used in definite and both manual modes
-    it's a predefined name in `show_bars()`, or a custom bar
+<br>    it's a predefined name in `show_bars()`, or a custom bar
 - `unknown`: bar to be used in unknown mode (whole bar is a spinner)
-    it's a predefined name in `show_spinners()`, or a custom spinner
+<br>    it's a predefined name in `show_spinners()`, or a custom spinner
 - `theme`: theme name in alive_progress.THEMES
-- `force_tty`: runs animations even without a tty (pycharm terminal for example)
+- `force_tty`: runs animations even without a tty (more details [here](#forcing-animations-on-non-interactive-consoles-like-pycharms))
 - `manual`: set to manually control percentage
 - `enrich_print`: includes the bar position in print() messages, default is True
 - `title_length`: fixed title length, or 0 for unlimited
 
-And you can mix and match them, global and local! (_Click to see it in motion_)
+To use them locally just send the option to `alive_bar`:
 
+```python
+from alive_progress import alive_bar
+
+with alive_bar(total, title='Title here', length=20, ...):
+    ...
+```
+
+To use them globally, set them before in `config_handler` object, and any `alive_bar` created after that will also use those options:
+
+```python
+from alive_progress import alive_bar, config_handler
+
+config_handler.set_global(length=20, ...)
+
+with alive_bar(total, other_options...):
+    # both sets of options will be active here!
+    ...
+```
+
+And you can mix and match them, local options always have precedence over global ones!
+
+_Click to see it in motion_
 [![alive-progress customization](https://asciinema.org/a/j392MaLz1w0zDw6EVHw4QbLAO.svg)](https://asciinema.org/a/260882)
 
 
@@ -367,6 +383,7 @@ $ pip install -U "alive_progress<2"
 ```
 
 ## Changelog highlights:
+- 1.6.0: soft wrapping support; hiding cursor support; python logging support; exponential smoothing of ETA time series; proper always visible bar title; enhanced elapsed time representation; new bar.text() dedicated method (deprecating 'text' parameter in bar()); performance optimizations
 - 1.5.1: fix compatibility with python 2.7 (should be the last one, version 2 is in the works, with python 3 support only)
 - 1.5.0: standard_bar accepts a background parameter instead of blank, which accepts arbitrarily sized strings and remains fixed in the background, simulating a bar going "over it"
 - 1.4.4: restructure internal packages; 100% branch coverage of all animations systems, i.e., bars and spinners
