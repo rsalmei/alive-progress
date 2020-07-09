@@ -74,7 +74,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             (cannot be in the global configuration because it depends on the current mode)
         **options: custom configuration options, which override the global configuration:
             length (int): number of characters to render the animated progress bar
-            spinner (Union[str, object]): the spinner to be used in all renditions,
+            spinner (Union[str, object]): the spinner to be used in all renditions
                 it's a predefined name in `show_spinners()`, or a custom spinner
             bar (Union[str, object]): bar to be used in definite and both manual modes
                 it's a predefined name in `show_bars()`, or a custom bar
