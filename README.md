@@ -63,10 +63,10 @@ In general lines, just retrieve the items, enter the `alive_bar()` context manag
 
 - the `items` can be any iterable, and usually will be some queryset;
 - the first argument of the `alive_bar` is the expected total, so it can be anything that returns an integer, like `qs.count()` for querysets, `len(items)` for iterables that support it, or even a static integer;
-- the `bar()` call is what makes the bar go forward -- you usually call it in every iteration after consuming an item, but you can get creative! For example you could call it only when you find something you want, or call it more than once in the same iteration, depending on what you want to monitor. Just adjust the total accordingly to get a useful eta;
-- the `bar()` call also returns the current count/percentage if needed, and enables to pass situational messages to the bar.
+- the `bar()` call is what makes the bar go forward -- you usually call it in every iteration after consuming an item, but you can get creative! Remember the bar is counting for you _independently of the iteration process_, only when you call `bar()` (something no other progress bar have), so you can use it to count anything you want! For example, you could call `bar()` only when you find something expected and then know how many of those there were, including the percentage that it represents! Or call it more than once in the same iteration, no problem at all, you choose what you are monitoring! The ETA will not be that useful unfortunately;
+- the `bar()` call returns the current count or percentage.
 
-So, you could even use it without any loops, like:
+So, you could even use it without any loops, like for example:
 
 ```python
 with alive_bar(3) as bar:
@@ -83,31 +83,36 @@ with alive_bar(3) as bar:
 
 Actually, the `total` argument is optional. Providing it makes the bar enter the **definite mode**, the one used for well-bounded tasks. This mode has all statistics widgets the alive-bar has to offer: counter, throughput and eta.
 
-If you do not provide a `total`, the bar enters the **unknown mode**. In this mode, the whole progress-bar is animated like the cool spinners, as it's not possible to determine the percentage of completion. Therefore it's also not possible to compute an eta, but you still get the counter and throughput widgets. And the cool spinners are still present in this mode, so each animation runs independently of each other, rendering a unique show in your terminal 😜.
+If you do not provide a `total`, the bar enters the **unknown mode**. In this mode, the whole progress-bar is animated like the cool spinners, as it's not possible to determine the percentage of completion. Therefore, it's also not possible to compute an eta, but you still get the counter and throughput widgets.
 
-Then you have the (📌 new) **manual mode**, where you get to actually control the bar! That way, you can put it in whatever position you want, like make it go backwards, or act like a gauge of some sort!
-Just pass a `manual=True` argument to `alive_bar()` (or `config_handler.set_global()`), and you get to send a percentage to the very same `bar()` handler to put the alive-bar where you want! For example to send 15%, you would call `bar(0.15)` (which is 15 / 100).
-Call it as frequently as you need, the refresh rate will be asynchronously computed according to the progress and the elapsed time, not the update rate.
+> The cool spinner are still present in this mode, so the animations from both bar and spinner runs concurrently and independently of each other, rendering a unique show in your terminal 😜.
 
-And of course, in this mode you can also provide the `total`, and get all the same counter, throughput and eta statistics widgets as the _definite mode_. The counter is inferred from the supplied percentage.
-If you omit the `total`, it's not possible to infer neither the counter nor the throughput widgets, and you get a simpler "percent/second" (%/s) and a rough eta, calculated to get to 100%.
+Then you have the (📌 new) **manual modes**, where you get to actually control the bar! That way, you can put it in whatever position you want, including make it go backwards or act like a gauge of some sort!
+Just pass a `manual=True` argument to `alive_bar()` (or `config_handler.set_global()`), and you get to send a percentage to the very same `bar()` handler! For example to set it at 15%, you would call `bar(0.15)`, which is 15 / 100, as simple as that.
+Call it as frequently as you need, the refresh rate will be asynchronously computed as usual, according to current progress and elapsed time.
+
+And please provide the `total` if you have it, to get all the same counter, throughput and eta widgets as the _definite mode_. The counter will be inferred from the supplied user percentage.
+<br>If you omit the `total`, it's not possible to infer the counter widget, but you'll still kinda get the throughput and eta widgets, a simpler one with only "%/s" (percent per second) and a rough ETA to get to 100%, which are very inaccurate, but better than nothing.
 
 > Just remember: You do not have to think about which mode you should be using, just always pass a `total` if you know it, and use `manual` if you need it! It will just work! 👏
 
 To summarize it all:
 
-| mode | positioning | counter | throughput | eta | overflow and underflow |
+|       mode         |     completion         | counter    | throughput |   eta    | overflow and underflow |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| definite (with total)   | ✅ automatic  | ✅          | ✅           | ✅ | ✅ |
-| unknown (without total) | ❌            | ✅          | ✅           | ❌ | ❌ |
-| manual (with total)     | ✅ you choose | ✅ inferred | ✅           | ✅ | ✅ |
-| manual (without total)  | ✅ you choose | ❌          | ⚠️ simpler | ⚠️ rough | ✅ |
+|     definite       | ✅ automatic           | ✅          | ✅         | ✅       | ✅ |
+|     unknown        | ❌ (an animation runs) | ✅          | ✅         | ❌       | ❌ |
+| manual (bounded)   | ✅ you choose          | ✅ inferred | ✅         | ✅       | ✅ |
+| manual (unbounded) | ✅ you choose          | ❌          | ⚠️ simpler | ⚠️ rough | ✅ |
 
 
-### Signatures of the `bar()` handler
+### The `bar()` handler
 
-- in **definite and unknown** modes: `bar(text=None, incr=1)` ➔ increases the current count (by any positive increment), optionally setting the situational text message, and returns the new count;
-- in **manual** modes: `bar(perc=None, text=None)` ➔ sets the new progress percentage, optionally setting the situational text message, and returns the new percentage.
+- in **definite and unknown** modes, it accepts an **optional** `int` argument, which increments the counter by any positive number, like `bar(5)` to increment the counter by 5 in one step ➔ relative positioning;
+- in **manual** modes, it needs a **mandatory** `float` argument, which overwrites the progress percentage, like `bar(.35)` to put the bar in the 35% position ➔ absolute positioning.
+- and it always returns the updated counter/progress value.
+
+> Deprecated: the `bar()` handlers used to also have a `text` parameter which is being removed, more details [here](#displaying-messages).
 
 
 ## Styles
@@ -122,47 +127,64 @@ There's also a bars `showtime`, check it out! ;)
 
 ![alive-progress bar styles](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/showtime-bars.gif)
 
-(📌 new) Now there's new commands in exhibition! Try the `show_bars()` and `show_spinners()`! Just:
+(📌 new) Now there are new commands in exhibition! Try the `show_bars()` and `show_spinners()`!
  
 ```python
 from alive_progress import show_bars, show_spinners
-# call them!
+# call them and enjoy the show ;)
 ```
 
-Enjoy ;)
-
-There's also a new utility called `print_chars`, to help finding that cool one to put in your customized spinner or bar, or to determine if your terminal support unicode chars.
+There's also a (📌 new) utility called `print_chars`, to help finding that cool one to put in your customized spinner or bar, or to determine if your terminal do support unicode chars.
 
 
-## Printing messages
+## Displaying messages
 
-While in an alive progress bar context, you have two ways to output messages:
-  - calling `bar(text='message')`, which sets/overwrites a situational message within the bar line, usually to display something about the items being processed, or the phase the processing is in;
-  - calling the usual Python `print()` statement, which will print an enriched message that includes the current position of the alive bar, thus leaving behind a cool log and continuing the bar below it.
+While in any alive progress context, you can display messages with:
+- the usual Python `print()` statement, which will properly clean the line, print an enriched message (including the current bar position) and continue the bar right below it;
+- the (📌 new) `bar.text('message')` call, which sets a situational message right within the bar, usually to display something about the items being processed or the phase the processing is in.
 
-Both methods work the same in all modes, and always clear the line appropriately to remove any garbage on screen.
+> Deprecated: there's still a `bar(text='message')` to update the situational message, but that did not allow you to update it without also updating the bar position, which was inconvenient.
+> Now they are separate methods, and the message can be changed whenever you want.
+> `DeprecationWarning`s should be displayed to alert you, please update your software to `bar.text('message')`, since this will be removed in the next version.
 
 ![alive-progress messages](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/print-hook.gif)
 
 
-## Configuration
+## Appearance and behavior
 
-There are several options to customize behavior, both globally and per use! Just use the `config_handler` object!
+There are several options to customize appearance and behavior, both locally and globally!
+
+Locally just send the option to `alive_bar`:
 
 ```python
-from alive_progress import config_handler
-config_handler.set_global(...)
+from alive_progress import alive_bar
+with alive_bar(total, 'Title here', options...):
+    ...
 ```
 
-The options are:
+Globally just use the `config_handler` object!
+
+```python
+from alive_progress import alive_bar, config_handler
+config_handler.set_global(options...)
+
+with alive_bar(total, 'Title here', other_options...):
+    # both sets of options will be active here!
+    ...
+```
+
+Those options are:
 - `length`: number of characters to render the animated progress bar
-- `spinner`: spinner name in alive_progress.SPINNERS or custom
-- `bar`: bar name in alive_progress.BARS or custom
-- `unknown`: spinner name in alive_progress.SPINNERS or custom
+- `spinner`: the spinner to be used in all renditions,
+    it's a predefined name in `show_spinners()`, or a custom spinner
+- `bar`: bar to be used in definite and both manual modes
+    it's a predefined name in `show_bars()`, or a custom bar
+- `unknown`: bar to be used in unknown mode (whole bar is a spinner)
+    it's a predefined name in `show_spinners()`, or a custom spinner
 - `theme`: theme name in alive_progress.THEMES
 - `force_tty`: runs animations even without a tty (pycharm terminal for example)
 - `manual`: set to manually control percentage
-- `enrich_print`: enabled by default, unset to remove the bar position from print() messages
+- `enrich_print`: includes the bar position in print() messages, default is True
 
 And you can mix and match them, global and local! (_Click to see it in motion_)
 
@@ -281,8 +303,16 @@ Do note that this console is heavily instrumented and has more overhead, so the 
 - ~~create generators for scrolling, bouncing, delayed and compound spinners~~
 - ~~create an exhibition of spinners and bars, to see them all in motion~~
 - ~~include theme support in configuration~~
-- include colors in spinners and bars
-- try some adaptive algorithm for ETA, like moving average, exponential smoothing or Kalman Filter
+- ~~soft wrapping support~~
+- ~~hiding cursor support~~
+- ~~python logging support~~
+- ~~exponential smoothing of ETA time series~~
+- improve test coverage, hopefully achieving 100% branch coverage
+- variable width bar rendition, listening to changes in terminal size
+- enable multiple simultaneous bars, for nested or multiple statuses
+- create a contrib system, to allow a simple way to share users' spinners and bars styles
+- jupyter notebook support
+- support colors in spinners and bars
 - any other ideas welcome!
 
 
@@ -296,8 +326,11 @@ Do note that this console is heavily instrumented and has more overhead, so the 
 
 ## Python 2 EOL
 
-The versions 1.4.x are the last ones to support Python 2. Just implementing unit tests, that are long overdue.
+The `alive_progress` next major version 2.0 will support Python 3.5+ only. But if you still need support for Python 2, there is a full featured one you can use, just:
 
+```bash
+$ pip install -U "alive_progress<2"
+```
 
 ## Changelog highlights:
 - 1.5.1: fix compatibility with python 2.7 (should be the last one, version 2 is in the works, with python 3 support only)
@@ -327,4 +360,4 @@ This software is licensed under the MIT License. See the LICENSE file in the top
 Thank you for your interest!
 
 I've put much ❤️ and effort into this.
-<br>If you appreciate my work you can sponsor me, buy me a coffee! The button is on the top right of the page (the big orange one, it's hard to miss 😊)
+<br>If you've appreciated my work and would like me to continue improving it, you could buy me a coffee! Thank you!
