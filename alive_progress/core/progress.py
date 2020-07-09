@@ -5,6 +5,7 @@ import math
 import sys
 import threading
 import time
+import warnings
 from contextlib import contextmanager
 from itertools import chain, islice, repeat
 
@@ -125,21 +126,35 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         run.text = sanitize_text(message)
 
     if config.manual:
+        # FIXME update bar signatures and remove deprecated in v2.
         def bar(perc=None, text=None):
+            """Bar handle for manual (bounded and unbounded) modes.
+            Only absolute positioning.
+            """
             if perc is not None:
                 flush_buffer()
                 run.percent = max(0., float(perc))  # ignores negative numbers.
+            else:
+                warnings.warn(DeprecationWarning('percent will be mandatory in manual bar(),'
+                                                 ' please update your code.'), stacklevel=2)
             update_hook()
             if text is not None:
+                warnings.warn(DeprecationWarning("use bar.text('') instead of bar(text=''),"
+                                                 ' please update your code.'), stacklevel=2)
                 set_text(text)
             return run.percent
     else:
         def bar(text=None, incr=1):
+            """Bar handle for definite and unknown modes.
+            Only relative positioning.
+            """
             flush_buffer()
             # FIXME it was accepting 0 before, so a user could be using that to change text only
             run.count += max(0, int(incr))  # ignores negative numbers.
             update_hook()
             if text is not None:
+                warnings.warn(DeprecationWarning("use bar.text('') instead of bar(text=''),"
+                                                 ' please update your code.'), stacklevel=2)
                 set_text(text)
             return run.count
     bar.text = set_text
