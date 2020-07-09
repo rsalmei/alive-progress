@@ -18,43 +18,39 @@ from ..animations.utils import spinner_player
 @contextmanager
 def alive_bar(total=None, title=None, calibrate=None, **options):
     """An alive progress bar to keep track of lengthy operations.
-    It has a spinner indicator, time elapsed, throughput and eta.
+    It has a spinner indicator, elapsed time, throughput and ETA.
     When the operation finishes, a receipt is displayed with statistics.
 
-    If the code was being executed in a headless environment, ie without a
-    connected tty, all features of the alive progress bar will be disabled
-    but the final receipt.
+    If the code is executed in a headless environment, ie without a
+    connected tty, all features are disabled but the final receipt.
 
     Another cool feature is that it tracks the actual count in regard of the
-    expected count. It will look different if you send more (or less) than
+    expected count. So it will look different if you send more (or less) than
     expected.
 
-    Also, the bar installs a hook in the system print function, which cleans
-    any garbage mix-up of texts, allowing you to print() while using the bar.
-
-    And finally, it also do not show anything like `eta: 1584s`, it will nicely
-    show `eta: 0:26:24` as you would expect (but anything less than a minute
-    is indeed `eta: 42s`). :)
+    Also, the bar installs a hook in the system print function that cleans
+    any garbage out of the terminal, allowing you to print() effortlessly
+    while using the bar.
 
     Use it like this:
 
     >>> from alive_progress import alive_bar
-    ... with alive_bar(<total>) as bar:
+    ... with alive_bar(123, 'Title') as bar:  # <-- expected total and bar title
     ...     for item in <iterable>:
     ...         # process item
     ...         bar()  # makes the bar go forward
 
-    The `bar()` call is what makes the bar go forward. You can call it always,
-    or you can choose when to call it, depending on what you want to monitor.
+    The `bar()` method should be called whenever you want the bar to go forward.
+    You usually call it in every iteration, but you could do it only when some
+    criteria match, depending on what you want to monitor.
 
     While in a progress bar context, you have two ways to output messages:
-      - call `bar('text')`, which besides incrementing the counter, also
-      sets/overwrites an inline message within the bar;
-      - call `print('text')`, which prints an enriched message that includes
-      the current position of the progress bar, effectively leaving behind a
-      log and continuing the progress bar below it.
-    Both methods always clear the line appropriately to remove any garbage of
-    previous messages on screen.
+      - the usual Python `print()` statement, which will properly clean the line,
+        print an enriched message (including the current bar position) and
+        continue the bar right below it;
+      - the `bar.text('message')` call, which sets a situational message right within
+        the bar, usually to display something about the items being processed or the
+        phase the processing is in.
 
     If the bar is over or underused, it will warn you!
     To test all supported scenarios, you can do this:
@@ -64,10 +60,10 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     ...            time.sleep(.005)
     ...            bar()
     Expected results are these (but you have to see them in motion!):
-[========================================] 3000/3000 [100%] in 7.4s (408.09/s)
-[==============================!         ] (!) 3000/4000 [75%] in 7.3s (408.90/s)
-[========================================x (!) 3000/2000 [150%] in 7.4s (408.11/s)
-[========================================] 3000 in 7.4s (407.54/s)
+|████████████████████████████████████████| 1000/1000 [100%] in 6.0s (167.93/s)
+|██████████████████████████▋⚠            | (!) 1000/1500 [67%] in 6.0s (167.57/s)
+|████████████████████████████████████████✗ (!) 1000/700 [143%] in 6.0s (167.96/s)
+|████████████████████████████████████████| 1000 in 5.8s (171.91/s)
 
     Args:
         total (Optional[int]): the total expected count
@@ -76,12 +72,16 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             (cannot be in the global configuration because it depends on the current mode)
         **options: custom configuration options, which override the global configuration:
             length (int): number of characters to render the animated progress bar
-            spinner (Union[str | object]): spinner name in alive_progress.SPINNERS or custom
-            bar (Union[str | object]): bar name in alive_progress.BARS or custom
-            unknown (Union[str | object]): spinner name in alive_progress.SPINNERS or custom
+            spinner (Union[str, object]): the spinner to be used in all renditions,
+                it's a predefined name in `show_spinners()`, or a custom spinner
+            bar (Union[str, object]): bar to be used in definite and both manual modes
+                it's a predefined name in `show_bars()`, or a custom bar
+            unknown (Union[str, object]): bar to be used in unknown mode (whole bar is a spinner)
+                it's a predefined name in `show_spinners()`, or a custom spinner
             theme (str): theme name in alive_progress.THEMES
             force_tty (bool): runs animations even without a tty (pycharm terminal for example)
             manual (bool): set to manually control percentage
+            enrich_print (bool): includes the bar position in print() messages, default is True
 
     """
     if total is not None:
