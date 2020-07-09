@@ -13,7 +13,7 @@
 
 Ever found yourself in a remote ssh session, doing some lengthy operations, and every now and then you feel the need to hit [enter] just to ensure you didn't lose the connection? Ever wondered where your processing is in, and when will it finish? Ever needed to *pause* the progress bar for a while, return to the python REPL for a manual inspection or fixing an item, and then *resume* the process like it never happened? I did...
 
-I've made this cool progress bar thinking about all that, the Alive-Progress bar! :)
+I've made this cool progress bar thinking about all that, the **Alive-Progress** bar! :)
 
 ![alive-progress](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/alive-demo.gif)
 
@@ -24,11 +24,11 @@ I like to think of it as a new kind of progress bar for python, as it has among 
   - a **visual feedback** of the current speed/throughput, as the spinner runs faster or slower according to the actual processing speed;
   - an **efficient** multi-threaded bar, which updates itself at a fraction of the actual speed (1,000,000 iterations per second equates to roughly 60fps refresh rate) to keep CPU usage low and avoid terminal spamming; (📌 new: you can now calibrate this!)
   - an expected time of arrival (**ETA**), that shows the remaining processing time in a friendly way, not anything like `eta: 1584s`, it will nicely show `eta: 0:26:24` as you would expect (but anything less than a minute is indeed `eta: 42s`);
-  - a `print()` hook, which allows print statements in the midst of an alive-bar context **without any hassle**, automatically cleaning the screen, and even enriching with the current position when it occurred;
+  - a `print()` hook, which allows print statements in the midst of an `alive-progress` context **without any hassle**, automatically cleaning the screen, and even enriching with the current position when it occurred;
   - after your processing has finished, a **nice receipt** is printed with the statistics of that run, including the elapsed time and observed throughput;
   - it tracks the actual count to detect **under and overflows**, so it will look different if you send in less or more than expected;
-  - it automatically detects if there's an **allocated tty**, and if there isn't, only the final receipt is printed, so you can safely include the alive-bar in any code, and rest assure your log file won't get 60fps progress lines;
-  - you can **pause** the alive-bar! I think that's an unprecedented feature for a progress bar! It's incredible to be able to manually operate on some items while inside a running progress bar context, and get the bar back like it had never stopped whenever you want;
+  - it automatically detects if there's an **allocated tty**, and if there isn't, only the final receipt is printed, so you can safely include `alive-progress` in any code, and rest assure your log file won't get 60fps progress lines;
+  - you can **pause** `alive-progress` bars! I think that's an unprecedented feature for a progress bar! It's incredible to be able to manually operate on some items while inside a running progress bar context, and get the bar back like it had never stopped whenever you want;
   - it is **customizable**, with a growing smorgasbord of different bar and spinner styles, as well as several factories to easily generate yours!
 
 
@@ -79,9 +79,9 @@ with alive_bar(3) as bar:
 ```
 
 
-## Alive-Bar modes
+## Modes of operation
 
-Actually, the `total` argument is optional. Providing it makes the bar enter the **definite mode**, the one used for well-bounded tasks. This mode has all statistics widgets the alive-bar has to offer: counter, throughput and eta.
+Actually, the `total` argument is optional. Providing it makes the bar enter the **definite mode**, the one used for well-bounded tasks. This mode has all statistics widgets `alive-progress` has to offer: counter, throughput and eta.
 
 If you do not provide a `total`, the bar enters the **unknown mode**. In this mode, the whole progress-bar is animated like the cool spinners, as it's not possible to determine the percentage of completion. Therefore, it's also not possible to compute an eta, but you still get the counter and throughput widgets.
 
@@ -194,120 +194,142 @@ And you can mix and match them, global and local! (_Click to see it in motion_)
 
 ## Advanced
 
-### Calibration (📌 new)
+You should now be completely able to use `alive-progress`, have fun!
+<br>If you've appreciated my work and would like me to continue improving it, you could buy me a coffee! I would really appreciate that 😊! Thank you!
 
-The Alive-Bar has a cool visual feedback of the current throughput, so you can instantly see how fast your processing is, as the spinner runs faster or slower with it.
-For this to happen, I've put together and implemented a few fps curves to empirically find which one gave the best feel of speed:
+And if you want to do even more, exciting stuff lies ahead!
 
-![alive-bar fps curves](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/alive-bar_fps.png)
-(interactive version [here](https://www.desmos.com/calculator/ema05elsux))
+<details>
+<summary><strong><em>You want to calibrate the engine?</em></strong></summary>
 
-The graph shows the logarithmic (red), parabolic (blue) and linear (green) curves, as well as an adjusted logarithmic curve (dotted orange), with a few twists for small numbers. I've settled with the adjusted logarithmic curve, as it seemed to provide the best all around perceived speed changes.
+> ### Calibration (📌 new)
+>
+> The `alive-progress` bars have a cool visual feedback of the current throughput, so you can instantly **see** how fast your processing is, as the spinner runs faster or slower with it.
+> For this to happen, I've put together and implemented a few fps curves to empirically find which one gave the best feel of speed:
+>
+> ![alive-progress fps curves](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/alive-bar_fps.png)
+> (interactive version [here](https://www.desmos.com/calculator/ema05elsux))
+>
+> The graph shows the logarithmic (red), parabolic (blue) and linear (green) curves, as well as an adjusted logarithmic curve (dotted orange), with a few twists for small numbers. I've settled with the adjusted logarithmic curve, as it seemed to provide the best all around perceived speed changes. In the future and if someone would find it useful, it could be configurable.
+>
+> The default `alive-progress` calibration is _1,000,000_ in auto (and manual bounded) modes, ie. it takes 1 million iterations per second for the bar to refresh itself at 60 frames per second. In the manual unbounded mode it is 1.0 (100%). Both enable a vast operating range and generally work well.
+>
+> Let's say your processing hardly gets to 20 items per second, and you think `alive-progress` is rendering sluggish, you could:
+>
+> ```python
+>     with alive_bar(total, calibrate=20) as bar:
+>         ...
+> ```
+>
+> And it will be running waaaay faster...
+> <br>Perhaps too fast, consider calibrating to ~50% more, find the one you like the most! :)
+>
+> ---
+</details>
 
-The default Alive-Bar calibrations are _1,000,000_ in auto (and manual definite) modes and 1 (100%) in manual unknown mode. Both enable a vast operating range and generally work well.
+<details>
+<summary><strong><em>Perhaps customize it even more?</em></strong></summary>
 
-But let's say your processing hardly gets to 20 items per second, and you think the Alive-Bar is rendering sluggish, you can:
+> ### Create your own animations
+>
+> Make your own spinners and bars! All of the major components are individually customizable!
+>
+> There's builtin support for a plethora of special effects, like frames, scrolling, bouncing, delayed and compound spinners! Get creative!
+>
+> These animations are made by very advanced generators, defined by factories of factory methods: the first level receives and process the styling parameters to create the actual factory; this factory then receives operating parameters like screen length, to build the infinite animation generators.
+>
+> These generators are capable of several different animation cycles, for example a bouncing ball has a cycle to the right and another to the left. They continually yield the next rendered animation frame in a cycle until it is exhausted. This just enables the next one, but does not start it! That has all kinds of cool implications: the cycles can have different animation sizes, different screen lengths, they do not need to be synchronized, they can create long different sequences by themselves, they can cooperate with each other to play cycles in sequence or simultaneously, and I can display several at once on the screen without any interferences! It's almost like they are _alive_! 😉
 
-```python
-    with alive_bar(total, calibrate=20) as bar:
-        ...
-``` 
+> The types I've made are:
+> - `frames`: draw any sequence of characters, that will be played frame by frame in sequence;
+> - `scrolling`: pick a frame or a sequence of characters and make it flow smoothly from one side to the other, hiding behind or wrapping upon the invisible borders; if using a sequence, generates several cycles of distinct characters;
+> - `bouncing`: aggregates two `scrolling` in opposite directions, to make two frames or two sequences of characters flow interleaved from/to each side, hiding or immediately bouncing upon the invisible borders; supports several interleaved cycles too;
+> - `delayed`: get any other animation generator, and copy it multiple times, skipping some frames at the start! very cool effects are made here;
+> - `compound` get a handful of generators and play them side by side simultaneously! why choose if you can have them all?
+>
+> A small example (_Click to see it in motion_)
+>
+> [![alive-progress creative](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc.svg)](https://asciinema.org/a/260884)
+>
+> ---
+</details>
 
-And it will be running waaaay faster... :)
-Adjust the calibration to your liking!
+<details>
+<summary><strong><em>Oh you want to stop it altogether!</em></strong></summary>
+
+> ### The Pause mechanism
+>
+> Why would you want to pause it, I hear? To get to manually act on some items at will, I say!
+> <br>Suppose you need to reconcile payment transactions. You need to iterate over thousands of them, detect somehow the faulty ones, and fix them. This fix is not simple nor deterministic, you need to study each one to understand what to do. They could be missing a recipient, or have the wrong amount, or not be synced with the server, etc, it's hard to even imagine all possibilities. Typically you would have to let the detection process run until completion, appending to a list each inconsistency found, and waiting potentially a long time until you can actually start fixing them. You could of course mitigate this by processing in chunks or printing them and acting in another shell, but those have their own shortcomings.
+> <br>Now there's a better way, pause the actual detection for a moment! Then you have to wait only until the next one is found, and act in near real time!
+>
+> To use the pause mechanism, you must be inside a function, which you should already be in your code (in the ipython shell just wrap it inside one). This requires a function to act as a generator and `yield` the objects you want to interact with. The `bar` handler includes a context manager for this, just do `with bar.pause(): yield transaction`.
+>
+> ```python
+> def reconcile_transactions():
+>     qs = Transaction.objects.filter()  # django example, or in sqlalchemy: session.query(Transaction).filter()
+>     with alive_bar(qs.count()) as bar:
+>         for transaction in qs:
+>             if not validate(transaction):
+>                 with bar.pause():
+>                     yield transaction
+>             bar()
+> ```
+>
+> That's it! Then you can use it in ipython (or your preferred _REPL_)! Just call the function to instantiate the generator and, whenever you want another transaction, call `next(gen, None)`! The progress bar will run as usual while searching, but as soon as an inconsistency is found, the bar pauses itself and you get the prompt back with a transaction! How cool is that 😃?
+>
+> ```text
+> In [11]: gen = reconcile_transactions()
+>
+> In [12]: next(gen, None)
+> |█████████████████████                   | 105/200 [52%] in 5s (18.8/s, eta: 4s)
+> Out[12]: Transaction<#123>
+> ```
+>
+> When you're done, continue the process with the same `next` as before... The bar reappears and continues like nothing happened!! :)
+>
+> ```text
+> In [21]: next(gen, None)
+> |█████████████████████                   | ▁▃▅ 106/200 [52%] in 5s (18.8/s, eta: 4s)
+> ```
+>
+> ---
+</details>
+
+<details>
+<summary><strong><em>Those astonishing animations refuse to display?</em></strong></summary>
+
+> ### Forcing animations on non-interactive consoles (like Pycharm's)
+>
+> Pycharm's python console for instance do not report itself as "interactive", so I've included a `force_tty` argument to be able to use the alive-progress bar in it.
+>
+> So, just start it as:
+>
+> ```python
+> with alive_bar(1000, force_tty=True) as bar:
+>     for i in range(1000):
+>         time.sleep(.01)
+>         bar()
+> ```
+>
+> You can also set it system-wide in `config_handler`.
+>
+> Do note that this console is heavily instrumented and has more overhead, so the outcome may not be as fluid as you would expect.
+>
+> ---
+</details>
 
 
-### Create your own animations
+## Interesting facts
 
-Make your own spinners and bars! All of the major components are individually customizable!
-
-There's builtin support for a plethora of special effects, like frames, scrolling, bouncing, delayed and compound spinners! Get creative!
-
-These animations are made by very advanced generators, defined by factories of factory methods: the first level receives and process the styling parameters to create the actual factory; this factory then receives operating parameters like screen length, to build the infinite animation generators.
-
-These generators are capable of several different animation cycles, for example a bouncing ball has a cycle to the right and another to the left. They continually yield the next rendered animation frame in a cycle until it is exhausted. This just enables the next one, but does not start it! That has all kinds of cool implications: the cycles can have different animation sizes, different screen lengths, they do not need to be synchronized, they can create long different sequences by themselves, they can cooperate with each other to play cycles in sequence or simultaneously, and I can display several at once on the screen without any interferences! It's almost like they are _alive_! 😉
-
-The types I've made are:
-- `frames`: draw any sequence of characters, that will be played frame by frame in sequence;
-- `scrolling`: pick a frame or a sequence of characters and make it flow smoothly from one side to the other, hiding behind or wrapping upon the invisible borders; if using a sequence, generates several cycles of distinct characters;
-- `bouncing`: aggregates two `scrolling` in opposite directions, to make two frames or two sequences of characters flow interleaved from/to each side, hiding or immediately bouncing upon the invisible borders; supports several interleaved cycles too;
-- `delayed`: get any other animation generator, and copy it multiple times, skipping some frames at the start! very cool effects are made here;
-- `compound` get a handful of generators and play them side by side simultaneously! why choose if you can have them all?
-
-A small example (_Click to see it in motion_)
-
-[![alive-progress creative](https://asciinema.org/a/mK9rbzLC1xkMRfRDk5QJMy8xc.svg)](https://asciinema.org/a/260884)
-
-
-### The Pause mechanism
-
-To use the pause mechanism, you must wrap the alive-bar inside a function generator to yield the objects you want to interact with. The `bar` handler includes another context manager to yield anything you want, just do `with bar.pause(): yield obj`.
-
-Suppose you need to reconcile transactions. You need to iterate over thousands of them, detect somehow the faulty ones, and fix them. They could be broken or not synced or invalid or anything else, several different problems. Typically you would have to let the process run, appending to a list each inconsistency found, and waiting, potentially a long time, until the end to be able to do anything. You could mitigate this by processing in chunks, but that has its own shortcomings.
-
-With the Alive-Progress bar and the Pause mechanism, you can inspect these transactions in **real-time**! You wait only until the next one is found! To use it you would do something like this:
-
-```python
-def reconcile_transactions():
-    qs = Transaction.objects.filter()  # django example, or in sqlalchemy: session.query(Transaction).filter()
-    with alive_bar(qs.count()) as bar:
-        for transaction in qs:
-            if not validate(transaction):
-                with bar.pause():
-                    yield transaction
-            bar()
-```
-
-That's it! Then you could use it in ipython (or your preferred _REPL_)! Just call the function to instantiate the generator and `next()` with it. The progress bar will run as usual, but as soon as an inconsistency is found, the bar pauses itself and you get the prompt back! 😃
-
-```text
-In [11]: gen = reconcile_transactions()
-
-In [12]: next(gen, None)
-|█████████████████████                   | 105/200 [52%] in 5s (18.8/s, eta: 4s)
-Out[12]: Transaction<#123>
-```
-
-How cool is that?! You have the transaction to debug and fix any way you want, and when you're done, continue the process with the same `next` as before... The bar returns like nothing happened!! :)
-
-```text
-In [21]: next(gen, None)
-|█████████████████████                   | ▁▃▅ 105/200 [52%] in 5s (18.8/s, eta: 4s)
-```
-
-
-### Forcing animations on non-interactive consoles (like Pycharm's)
-
-Pycharm's python console for instance do not report itself as "interactive", so I've included a `force_tty` argument to be able to use the alive-progress bar in it.
-
-So, just start it as:
-
-```python
-with alive_bar(1000, force_tty=True) as bar:
-    for i in range(1000):
-        time.sleep(.01)
-        bar()
-```
-
-You can also set it system-wide in `config_handler`.
-
-Do note that this console is heavily instrumented and has more overhead, so the outcome may not be as fluid as you would expect.
+- This whole project was implemented in functional style;
+- It does not declare even a single class;
+- It uses extensively (and very creatively) python _Closures_ and _Generators_, they're in almost all modules (look for instance the [spinners factories](https://github.com/rsalmei/alive-progress/blob/master/alive_progress/animations/spinners.py) and [spinner_player](https://github.com/rsalmei/alive-progress/blob/master/alive_progress/animations/utils.py) 😜);
+- It does not have any dependencies.
 
 
 ## To do
 
-- ~~create an unknown mode for bars (without a known total and eta)~~
-- ~~implement a pausing mechanism~~
-- ~~change spinner styles~~
-- ~~change bar styles~~
-- ~~include a global configuration system~~
-- ~~create generators for scrolling, bouncing, delayed and compound spinners~~
-- ~~create an exhibition of spinners and bars, to see them all in motion~~
-- ~~include theme support in configuration~~
-- ~~soft wrapping support~~
-- ~~hiding cursor support~~
-- ~~python logging support~~
-- ~~exponential smoothing of ETA time series~~
 - improve test coverage, hopefully achieving 100% branch coverage
 - variable width bar rendition, listening to changes in terminal size
 - enable multiple simultaneous bars, for nested or multiple statuses
@@ -316,13 +338,24 @@ Do note that this console is heavily instrumented and has more overhead, so the 
 - support colors in spinners and bars
 - any other ideas welcome!
 
+<details>
+<summary>Already done.</summary>
 
-## Interesting facts
-
-- This whole project was implemented in functional style;
-- It does not declare even a single class;
-- It uses extensively (and very creatively) python _Closures_ and _Generators_, they're in almost all modules (look for instance the [spinners factories and spinner_player](https://github.com/rsalmei/alive-progress/blob/master/alive_progress/spinners.py) 😜);
-- It does not have any dependencies.
+> - create an unknown mode for bars (without a known total and eta)
+> - implement a pausing mechanism
+> - change spinner styles
+> - change bar styles
+> - include a global configuration system
+> - create generators for scrolling, bouncing, delayed and compound spinners
+> - create an exhibition of spinners and bars, to see them all in motion
+> - include theme support in configuration
+> - soft wrapping support
+> - hiding cursor support
+> - python logging support
+> - exponential smoothing of ETA time series
+>
+> ---
+</details>
 
 
 ## Python 2 EOL
@@ -361,4 +394,4 @@ This software is licensed under the MIT License. See the LICENSE file in the top
 Thank you for your interest!
 
 I've put much ❤️ and effort into this.
-<br>If you've appreciated my work and would like me to continue improving it, you could buy me a coffee! Thank you!
+<br>If you've appreciated my work and would like me to continue improving it, you could buy me a coffee! I would really appreciate that 😊! (the button is on the top-right corner) Thank you!
