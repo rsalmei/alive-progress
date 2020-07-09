@@ -128,16 +128,16 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         def bar(perc=None, text=None):
             if perc is not None:
                 flush_buffer()
-                run.percent = float(perc)
+                run.percent = max(0., float(perc))  # ignores negative numbers.
             update_hook()
             if text is not None:
                 set_text(text)
             return run.percent
     else:
         def bar(text=None, incr=1):
-            if incr > 0:
-                flush_buffer()
-                run.count += int(incr)
+            flush_buffer()
+            # FIXME it was accepting 0 before, so a user could be using that to change text only
+            run.count += max(0, int(incr))  # ignores negative numbers.
             update_hook()
             if text is not None:
                 set_text(text)
