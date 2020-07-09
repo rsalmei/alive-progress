@@ -101,7 +101,6 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             time.sleep(1. / fps())
 
     def alive_repr(spin=''):
-        update_hook()
         elapsed = time.time() - run.init
         run.rate = current() / elapsed if elapsed else 0.
 
@@ -127,6 +126,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             if perc is not None:
                 flush_buffer()
                 run.percent = float(perc)
+            update_hook()
             if text is not None:
                 run.text = sanitize_text(text)
             return run.percent
@@ -135,6 +135,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             if incr > 0:
                 flush_buffer()
                 run.count += int(incr)
+            update_hook()
             if text is not None:
                 run.text = sanitize_text(text)
             return run.count
