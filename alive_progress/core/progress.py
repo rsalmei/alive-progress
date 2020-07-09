@@ -121,6 +121,9 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         if print_buffer:
             print()
 
+    def set_text(message):
+        run.text = sanitize_text(message)
+
     if config.manual:
         def bar(perc=None, text=None):
             if perc is not None:
@@ -128,7 +131,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
                 run.percent = float(perc)
             update_hook()
             if text is not None:
-                run.text = sanitize_text(text)
+                set_text(text)
             return run.percent
     else:
         def bar(text=None, incr=1):
@@ -137,8 +140,9 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
                 run.count += int(incr)
             update_hook()
             if text is not None:
-                run.text = sanitize_text(text)
+                set_text(text)
             return run.count
+    bar.text = set_text
 
     def print_hook(part):
         if part != '\n':
