@@ -20,8 +20,8 @@ def test_sanitize_text(text, expected):
 
 
 @pytest.mark.parametrize('text, length, expected', [
-    (None, -1, ''),
-    ('', -1, ''),
+    (None, 0, ''),
+    ('', 0, ''),
     ('cool bar title', 0, 'cool bar title'),
     ('cool bar title', 1, '…'),
     ('cool bar title', 5, 'cool…'),
