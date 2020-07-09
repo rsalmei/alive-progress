@@ -11,7 +11,8 @@ from itertools import chain, islice, repeat
 from .configuration import config_handler
 from .logging_hook import install_logging_hook, uninstall_logging_hook
 from .timing import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
-from .utils import clear_traces, hide_cursor, sanitize_text, show_cursor, terminal_columns
+from .utils import clear_traces, hide_cursor, render_title, sanitize_text, show_cursor, \
+    terminal_columns
 from ..animations.utils import spinner_player
 
 
@@ -82,6 +83,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             force_tty (bool): runs animations even without a tty (pycharm terminal for example)
             manual (bool): set to manually control percentage
             enrich_print (bool): includes the bar position in print() messages, default is True
+            title_length (int): fixed title length, or 0 for unlimited
 
     """
     if total is not None:
@@ -248,6 +250,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         update_hook = lambda: None  # noqa
         monitor = lambda: '{}'.format(run.count)  # noqa
 
+    title = render_title(title, config.title_length)
     start_monitoring()
     try:
         yield bar

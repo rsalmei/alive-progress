@@ -48,6 +48,7 @@ CONFIG_VARS = dict(
     force_tty=_bool_input_factory(),
     manual=_bool_input_factory(),
     enrich_print=_bool_input_factory(),
+    title_length=_int_input_factory(0, 100),
 )
 
 Config = namedtuple('Config', tuple(CONFIG_VARS.keys()))
@@ -63,6 +64,7 @@ def create_config():
             force_tty=False,
             manual=False,
             enrich_print=True,
+            title_length=20,
         )
 
     def set_global(theme=None, **options):

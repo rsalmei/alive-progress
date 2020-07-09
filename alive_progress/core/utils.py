@@ -24,6 +24,21 @@ def sanitize_text(text):
     return ' '.join(str(text).split())
 
 
+def render_title(title, length):
+    if not title:
+        return ''
+    elif not length:
+        return title
+    elif length == 1:
+        return '…'
+
+    # fixed size left align implementation.
+    # there may be more in v2, like other alignments, variable with maximum size, and
+    # even scrolling and bouncing.
+    data = (length - 1, '…') if len(title) > length else (length, ' ')
+    return '{:{}.{}}{}'.format(title, length - 1, *data)[:length]
+
+
 def terminal_columns():  # pragma: no cover
     """Gets the size of the terminal.
 

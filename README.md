@@ -185,6 +185,7 @@ Those options are:
 - `force_tty`: runs animations even without a tty (pycharm terminal for example)
 - `manual`: set to manually control percentage
 - `enrich_print`: includes the bar position in print() messages, default is True
+- `title_length`: fixed title length, or 0 for unlimited
 
 And you can mix and match them, global and local! (_Click to see it in motion_)
 
