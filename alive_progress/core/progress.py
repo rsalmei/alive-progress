@@ -93,8 +93,8 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             total = None
     config = config_handler(**options)
 
-    def run():
-        player = spinner_player(config.spinner())
+    def run(spinner):
+        player = spinner_player(spinner)
         while thread:
             release_thread.wait()
             alive_repr(next(player))
@@ -188,7 +188,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             start_monitoring(offset)
 
         bar.pause = pause_monitoring
-        thread = threading.Thread(target=run)
+        thread = threading.Thread(target=run, args=(config.spinner(),))
         thread.daemon = True
         thread.start()
 
