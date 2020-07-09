@@ -32,10 +32,10 @@ I like to think of it as a new kind of progress bar for python, as it has among 
 - it is **customizable**, with a growing smorgasbord of different bar and spinner styles, as well as several factories to easily generate yours!
 
 > ### 📌 New in 1.6 series!
-> - soft wrapping support - it won't go desperately up if it doesn't fit the line anymore!
+> - soft wrapping support - or lack thereof actually, it won't scroll your terminal desperately up if it doesn't fit the line anymore!
 > - hiding cursor support - more beautiful and professional appearance!
-> - python logging support - adequately clean and enriched messages from logging!
-> - exponential smoothing of ETA - way smoother when you need them the most!
+> - python logging support - adequately clean and enriched messages from logging without any configuration or hack!
+> - exponential smoothing of ETA - way smoother when you need it the most!
 > - proper bar title - left aligned always visible title so you know what is expected from that processing!
 > - enhanced elapsed time and ETA representation - the smallest rendition possible, so you can maximize the animations!
 > - new `bar.text()` dedicated method - now you can change the situational message without making the bar going forward!
@@ -165,21 +165,21 @@ While in any alive progress context, you can display messages with:
 There are several options to customize appearance and behavior, most of them usable both locally and globally. But there's a few that only make sense locally, these are:
 
 - `title`: an optional yet always visible title if defined, that represents what is that processing;
-- `calibrate`: the engine calibration system (more details [here](#calibration--new))
+- `calibrate`: calibrates the fps engine (more details [here](#advanced))
 
-Those used anywhere are:
-- `length`: number of characters to render the animated progress bar
+Those used anywhere are [default values in brackets]:
+- `length`: [`40`] number of characters to render the animated progress bar
 - `spinner`: the spinner to be used in all renditions
 <br>    it's a predefined name in `show_spinners()`, or a custom spinner
 - `bar`: bar to be used in definite and both manual modes
 <br>    it's a predefined name in `show_bars()`, or a custom bar
 - `unknown`: bar to be used in unknown mode (whole bar is a spinner)
 <br>    it's a predefined name in `show_spinners()`, or a custom spinner
-- `theme`: theme name in alive_progress.THEMES
-- `force_tty`: runs animations even without a tty (more details [here](#forcing-animations-on-non-interactive-consoles-like-pycharms))
-- `manual`: set to manually control percentage
-- `enrich_print`: includes the bar position in print() messages, default is True
-- `title_length`: fixed title length, or 0 for unlimited
+- `theme`: [`'smooth'`, which sets spinner, bar and unknown] theme name in alive_progress.THEMES
+- `force_tty`: [`False`] runs animations even without a tty (more details [here](#advanced))
+- `manual`: [`False`] set to manually control percentage
+- `enrich_print`: [`True`] includes the bar position in print() and logging messages
+- `title_length`: [`20`] fixed title length, or 0 for unlimited
 
 To use them locally just send the option to `alive_bar`:
 
