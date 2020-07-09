@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import pytest
 
-from alive_progress.core.utils import sanitize_text
+from alive_progress.core.utils import render_title, sanitize_text
 
 
 @pytest.mark.parametrize('text, expected', [
@@ -17,3 +17,16 @@ from alive_progress.core.utils import sanitize_text
 ])
 def test_sanitize_text(text, expected):
     assert sanitize_text(text) == expected
+
+
+@pytest.mark.parametrize('text, length, expected', [
+    (None, -1, ''),
+    ('', -1, ''),
+    ('cool bar title', 0, 'cool bar title'),
+    ('cool bar title', 1, '…'),
+    ('cool bar title', 5, 'cool…'),
+    ('cool bar title', 14, 'cool bar title'),
+    ('cool bar title', 20, 'cool bar title      '),
+])
+def test_render_title(text, length, expected):
+    assert render_title(text, length) == expected
