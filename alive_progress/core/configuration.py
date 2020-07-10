@@ -6,8 +6,8 @@ from collections import namedtuple
 from copy import deepcopy
 from types import FunctionType
 
-from .animations import bars, spinners
-from .styles.internal import BARS, SPINNERS, THEMES
+from ..animations import bars, spinners
+from ..styles.internal import BARS, SPINNERS, THEMES
 
 
 def _style_input_factory(name_lookup, func_lookup, name_index=None):
@@ -48,6 +48,7 @@ CONFIG_VARS = dict(
     force_tty=_bool_input_factory(),
     manual=_bool_input_factory(),
     enrich_print=_bool_input_factory(),
+    title_length=_int_input_factory(0, 100),
 )
 
 Config = namedtuple('Config', tuple(CONFIG_VARS.keys()))
@@ -63,6 +64,7 @@ def create_config():
             force_tty=False,
             manual=False,
             enrich_print=True,
+            title_length=0,
         )
 
     def set_global(theme=None, **options):

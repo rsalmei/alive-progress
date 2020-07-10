@@ -10,7 +10,7 @@ except ImportError:
 
 from alive_progress.styles.internal import BARS, SPINNERS, THEMES
 # noinspection PyProtectedMember
-from alive_progress.configuration import Config, _bool_input_factory, _int_input_factory, \
+from alive_progress.core.configuration import Config, _bool_input_factory, _int_input_factory, \
     _style_input_factory, create_config
 
 

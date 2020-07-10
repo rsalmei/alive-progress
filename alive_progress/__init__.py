@@ -7,12 +7,12 @@ from .animations.bars import standard_bar_factory, unknown_bar_factory
 from .animations.spinners import bouncing_spinner_factory, compound_spinner_factory, \
     delayed_spinner_factory, frame_spinner_factory, scrolling_spinner_factory
 from .animations.utils import spinner_player
-from .configuration import config_handler
-from .progress import alive_bar
+from .core.configuration import config_handler
+from .core.progress import alive_bar
 from .styles.exhibit import print_chars, show_bars, show_spinners, showtime
 from .styles.internal import BARS, SPINNERS, THEMES
 
-VERSION = (1, 5, 1)
+VERSION = (1, 6, 0)
 
 __author__ = 'Rogério Sampaio de Almeida'
 __email__ = 'rsalmei@gmail.com'
