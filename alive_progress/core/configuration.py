@@ -64,7 +64,7 @@ def create_config():
             force_tty=False,
             manual=False,
             enrich_print=True,
-            title_length=20,
+            title_length=0,
         )
 
     def set_global(theme=None, **options):

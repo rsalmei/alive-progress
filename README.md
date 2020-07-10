@@ -179,7 +179,7 @@ Those used anywhere are [default values in brackets]:
 - `force_tty`: [`False`] runs animations even without a tty (more details [here](#advanced))
 - `manual`: [`False`] set to manually control percentage
 - `enrich_print`: [`True`] includes the bar position in print() and logging messages
-- `title_length`: [`20`] fixed title length, or 0 for unlimited
+- `title_length`: [`0`] fixed title length, or 0 for unlimited
 
 To use them locally just send the option to `alive_bar`:
 
