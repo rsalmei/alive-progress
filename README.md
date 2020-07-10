@@ -197,7 +197,7 @@ from alive_progress import alive_bar, config_handler
 
 config_handler.set_global(length=20, ...)
 
-with alive_bar(total, other_options...):
+with alive_bar(total, ...):
     # both sets of options will be active here!
     ...
 ```
