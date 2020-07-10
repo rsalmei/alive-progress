@@ -4,8 +4,8 @@ import sys
 
 def install_logging_hook():  # pragma: no cover
     root = logging.root
-            if isinstance(h, logging.StreamHandler)}
-    return {h: set_stream(h, sys.stdout) for h in root.handlers
+    return {h: set_stream(h, sys.stdout) for h in root.handlers  # noqa
+            if h.__class__ == logging.StreamHandler}  # want only this, not its subclasses.
 
 
 def uninstall_logging_hook(before):  # pragma: no cover
