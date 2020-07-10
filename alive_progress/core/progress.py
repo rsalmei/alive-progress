@@ -83,7 +83,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             theme (str): theme name in alive_progress.THEMES
             force_tty (bool): runs animations even without a tty (pycharm terminal for example)
             manual (bool): set to manually control percentage
-            enrich_print (bool): includes the bar position in print() messages, default is True
+            enrich_print (bool): includes the bar position in print() and logging messages
             title_length (int): fixed title length, or 0 for unlimited
 
     """
