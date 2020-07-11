@@ -3,6 +3,10 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import sys
+import unicodedata
+from itertools import chain
+
+ZWJ = '\u200d'  # zero-width joiner (it's the only one that actually worked on my terminal)
 
 
 def clear_traces():  # pragma: no cover
@@ -20,17 +24,22 @@ def show_cursor():  # pragma: no cover
     sys.__stdout__.write('\033[?25h')
 
 
-def sanitize_text(text):
-    return ' '.join(str(text).split())
+def sanitize_text_marking_wide_chars(text):
+    text = ' '.join((text or '').split())
+    return ''.join(chain.from_iterable(
+        (ZWJ, x) if unicodedata.east_asian_width(x) == 'W' else (x,)
+        for x in text))
 
 
 def render_title(title, length):
     if not title:
         return ''
-    elif not length:
-        return title
     elif length == 1:
         return '…'
+
+    title = sanitize_text_marking_wide_chars(title)
+    if not length:
+        return title
 
     # fixed size left align implementation.
     # there may be more in v2, like other alignments, variable with maximum size, and

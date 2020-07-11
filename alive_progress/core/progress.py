@@ -12,8 +12,8 @@ from itertools import chain, islice, repeat
 from .configuration import config_handler
 from .logging_hook import install_logging_hook, uninstall_logging_hook
 from .timing import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
-from .utils import clear_traces, hide_cursor, render_title, sanitize_text, show_cursor, \
-    terminal_columns
+from .utils import clear_traces, hide_cursor, render_title, sanitize_text_marking_wide_chars, \
+    show_cursor, terminal_columns
 from ..animations.utils import spinner_player
 
 
@@ -107,7 +107,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
 
         line = ' '.join(filter(None, (
             title, bar_repr(run.percent, end), spin, monitor(), 'in',
-            to_elapsed_text(elapsed, end), run.stats(), run.text)))
+            to_elapsed_text(elapsed, end), stats(), run.text)))
 
         line_len, cols = len(line), terminal_columns()
         with print_lock:
@@ -123,7 +123,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             print()
 
     def set_text(message):
-        run.text = sanitize_text(message)
+        run.text = sanitize_text_marking_wide_chars(message)
 
     if config.manual:
         # FIXME update bar signatures and remove deprecated in v2.
@@ -219,7 +219,6 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         stats = lambda: spec.format(run.rate, to_eta_text(gen_eta.send((current(), run.rate))))
         bar_repr = config.bar(config.length)
     else:  # unknown progress.
-        eta_text = lambda: None  # noqa
         bar_repr = config.unknown(config.length, config.bar)
         stats = lambda: '({:.1f}/s)'.format(run.rate)  # noqa
     stats_end = lambda: '({:.2{}}/s)'.format(run.rate, rate_spec)  # noqa
@@ -245,9 +244,8 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             return math.log10((run.rate * adjust_log_curve) + 1.) * factor + min_fps
         return max_fps
 
-    end, run.text, run.eta_text, run.stats = False, '', '', stats
-    run.count, run.last_line_len = 0, 0
-    run.percent, run.rate, run.init = 0., 0., 0.
+    end, run.text, run.last_line_len = False, '', 0
+    run.count, run.percent, run.rate, run.init = 0, 0., 0., 0.
 
     if total:
         if config.manual:
@@ -282,5 +280,5 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             thread = None  # lets the internal thread terminate gracefully.
             local_copy.join()
 
-        end, run.text, run.stats = True, '', stats_end
+        end, run.text, stats = True, '', stats_end
         alive_repr()
