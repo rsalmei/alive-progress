@@ -34,10 +34,12 @@ def sanitize_text_marking_wide_chars(text):
 def render_title(title, length):
     if not title:
         return ''
-    elif not length:
-        return title
     elif length == 1:
         return '…'
+
+    title = sanitize_text_marking_wide_chars(title)
+    if not length:
+        return title
 
     # fixed size left align implementation.
     # there may be more in v2, like other alignments, variable with maximum size, and
