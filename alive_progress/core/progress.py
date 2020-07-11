@@ -12,8 +12,8 @@ from itertools import chain, islice, repeat
 from .configuration import config_handler
 from .logging_hook import install_logging_hook, uninstall_logging_hook
 from .timing import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
-from .utils import clear_traces, hide_cursor, render_title, sanitize_text, show_cursor, \
-    terminal_columns
+from .utils import clear_traces, hide_cursor, render_title, sanitize_text_marking_wide_chars, \
+    show_cursor, terminal_columns
 from ..animations.utils import spinner_player
 
 
@@ -123,7 +123,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             print()
 
     def set_text(message):
-        run.text = sanitize_text(message)
+        run.text = sanitize_text_marking_wide_chars(message)
 
     if config.manual:
         # FIXME update bar signatures and remove deprecated in v2.
