@@ -6,12 +6,7 @@ import sys
 
 import pytest
 
-from alive_progress.core.logging_hook import install_logging_hook
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock  # noqa
+from alive_progress.core.logging_hook import install_logging_hook, uninstall_logging_hook
 
 
 @pytest.fixture
@@ -25,6 +20,13 @@ def all_handlers():
 
 def test_install(all_handlers):
     handler, nope = all_handlers
-    install_logging_hook()
+    changed = install_logging_hook()
     assert handler.stream == sys.stdout
     assert nope.stream is None
+    assert changed == {handler: sys.stderr}
+
+
+def test_uninstall(all_handlers):
+    handler, _ = all_handlers
+    uninstall_logging_hook({handler: sys.stderr})
+    assert handler.stream == sys.stderr

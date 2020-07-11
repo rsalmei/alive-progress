@@ -18,7 +18,7 @@ def uninstall_logging_hook(before):
 if sys.version_info >= (3, 7):
     def set_stream(handler, stream):
         return handler.setStream(stream)
-else:
+else:  # pragma: no cover
     def set_stream(handler, stream):
         # from python 3.7 implementation.
         result = handler.stream
