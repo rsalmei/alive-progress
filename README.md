@@ -383,10 +383,10 @@ $ pip install -U "alive_progress<2"
 ```
 
 ## Changelog highlights:
-- 1.6.1: fix logging support for python 3.6 and lower; support logging for file; support for wide unicode chars, which uses 2 cols but their length is 1
-- 1.6.0: soft wrapping support; hiding cursor support; python logging support; exponential smoothing of ETA time series; proper always visible bar title; enhanced elapsed time representation; new bar.text() dedicated method (deprecating 'text' parameter in bar()); performance optimizations
+- 1.6.1: fix logging support for python 3.6 and lower; support logging for file; support for wide unicode chars, which use 2 columns but have length 1
+- 1.6.0: soft wrapping support; hiding cursor support; python logging support; exponential smoothing of ETA time series; proper bar title, always visible; enhanced times representation; new `bar.text()` method, to set situational messages at any time, without incrementing position (deprecates 'text' parameter in `bar()`); performance optimizations
 - 1.5.1: fix compatibility with python 2.7 (should be the last one, version 2 is in the works, with python 3 support only)
-- 1.5.0: standard_bar accepts a background parameter instead of blank, which accepts arbitrarily sized strings and remains fixed in the background, simulating a bar going "over it"
+- 1.5.0: standard_bar accepts a `background` parameter instead of `blank`, which accepts arbitrarily sized strings and remains fixed in the background, simulating a bar going "over it"
 - 1.4.4: restructure internal packages; 100% branch coverage of all animations systems, i.e., bars and spinners
 - 1.4.3: protect configuration system against other errors (length='a' for example); first automated tests, 100% branch coverage of configuration system
 - 1.4.2: sanitize text input, keeping \n from entering and replicating bar on screen
