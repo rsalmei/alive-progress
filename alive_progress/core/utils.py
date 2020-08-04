@@ -23,7 +23,7 @@ def show_cursor():  # pragma: no cover
 def sanitize_text_marking_wide_chars(text):
     text = ' '.join((text or '').split())
     return ''.join(chain.from_iterable(
-        (ZWJ, x) if unicodedata.east_asian_width(x) == 'W' else (x,)
+        (ZWJ, x) if unicodedata.east_asian_width(x) in ('F', 'W') else (x,)
         for x in text))
 
 
