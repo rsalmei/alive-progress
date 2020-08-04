@@ -6,6 +6,7 @@ import warnings
 from contextlib import contextmanager
 from itertools import chain, islice, repeat
 
+from .calibration import calibrated_fps
 from .configuration import config_handler
 from .logging_hook import install_logging_hook, uninstall_logging_hook
 from .timing import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
@@ -96,7 +97,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         while thread:
             release_thread.wait()
             alive_repr(next(player))
-            time.sleep(1. / fps())
+            time.sleep(1. / fps(run.rate))
 
     def alive_repr(spin=''):
         elapsed = time.time() - run.init
@@ -220,26 +221,6 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         stats = lambda: '({:.1f}/s)'.format(run.rate)  # noqa
     stats_end = lambda: '({:.2{}}/s)'.format(run.rate, rate_spec)  # noqa
 
-    # calibration of the dynamic fps engine.
-    # I've started with the equation y = log10(x + m) * k + n, where:
-    #   y is the desired fps, m and n are horizontal and vertical translation,
-    #   k is a calibration factor, computed from some user input c (see readme for details).
-    # considering minfps and maxfps as given constants, I came to:
-    #   fps = log10(x + 1) * k + minfps, which must be equal to maxfps for x = c,
-    # so the factor k = (maxfps - minfps) / log10(c + 1), and
-    #   fps = log10(x + 1) * (maxfps - minfps) / log10(c + 1) + minfps
-    # neat! ;)
-    min_fps, max_fps = 2., 60.
-    calibrate = max(0., calibrate or factor)
-    adjust_log_curve = 100. / min(calibrate, 100.)  # adjust curve for small numbers
-    factor = (max_fps - min_fps) / math.log10((calibrate * adjust_log_curve) + 1.)
-
-    def fps():
-        if run.rate <= 0:
-            return 10.  # bootstrap speed
-        if run.rate < calibrate:
-            return math.log10((run.rate * adjust_log_curve) + 1.) * factor + min_fps
-        return max_fps
 
     end, run.text, run.last_line_len = False, '', 0
     run.count, run.percent, run.rate, run.init = 0, 0., 0., 0.
@@ -266,6 +247,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         monitor = lambda: '{}'.format(run.count)  # noqa
 
     title = render_title(title, config.title_length)
+    fps = calibrated_fps(calibrate or factor)
     start_monitoring()
     try:
         yield bar
