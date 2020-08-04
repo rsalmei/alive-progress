@@ -4,7 +4,6 @@ import threading
 import time
 import warnings
 from contextlib import contextmanager
-from itertools import chain, islice, repeat
 from shutil import get_terminal_size
 
 from .calibration import calibrated_fps
@@ -102,7 +101,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             time.sleep(1. / fps(run.rate))
 
     def alive_repr(spin=''):
-        elapsed = time.time() - run.init
+        elapsed = time.perf_counter() - run.init
         run.rate = current() / elapsed if elapsed else 0.
 
         line = ' '.join(filter(None, (
@@ -160,13 +159,13 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         sys.stdout = hook_manager.get_hook_for(sys.stdout)
         run.before_handlers = install_logging_hooks(hook_manager)
         release_thread.set()
-        run.init = time.time() - offset
+        run.init = time.perf_counter() - offset
 
     def stop_monitoring():
         show_cursor()
         sys.stdout = sys.__stdout__
-        return time.time() - run.init
         uninstall_logging_hooks(run.before_handlers)  # noqa
+        return time.perf_counter() - run.init
 
     thread, release_thread = None, threading.Event()
     if sys.stdout.isatty() or config.force_tty:
