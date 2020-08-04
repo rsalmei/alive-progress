@@ -9,7 +9,7 @@ from itertools import chain, islice, repeat
 from .calibration import calibrated_fps
 from .configuration import config_handler
 from .logging_hook import install_logging_hook, uninstall_logging_hook
-from .hook_manager import create_print_hook
+from .hook_manager import buffered_hook_manager
 from .timing import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
 from .utils import clear_traces, hide_cursor, render_title, sanitize_text_marking_wide_chars, \
     show_cursor, terminal_columns
@@ -109,7 +109,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             to_elapsed_text(elapsed, end), stats(), run.text)))
 
         line_len, cols = len(line), terminal_columns()
-        with print_lock:
+        with hook_manager.lock:
             if line_len < run.last_line_len:
                 clear_traces()
             sys.__stdout__.write(line[:cols] + (spin and '\r' or '\n'))
@@ -127,11 +127,11 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             Only absolute positioning.
             """
             if perc is not None:
-                flush_buffer()
                 run.percent = max(0., float(perc))  # ignores negative numbers.
             else:
                 warnings.warn(DeprecationWarning('percent will be mandatory in manual bar(),'
                                                  ' please update your code.'), stacklevel=2)
+            hook_manager.flush_buffers()
             update_hook()
             if text is not None:
                 warnings.warn(DeprecationWarning("use bar.text('') instead of bar(text=''),"
@@ -143,9 +143,9 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             """Bar handle for definite and unknown modes.
             Only relative positioning.
             """
-            flush_buffer()
             # FIXME it was accepting 0 before, so a user could be using that to change text only
             run.count += max(0, int(incr))  # ignores negative numbers.
+            hook_manager.flush_buffers()
             update_hook()
             if text is not None:
                 warnings.warn(DeprecationWarning("use bar.text('') instead of bar(text=''),"
@@ -156,8 +156,8 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
 
     def start_monitoring(offset=0.):
         hide_cursor()
-        sys.stdout = print_hook
         run.before_handlers = install_logging_hook()
+        sys.stdout = hook_manager.get_hook_for(sys.stdout)
         release_thread.set()
         run.init = time.time() - offset
 
@@ -225,11 +225,12 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
 
     title = render_title(title, config.title_length)
     fps = calibrated_fps(calibrate or factor)
+    hook_manager = buffered_hook_manager(print_template if config.enrich_print else '', current)
     start_monitoring()
     try:
         yield bar
     finally:
-        flush_buffer()
+        hook_manager.flush_buffers()
         stop_monitoring()
         if thread:
             local_copy = thread
