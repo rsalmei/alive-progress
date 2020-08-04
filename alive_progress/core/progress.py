@@ -2,7 +2,6 @@ import math
 import sys
 import threading
 import time
-import warnings
 from contextlib import contextmanager
 from shutil import get_terminal_size
 
@@ -121,38 +120,30 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         run.text = sanitize_text_marking_wide_chars(message)
 
     if config.manual:
-        # FIXME update bar signatures and remove deprecated in v2.
-        def bar(perc=None, text=None):
+        def bar_handle(percent, relative=False):
             """Bar handle for manual (bounded and unbounded) modes.
-            Only absolute positioning.
+            Default is absolute positioning.
             """
-            if perc is not None:
-                run.percent = max(0., float(perc))  # ignores negative numbers.
-            else:
-                warnings.warn(DeprecationWarning('percent will be mandatory in manual bar(),'
-                                                 ' please update your code.'), stacklevel=2)
             hook_manager.flush_buffers()
+            percent = float(percent)
+            if relative:
+                percent += run.percent
+            run.percent = max(0., percent)
             update_hook()
-            if text is not None:
-                warnings.warn(DeprecationWarning("use bar.text('') instead of bar(text=''),"
-                                                 ' please update your code.'), stacklevel=2)
-                set_text(text)
             return run.percent
     else:
-        def bar(text=None, incr=1):
+        def bar_handle(count=1, relative=True):
             """Bar handle for definite and unknown modes.
-            Only relative positioning.
+            Default is relative positioning.
             """
-            # FIXME it was accepting 0 before, so a user could be using that to change text only
-            run.count += max(0, int(incr))  # ignores negative numbers.
             hook_manager.flush_buffers()
+            count = int(count)
+            if relative:
+                count += run.count
+            run.count = max(0, count)
             update_hook()
-            if text is not None:
-                warnings.warn(DeprecationWarning("use bar.text('') instead of bar(text=''),"
-                                                 ' please update your code.'), stacklevel=2)
-                set_text(text)
             return run.count
-    bar.text = set_text
+    bar_handle.text = set_text
 
     def start_monitoring(offset=0.):
         hide_cursor()
@@ -177,7 +168,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             yield
             start_monitoring(offset)
 
-        bar.pause = pause_monitoring
+        bar_handle.pause = pause_monitoring
         thread = threading.Thread(target=run, args=(config.spinner(),))
         thread.daemon = True
         thread.start()
@@ -228,7 +219,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     hook_manager = buffered_hook_manager(print_template if config.enrich_print else '', current)
     start_monitoring()
     try:
-        yield bar
+        yield bar_handle
     finally:
         hook_manager.flush_buffers()
         stop_monitoring()
