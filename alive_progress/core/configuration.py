@@ -90,13 +90,13 @@ def create_config():
                     raise ValueError
                 return result
             except KeyError:
-                raise ValueError('invalid config name: {}'.format(key))
+                raise ValueError(f'invalid config name: {key}')
             except Exception:
-                raise ValueError('invalid config value: {}={}'.format(key, repr(value)))
+                raise ValueError(f'invalid config value: {key}={value!r}')
 
         if theme:
             if theme not in THEMES:
-                raise ValueError('invalid theme name={}'.format(repr(theme)))
+                raise ValueError(f'invalid theme name={theme}')
             swap = options
             options = deepcopy(THEMES[theme])
             options.update(swap)

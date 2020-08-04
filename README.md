@@ -374,10 +374,10 @@ And if you want to do even more, exciting stuff lies ahead!
 </details>
 
 
-## Python 2 EOL
+## Python versions End of Life notice
 
-The `alive_progress` framework starting from version 2.0 does not support Python 2.7 anymore.
-<br>If you still need support for Python 2, you can always use the versions 1.x, which are also full-featured and do work very well, just:
+The `alive_progress` framework starting from version 2.0 does not support Python 2.7 and 3.5 anymore.
+<br>If you still need support for them, you can always use the versions 1.x, which are also full-featured and do work very well, just:
 
 ```bash
 $ pip install -U "alive_progress<2"
@@ -387,6 +387,7 @@ $ pip install -U "alive_progress<2"
 
 
 ## Changelog highlights:
+- 2.0.0: requires python 3.6+ (and officially supports python 3.9 and 3.10)
 - 1.6.1: fix logging support for python 3.6 and lower; support logging for file; support for wide unicode chars, which use 2 columns but have length 1
 - 1.6.0: soft wrapping support; hiding cursor support; python logging support; exponential smoothing of ETA time series; proper bar title, always visible; enhanced times representation; new `bar.text()` method, to set situational messages at any time, without incrementing position (deprecates 'text' parameter in `bar()`); performance optimizations
 - 1.5.1: fix compatibility with python 2.7 (should be the last one, version 2 is in the works, with python 3 support only)

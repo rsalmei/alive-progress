@@ -86,7 +86,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     """
     if total is not None:
         if not isinstance(total, int):
-            raise TypeError("integer argument expected, got '{}'.".format(type(total).__name__))
+            raise TypeError(f"integer argument expected, got '{type(total).__name__}'.")
         if total <= 0:
             total = None
     config = config_handler(**options)
