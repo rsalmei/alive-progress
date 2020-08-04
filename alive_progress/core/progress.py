@@ -8,8 +8,8 @@ from itertools import chain, islice, repeat
 
 from .calibration import calibrated_fps
 from .configuration import config_handler
-from .logging_hook import install_logging_hook, uninstall_logging_hook
 from .hook_manager import buffered_hook_manager
+from .logging_hook import install_logging_hooks, uninstall_logging_hooks
 from .timing import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
 from .utils import clear_traces, hide_cursor, render_title, sanitize_text_marking_wide_chars, \
     show_cursor, terminal_columns
@@ -156,16 +156,16 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
 
     def start_monitoring(offset=0.):
         hide_cursor()
-        run.before_handlers = install_logging_hook()
         sys.stdout = hook_manager.get_hook_for(sys.stdout)
+        run.before_handlers = install_logging_hooks(hook_manager)
         release_thread.set()
         run.init = time.time() - offset
 
     def stop_monitoring():
         show_cursor()
         sys.stdout = sys.__stdout__
-        uninstall_logging_hook(run.before_handlers)  # noqa
         return time.time() - run.init
+        uninstall_logging_hooks(run.before_handlers)  # noqa
 
     thread, release_thread = None, threading.Event()
     if sys.stdout.isatty() or config.force_tty:

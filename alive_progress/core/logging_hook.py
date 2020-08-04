@@ -2,17 +2,20 @@ import logging
 import sys
 
 
-def install_logging_hook():
+def install_logging_hooks(hook_manager):
     root = logging.root
-    return {h: set_stream(h, sys.stdout) for h in root.handlers  # noqa
-            if h.__class__ == logging.StreamHandler}  # want only this, not its subclasses.
+    # modify all stream handlers, including their subclasses.
+    return {handler: set_stream(handler, hook_manager.get_hook_for(handler.stream))
+            for handler in root.handlers
+            if isinstance(handler, logging.StreamHandler)}
 
 
-def uninstall_logging_hook(before):
-    [set_stream(h, s) for h, s in before.items()]
+def uninstall_logging_hooks(before):
+    [set_stream(handler, original_stream)
+     for handler, original_stream in before.items()]
 
 
-if sys.version_info >= (3, 7):
+if sys.version_info >= (3, 7):  # pragma: no cover
     def set_stream(handler, stream):
         return handler.setStream(stream)
 else:  # pragma: no cover
