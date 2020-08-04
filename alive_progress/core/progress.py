@@ -5,6 +5,7 @@ import time
 import warnings
 from contextlib import contextmanager
 from itertools import chain, islice, repeat
+from shutil import get_terminal_size
 
 from .calibration import calibrated_fps
 from .configuration import config_handler
@@ -12,7 +13,7 @@ from .hook_manager import buffered_hook_manager
 from .logging_hook import install_logging_hooks, uninstall_logging_hooks
 from .timing import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
 from .utils import clear_traces, hide_cursor, render_title, sanitize_text_marking_wide_chars, \
-    show_cursor, terminal_columns
+    show_cursor
 from ..animations.utils import spinner_player
 
 
@@ -108,7 +109,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             title, bar_repr(run.percent, end), spin, monitor(), 'in',
             to_elapsed_text(elapsed, end), stats(), run.text)))
 
-        line_len, cols = len(line), terminal_columns()
+        line_len, (cols, _) = len(line), get_terminal_size()
         with hook_manager.lock:
             if line_len < run.last_line_len:
                 clear_traces()
