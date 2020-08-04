@@ -376,11 +376,15 @@ And if you want to do even more, exciting stuff lies ahead!
 
 ## Python 2 EOL
 
-The `alive_progress` next major version 2.0 will support Python 3.5+ only. But if you still need support for Python 2, there is a full featured one you can use, just:
+The `alive_progress` framework starting from version 2.0 does not support Python 2.7 anymore.
+<br>If you still need support for Python 2, you can always use the versions 1.x, which are also full-featured and do work very well, just:
 
 ```bash
 $ pip install -U "alive_progress<2"
 ```
+
+> This will always fetch the latest release of the v1.x series, which is recommended because if I ever release a bugfix, you will get it the next time you install it.
+
 
 ## Changelog highlights:
 - 1.6.1: fix logging support for python 3.6 and lower; support logging for file; support for wide unicode chars, which use 2 columns but have length 1

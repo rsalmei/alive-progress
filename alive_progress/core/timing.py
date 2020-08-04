@@ -1,7 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-
 def to_elapsed_text(seconds, precise):
     seconds = round(seconds, 1 if precise else 0)
     if seconds < 60.:

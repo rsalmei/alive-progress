@@ -1,6 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import math
 import operator
 from itertools import chain, repeat
@@ -14,8 +11,7 @@ def frame_spinner_factory(*frames):
     def inner_factory(length_actual=None):
         @repeating(length_actual, inner_factory.natural)
         def inner_spinner():
-            for frame in frames:  # TODO change to yield from, when dropping python 2.7
-                yield frame
+            yield from frames
 
         inner_spinner.cycles = len(frames)
         return inner_spinner
@@ -146,7 +142,7 @@ def delayed_spinner_factory(spinner_factory, copies, offset):
     def inner_factory(length_actual=None):
         # it needed to have two levels to wait for the length_actual, since this
         # argument can change the number of copies.
-        copies_actual = int(math.ceil(length_actual / spinner_factory.natural)) \
+        copies_actual = math.ceil(length_actual / spinner_factory.natural) \
             if length_actual else copies
         result = compound_spinner_factory(*((spinner_factory,) * copies_actual))(length_actual)
         for i, s in enumerate(result.players):

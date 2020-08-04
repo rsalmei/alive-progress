@@ -1,8 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-import sys
-
 from .animations.bars import standard_bar_factory, unknown_bar_factory
 from .animations.spinners import bouncing_spinner_factory, compound_spinner_factory, \
     delayed_spinner_factory, frame_spinner_factory, scrolling_spinner_factory
@@ -20,10 +15,9 @@ __version__ = '.'.join(map(str, VERSION))
 __description__ = 'A new kind of Progress Bar, with real-time throughput, ' \
                   'eta and very cool animations!'
 
-__all__ = ['alive_bar', 'standard_bar_factory', 'unknown_bar_factory', 'spinner_player',
-           'frame_spinner_factory', 'scrolling_spinner_factory', 'bouncing_spinner_factory',
-           'compound_spinner_factory', 'delayed_spinner_factory', 'BARS', 'SPINNERS', 'THEMES',
-           'print_chars', 'show_bars', 'show_spinners', 'showtime', 'config_handler']
-
-if sys.version_info < (3,):  # pragma: no cover
-    __all__ = [bytes(x) for x in __all__]
+__all__ = (
+    'alive_bar', 'config_handler', 'standard_bar_factory', 'unknown_bar_factory', 'spinner_player',
+    'frame_spinner_factory', 'scrolling_spinner_factory', 'bouncing_spinner_factory',
+    'compound_spinner_factory', 'delayed_spinner_factory', 'BARS', 'SPINNERS', 'THEMES',
+    'showtime', 'show_spinners', 'show_bars', 'print_chars'
+)

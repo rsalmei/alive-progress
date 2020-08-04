@@ -1,6 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import math
 from itertools import chain
 
@@ -28,10 +25,10 @@ def standard_bar_factory(chars='=', borders='||', background=' ', tip='>', error
             return draw_bar.left_border + bar + (draw_bar.right_border if right else '')
 
         virtual_length = length * len(chars)
-        padding = background * int(math.ceil((length - len(tip)) / len(background)))
         blanks = ' ' * (length - len(tip))
 
         draw_bar.left_border, draw_bar.right_border = borders
+        padding = background * math.ceil((length + len_tip) / len(background))
         return draw_bar
 
     tip = tip or ''

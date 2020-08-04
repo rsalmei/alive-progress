@@ -1,8 +1,4 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import random
-import sys
 import time
 from collections import OrderedDict
 
@@ -132,11 +128,10 @@ def print_chars(line_length=32, max_char=0x2e80):
             this goes up to 0x10ffff, but after the default value, it seems to return
             only japanese ideograms, increase this if would like to see them.
     """
-    char = chr if sys.version_info >= (3,) else unichr  # noqa
     max_char = min(0x10ffff, max(0, max_char))
     num_lines = int(max_char / line_length)
     for i in map(lambda x: x * line_length + 32, range(num_lines)):
         print(hex(i), end=': ')
         for j in range(line_length):
-            print(char(i + j), end=' ')
+            print(chr(i + j), end=' ')
         print()

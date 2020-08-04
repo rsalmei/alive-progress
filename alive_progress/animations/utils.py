@@ -1,10 +1,17 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from functools import wraps
 
 
 def repeating(length, natural=0):
+def spinner_player(spinner):
+    """Create an infinite generator that plays all cycles of a spinner indefinitely."""
+
+    def inner_play():
+        while True:
+            yield from spinner()
+
+    return inner_play()  # returns an already initiated generator.
+
+
     """Decorator to repeat a return value until a certain length."""
 
     def wrapper(fn):
@@ -39,12 +46,5 @@ def sliding_window_factory(length, content, step, initial):
     return window
 
 
-def spinner_player(spinner):
-    """Create an infinite generator that plays all cycles of a spinner indefinitely."""
 
-    def inner_play():
-        while True:
-            for c in spinner():  # TODO change to yield from, when dropping python 2.7
-                yield c
 
-    return inner_play()  # returns an already initiated generator.

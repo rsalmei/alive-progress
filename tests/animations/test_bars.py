@@ -1,6 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import pytest
 
 from alive_progress.animations.bars import standard_bar_factory, unknown_bar_factory

@@ -1,12 +1,6 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
+from unittest import mock
 
 import pytest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock  # noqa
 
 from alive_progress.core.timing import gen_simple_exponential_smoothing_eta, to_eta_text, \
     to_elapsed_text, simple_eta

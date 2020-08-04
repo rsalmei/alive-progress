@@ -1,6 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import math
 import sys
 import threading
@@ -250,7 +247,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     if total:
         if config.manual:
             def update_hook():
-                run.count = int(math.ceil(run.percent * total))
+                run.count = math.ceil(run.percent * total)
         else:
             def update_hook():
                 run.percent = run.count / total

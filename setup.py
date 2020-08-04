@@ -40,8 +40,8 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
+        # 'Programming Language :: Python :: 2',
+        # 'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
@@ -55,6 +55,6 @@ setup(
              'multi-threaded REPL alive animated visual feedback'.split(),
     packages=find_packages(),
     data_files=[('', ['LICENSE'])],
-    python_requires='>=2.7, <4',
+    python_requires='>=3.5, <4',
     install_requires=[],
 )

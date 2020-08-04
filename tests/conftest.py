@@ -1,5 +1,3 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
 import pytest
 
 
@@ -9,8 +7,7 @@ def spinner_test():
         # noinspection PyUnusedLocal
         def inner_factory(length_actual=None):
             def inner_spinner():
-                for c in output:  # TODO python 27
-                    yield c
+                yield from output
 
             inner_spinner.cycles = len(output)
             return inner_spinner
