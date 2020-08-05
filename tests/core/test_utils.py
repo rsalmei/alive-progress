@@ -34,14 +34,18 @@ def test_sanitize_text_wide_chars(text, expected):
     assert result.replace(ZWJ, 'X') == expected
 
 
-@pytest.mark.parametrize('text, length, expected', [
-    (None, 0, ''),
-    ('', 0, ''),
-    ('cool bar title', 0, 'cool bar title'),
-    ('cool bar title', 1, '…'),
-    ('cool bar title', 5, 'cool…'),
-    ('cool bar title', 14, 'cool bar title'),
-    ('cool bar title', 20, 'cool bar title      '),
+@pytest.mark.parametrize('length, text, expected', [
+    (0, None, ''),
+    (0, '', ''),
+    (0, 'c', 'c'),
+    (0, 'cool bar title', 'cool bar title'),
+    (1, None, ' '),
+    (1, '', ' '),
+    (1, 'c', 'c'),
+    (1, 'cool bar title', '…'),
+    (5, 'cool bar title', 'cool…'),
+    (14, 'cool bar title', 'cool bar title'),
+    (20, 'cool bar title', 'cool bar title      '),
 ])
-def test_render_title(text, length, expected):
+def test_render_title(length, text, expected):
     assert render_title(text, length) == expected
