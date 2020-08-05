@@ -2,8 +2,10 @@ import random
 import re
 import time
 from collections import OrderedDict
+from shutil import get_terminal_size
 
-from .internal import BARS, SPINNERS
+from .internal import BARS, SPINNERS, THEMES
+from ..animations.spinners import compound_spinner_factory, scrolling_spinner_factory
 from ..animations.utils import spinner_player
 from ..core.configuration import config_handler
 from ..core.utils import hide_cursor, show_cursor
@@ -13,9 +15,9 @@ def showtime(fps=None, spinners=True, *, length=None, pattern=None):
     """Start a show, rendering all styles simultaneously in your screen.
 
     Args:
-        fps (float): the desired frames per second rendition
         spinners (bool): shows spinners if True, or bars otherwise
-        options (dict): configuration options
+        fps (float): the desired frames per second refresh rate
+        length (int): the bar length, as in configuration options
         pattern (Pattern): to filter objects displayed
     """
     if spinners:
@@ -29,17 +31,16 @@ def show_spinners(fps=None, *, length=None, pattern=None):
 
     Args:
         fps (float): the desired frames per second rendition
-        options (dict): configuration options
+        length (int): the bar length, as in configuration options
         pattern (Pattern): to filter objects displayed
     """
-    displaying, line_pattern = 'spinners, with their unknown bar renditions', '{1}|{2}| {0} {3}'
-    total_lines = 1 + len(prepared_gen)
-    _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, **options)
     selected = _filter(SPINNERS, pattern)
     max_natural = max(map(lambda x: x.natural, selected.values())) + 2
     max_name_length = max(map(lambda x: len(x), selected)) + 2
     prepared_gen = OrderedDict((f'{k:^{max_name_length}}', _spinner_gen(s, max_natural))
                                for k, s in selected.items())
+    displaying, line_pattern = 'spinners and their unknown bars', '{1}|{2}| {0} |{3}|'
+    _showtime_gen(fps, prepared_gen, displaying, line_pattern, length)
 
 
 def show_bars(fps=None, *, length=None, pattern=None):
@@ -47,21 +48,17 @@ def show_bars(fps=None, *, length=None, pattern=None):
 
     Args:
         fps (float): the desired frames per second rendition
-        options (dict): configuration options
+        length (int): the bar length, as in configuration options
         pattern (Pattern): to filter objects displayed
     """
     selected = _filter(BARS, pattern)
     max_name_length = max(map(lambda x: len(x), selected)) + 2
     prepared_gen = OrderedDict((f'{k:>{max_name_length}}', _bar_gen(b))
                                for k, b in selected.items())
-    """
-    displaying, line_pattern = 'bars', '{0} {1}{2}'
-    total_lines = 1 + 2 * len(prepared_gen)
-    _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, **options)
+    displaying, line_pattern = 'bars, with their underflow and overflow states', '{0} {1}'
+    _showtime_gen(fps, prepared_gen, displaying, line_pattern, length)
 
 
-    fps = min(300., max(2., float(fps or 15.)))  # since one can't set the total, max_fps is higher.
-    sleep, config = 1. / fps, config_handler(**options)
 def _filter(source, pattern):
     p = re.compile(pattern or '')
     selected = {k: v for k, v in source.items() if p.search(k)}
@@ -69,34 +66,47 @@ def _filter(source, pattern):
         raise ValueError(f'Nothing was selected with pattern "{pattern}".')
     return selected
 
-    print('Welcome to alive-progress, enjoy! (ctrl+c to stop :)')
-    print('=================================')
-    print('showing: preconfigured {}'.format(displaying))
-    print('--> remember you can create your own!\n')
 
-    # initialize the generators, sending fps and config params (list comprehension is discarded).
-    [(next(gen), gen.send((fps, config))) for gen in prepared_gen.values()]
+def _showtime_gen(fps, prepared_gen, displaying, line_pattern, length=None):
+    logo_player, info_player = spinner_player(SPINNERS['waves']()), None
+    info_spinners = compound_spinner_factory(
+        scrolling_spinner_factory(f'showing: preconfigured {displaying}', right=False),
+        scrolling_spinner_factory('and you can create your own styles, enjoy :)', right=False),
+        alongside=False
+    )
 
-    timer = time.perf_counter if sys.version_info >= (3, 3) else time.time
+    # initialize generators, sending fps and config params (list is discarded).
+    fps, config = min(60., max(2., float(fps or 15.))), config_handler(length=length)
+    [(next(gen), gen.send((fps, config.length))) for gen in prepared_gen.values()]
 
-    total_lines += 1  # frames per second indicator.
-    up_command = '\033[{}A'.format(total_lines)  # ANSI escape sequence for Cursor Up.
-    start, frame = timer(), 0
-def _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, length=None):
+    start, sleep, frame, i, last_info_cols = time.perf_counter(), 1. / fps, 0, 0, 0
     start, current = start - sleep, start  # simulates the first frame took exactly "sleep" ms.
     hide_cursor()
     try:
         while True:
-            print('fps: {:.2f} (goal: {:.1f})  '  # the blanks at the end remove artifacts.
-                  .format(frame / (current - start), fps))
+            term_cols, term_lines = get_terminal_size()
 
-            for name, gen in prepared_gen.items():
-                print(line_pattern.format(name, *next(gen)))
+            fps_monitor = f'fps: {frame / (current - start):.2f} (goal: {fps:.1f})'
+            info_cols = term_cols - len(fps_monitor) - 1
+            if info_cols != last_info_cols:
+                info_player = spinner_player(info_spinners(max(10, info_cols)))
+                last_info_cols = info_cols
+
+            title = f'\rWelcome to alive-progress! {next(logo_player)}'
+            info = f'{fps_monitor} {next(info_player)}'
+            print(title[:term_cols])
+            print(info[:term_cols], end='')
+
+            for i, (name, gen) in enumerate(prepared_gen.items(), 3):
+                data = next(gen)  # must consume data even if will not use it, to keep in sync.
+                if i > term_lines:
+                    break
+                print('\n' + line_pattern.format(name, *data)[:term_cols], end='')
 
             frame += 1
-            current = timer()
+            current = time.perf_counter()
             time.sleep(max(0., start + frame * sleep - current))
-            print(up_command)
+            print(f'\033[{i - 1}A', end='\r')  # ANSI escape sequence for Cursor Up.
     except KeyboardInterrupt:
         pass
     finally:
@@ -112,17 +122,17 @@ def _bar_gen(bar_factory):
         for t in total, int(total * .6), int(total + 1):
             for pos in range(t):
                 percent = float(pos) / total
-                yield bar(percent), '\n'
+                yield bar(percent),
             # generates a small pause in movement between cases, based on fps.
             percent = float(t) / total
             for _ in range(int(fps * 2)):
-                yield bar(percent, end=True), '\n'
+                yield bar(percent, end=True),
 
         # advanced use cases, which do not go only forward.
         for t in [1. - float(x) / total for x in range(total)], \
                  [random.random() for _ in range(total)]:
             for percent in t:
-                yield bar(percent), '\n'
+                yield bar(percent),
 
 
 def _spinner_gen(spinner_factory, max_natural):
