@@ -9,7 +9,7 @@ from ..core.configuration import config_handler
 from ..core.utils import hide_cursor, show_cursor
 
 
-def showtime(fps=None, spinners=True, length=None, pattern=None):
+def showtime(fps=None, spinners=True, *, length=None, pattern=None):
     """Start a show, rendering all styles simultaneously in your screen.
 
     Args:
@@ -24,7 +24,7 @@ def showtime(fps=None, spinners=True, length=None, pattern=None):
         show_bars(fps, **options)
 
 
-def show_spinners(fps=None, length=None, pattern=None):
+def show_spinners(fps=None, *, length=None, pattern=None):
     """Start a spinner show, rendering all styles simultaneously in your screen.
 
     Args:
@@ -42,7 +42,7 @@ def show_spinners(fps=None, length=None, pattern=None):
                                for k, s in selected.items())
 
 
-def show_bars(fps=None, length=None, pattern=None):
+def show_bars(fps=None, *, length=None, pattern=None):
     """Start a bar show, rendering all styles simultaneously in your screen.
 
     Args:
