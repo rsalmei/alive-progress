@@ -6,13 +6,15 @@ from ..animations.spinners import bouncing_spinner_factory, compound_spinner_fac
     delayed_spinner_factory, frame_spinner_factory, scrolling_spinner_factory
 
 
-def _wrap_ordered(result, desired_order):
-    assert set(result) == set(desired_order), \
-        'missing={} extra={}'.format(str(set(result) - set(desired_order)),
-                                     str(set(desired_order) - set(result)))
-    if sys.version_info >= (3, 7):
+def _wrap_ordered(context, desired):
+    result = {k: v for k, v in context.items() if not k.startswith('_')}
+    desired = desired.split()
+    assert set(result) == set(desired), \
+        'missing={}\nextra={}'.format(str(set(result) - set(desired)),
+                                      str(set(desired) - set(result)))
+    if sys.version_info >= (3, 7):  # python 3.7+ have dict ordering.
         return result
-    return OrderedDict((x, result[x]) for x in desired_order)
+    return OrderedDict((x, result[x]) for x in desired)
 
 
 def __create_spinners():
@@ -79,8 +81,6 @@ def __create_spinners():
         r'–––––––––––––•',
     )
 
-    result = {k: (v, unknown_bar_factory(v))
-              for k, v in locals().items() if not k.startswith('_')}
     desired_order = 'classic stars arrow arrows vertical waves waves2 waves3 horizontal dots ' \
                     'dots_reverse dots_waves dots_waves2 ball_scrolling balls_scrolling ' \
                     'ball_bouncing balls_bouncing dots_recur bar_recur pointer arrows_recur ' \
@@ -106,7 +106,6 @@ def __create_bars():
     checks = standard_bar_factory(chars='✓', tip='', errors='⚠✗')
     filling = standard_bar_factory(chars='▁▂▃▄▅▆▇█', tip=None, errors='⚠✗')
 
-    result = {k: v for k, v in locals().items() if not k.startswith('_')}
     desired_order = 'classic classic2 smooth blocks bubbles circles hollow squares solid checks ' \
                     'filling'.split()
     return _wrap_ordered(result, desired_order)
@@ -120,7 +119,6 @@ def __create_themes():
     # noinspection PyShadowingBuiltins
     ascii = dict(spinner='classic', bar='classic', unknown='brackets')
 
-    result = {k: v for k, v in locals().items() if not k.startswith('_')}
     desired_order = 'smooth ascii'.split()
     return _wrap_ordered(result, desired_order)
 
