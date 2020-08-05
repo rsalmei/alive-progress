@@ -5,6 +5,7 @@ from collections import OrderedDict
 from .internal import BARS, SPINNERS
 from ..animations.utils import spinner_player
 from ..core.configuration import config_handler
+from ..core.utils import hide_cursor, show_cursor
 
 
 def showtime(fps=None, spinners=True, length=None):
@@ -70,6 +71,7 @@ def show_bars(fps=None, length=None):
     start, frame = timer(), 0
 def _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, length=None):
     start, current = start - sleep, start  # simulates the first frame took exactly "sleep" ms.
+    hide_cursor()
     try:
         while True:
             print('fps: {:.2f} (goal: {:.1f})  '  # the blanks at the end remove artifacts.
@@ -84,6 +86,8 @@ def _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, leng
             print(up_command)
     except KeyboardInterrupt:
         pass
+    finally:
+        show_cursor()
 
 
 def _bar_gen(bar_factory):
