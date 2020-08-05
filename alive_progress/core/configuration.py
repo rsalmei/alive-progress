@@ -6,17 +6,25 @@ from ..animations import bars, spinners
 from ..styles.internal import BARS, SPINNERS, THEMES
 
 
-def _style_input_factory(name_lookup, func_lookup, name_index=None):
+def _style_input_factory(name_lookup, module_lookup, inner_name):
     def _input(x):
-        if isinstance(x, FunctionType):
-            if x.__code__.co_name == 'inner_factory' \
-                    and os.path.splitext(x.__code__.co_filename)[0] == func_file:
-                return x
-        elif x in name_lookup:
-            return getter(name_lookup[x])
+        return name_lookup(x) or func_lookup(x)
 
-    func_file, _ = os.path.splitext(func_lookup.__file__)
-    getter = (lambda x: x) if name_index is None else lambda x: x[name_index]
+    name_lookup = __name_lookup_factory(name_lookup)
+    func_lookup = __func_lookup_factory(module_lookup, inner_name)
+    return _input
+
+
+def _unknown_bar_input_factory():
+    def _input(x):
+        obj = name_lookup(x) or spinner_lookup(x)
+        if obj:
+            return bars.unknown_bar_factory(obj)
+        return unknown_lookup(x)
+
+    name_lookup = __name_lookup_factory(SPINNERS)
+    spinner_lookup = __func_lookup_factory(spinners, 'inner_factory')
+    unknown_lookup = __func_lookup_factory(bars, 'inner_unknown_bar_factory')
     return _input
 
 
@@ -35,12 +43,30 @@ def _bool_input_factory():
     return _input
 
 
-# noinspection PyTypeChecker
+def __name_lookup_factory(name_lookup):
+    def _input(x):
+        if isinstance(x, str):
+            return name_lookup.get(x)
+
+    return _input
+
+
+def __func_lookup_factory(module_lookup, inner_name):
+    def _input(x):
+        if isinstance(x, FunctionType):
+            func_file, _ = os.path.splitext(module_lookup.__file__)
+            if x.__code__.co_name == inner_name \
+                    and os.path.splitext(x.__code__.co_filename)[0] == func_file:
+                return x
+
+    return _input
+
+
 CONFIG_VARS = dict(
     length=_int_input_factory(3, 300),
-    spinner=_style_input_factory(SPINNERS, spinners, 0),
-    bar=_style_input_factory(BARS, bars),
-    unknown=_style_input_factory(SPINNERS, bars, 1),
+    spinner=_style_input_factory(SPINNERS, spinners, 'inner_factory'),
+    bar=_style_input_factory(BARS, bars, 'inner_standard_bar_factory'),
+    unknown=_unknown_bar_input_factory(),
     force_tty=_bool_input_factory(),
     manual=_bool_input_factory(),
     enrich_print=_bool_input_factory(),
