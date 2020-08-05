@@ -7,7 +7,7 @@ from ..animations.utils import spinner_player
 from ..core.configuration import config_handler
 
 
-def showtime(fps=None, spinners=True, **options):
+def showtime(fps=None, spinners=True, length=None):
     """Start a show, rendering all styles simultaneously in your screen.
 
     Args:
@@ -21,7 +21,7 @@ def showtime(fps=None, spinners=True, **options):
         show_bars(fps, **options)
 
 
-def show_spinners(fps=None, **options):
+def show_spinners(fps=None, length=None):
     """Start a spinner show, rendering all styles simultaneously in your screen.
 
     Args:
@@ -37,7 +37,7 @@ def show_spinners(fps=None, **options):
                                for k, s in SPINNERS.items())
 
 
-def show_bars(fps=None, **options):
+def show_bars(fps=None, length=None):
     """Start a bar show, rendering all styles simultaneously in your screen.
 
     Args:
@@ -52,7 +52,6 @@ def show_bars(fps=None, **options):
     _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, **options)
 
 
-def _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, **options):
     fps = min(300., max(2., float(fps or 15.)))  # since one can't set the total, max_fps is higher.
     sleep, config = 1. / fps, config_handler(**options)
 
@@ -69,6 +68,7 @@ def _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, **op
     total_lines += 1  # frames per second indicator.
     up_command = '\033[{}A'.format(total_lines)  # ANSI escape sequence for Cursor Up.
     start, frame = timer(), 0
+def _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, length=None):
     start, current = start - sleep, start  # simulates the first frame took exactly "sleep" ms.
     try:
         while True:
@@ -87,9 +87,9 @@ def _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, **op
 
 
 def _bar_gen(bar_factory):
-    fps, config = yield
-    total = int(config.length * 2)
-    bar = bar_factory(config.length)
+    fps, length = yield
+    total = int(length * 1.9)
+    bar = bar_factory(length)
     while True:
         # standard use cases, increment till completion, underflow and overflow.
         for t in total, int(total * .6), int(total + 1):
@@ -108,14 +108,11 @@ def _bar_gen(bar_factory):
                 yield bar(percent), '\n'
 
 
-    fps, config = yield
-    spinner_lengths = {k: v[0].natural for k, v in SPINNERS.items()}
-    longest = max(spinner_lengths.values()) + 2
-    blanks = ' ' * (longest - spinner_lengths[key])
 def _spinner_gen(spinner_factory, max_natural):
+    fps, length = yield
     blanks = ' ' * (max_natural - spinner_factory.natural)
     player = spinner_player(spinner_factory())
-    unknown = spinner_player(spinner_factory(config.length))
+    unknown = spinner_player(spinner_factory(length))
     while True:
         yield blanks, next(player), next(unknown)
 
