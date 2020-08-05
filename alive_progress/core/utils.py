@@ -28,17 +28,13 @@ def sanitize_text_marking_wide_chars(text):
 
 
 def render_title(title, length):
-    if not title:
-        return ''
-    elif length == 1:
-        return '…'
-
     title = sanitize_text_marking_wide_chars(title)
     if not length:
         return title
 
     # fixed size left align implementation.
-    # there may be more in v2, like other alignments, variable with maximum size, and
+    # there may be more like other alignments, dynamic with maximum size, and
     # even scrolling and bouncing.
-    data = (length - 1, '…') if len(title) > length else (length, ' ')
-    return '{:{}.{}}{}'.format(title, length - 1, *data)[:length]
+    if len(title) > length:
+        return f'{title:.{length - 1}}…'
+    return f'{title:{length}}'
