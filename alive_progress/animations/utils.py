@@ -1,7 +1,7 @@
+import math
 from functools import wraps
 
 
-def repeating(length, natural=0):
 def spinner_player(spinner):
     """Create an infinite generator that plays all cycles of a spinner indefinitely."""
 
@@ -12,18 +12,18 @@ def spinner_player(spinner):
     return inner_play()  # returns an already initiated generator.
 
 
+def repeating(length):
     """Decorator to repeat a return value until a certain length."""
 
     def wrapper(fn):
         @wraps(fn)
         def inner(*args, **kwargs):
             for text in fn(*args, **kwargs):
-                text = ''.join((text,) * ratio)
-                yield text[:length]
+                yield (text * math.ceil((length or 1) / len(text)))[:length]
 
         return inner if length else fn
 
-    ratio = length // natural + 1 if length and natural else 1
+    assert not length or length > 0, 'length must be None or non negative'
     return wrapper
 
 
