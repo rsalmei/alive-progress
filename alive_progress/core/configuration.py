@@ -1,6 +1,5 @@
 import os
 from collections import namedtuple
-from copy import deepcopy
 from types import FunctionType
 
 from ..animations import bars, spinners
@@ -75,7 +74,7 @@ def create_config():
 
     def create_context(theme=None, **options):
         """Create an immutable copy of the current configuration, with optional customization."""
-        local_config = deepcopy(global_config)
+        local_config = dict(global_config)
         local_config.update(_parse(theme, options))
         # noinspection PyArgumentList
         return Config(**local_config)
@@ -98,7 +97,7 @@ def create_config():
             if theme not in THEMES:
                 raise ValueError(f'invalid theme name={theme}')
             swap = options
-            options = deepcopy(THEMES[theme])
+            options = dict(THEMES[theme])
             options.update(swap)
         return {k: validator(k, v) for k, v in options.items()}
 
