@@ -73,8 +73,7 @@ CONFIG_VARS = dict(
     title_length=_int_input_factory(0, 100),
 )
 
-Config = namedtuple('Config', tuple(CONFIG_VARS.keys()))
-Config.__new__.__defaults__ = (None,) * len(CONFIG_VARS)
+Config = namedtuple('Config', tuple(CONFIG_VARS))
 
 
 def create_config():
@@ -125,13 +124,12 @@ def create_config():
             swap = options
             options = dict(THEMES[theme])
             options.update(swap)
-        return {k: validator(k, v) for k, v in options.items()}
+        return {k: validator(k, v) for k, v in options.items() if v is not None}
 
     global_config = {}
     reset()
 
-    create_context.set_global = set_global
-    create_context.reset = reset
+    create_context.set_global, create_context.reset = set_global, reset
     return create_context
 
 
