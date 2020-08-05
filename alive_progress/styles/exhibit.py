@@ -1,4 +1,5 @@
 import random
+import re
 import time
 from collections import OrderedDict
 
@@ -8,13 +9,14 @@ from ..core.configuration import config_handler
 from ..core.utils import hide_cursor, show_cursor
 
 
-def showtime(fps=None, spinners=True, length=None):
+def showtime(fps=None, spinners=True, length=None, pattern=None):
     """Start a show, rendering all styles simultaneously in your screen.
 
     Args:
         fps (float): the desired frames per second rendition
         spinners (bool): shows spinners if True, or bars otherwise
         options (dict): configuration options
+        pattern (Pattern): to filter objects displayed
     """
     if spinners:
         show_spinners(fps, **options)
@@ -22,32 +24,37 @@ def showtime(fps=None, spinners=True, length=None):
         show_bars(fps, **options)
 
 
-def show_spinners(fps=None, length=None):
+def show_spinners(fps=None, length=None, pattern=None):
     """Start a spinner show, rendering all styles simultaneously in your screen.
 
     Args:
         fps (float): the desired frames per second rendition
         options (dict): configuration options
+        pattern (Pattern): to filter objects displayed
     """
-    max_name_length = max(map(lambda x: len(x), SPINNERS.keys())) + 2
     displaying, line_pattern = 'spinners, with their unknown bar renditions', '{1}|{2}| {0} {3}'
     total_lines = 1 + len(prepared_gen)
     _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, **options)
-    max_natural = max(map(lambda x: x.natural, SPINNERS.values())) + 2
+    selected = _filter(SPINNERS, pattern)
+    max_natural = max(map(lambda x: x.natural, selected.values())) + 2
+    max_name_length = max(map(lambda x: len(x), selected)) + 2
     prepared_gen = OrderedDict((f'{k:^{max_name_length}}', _spinner_gen(s, max_natural))
-                               for k, s in SPINNERS.items())
+                               for k, s in selected.items())
 
 
-def show_bars(fps=None, length=None):
+def show_bars(fps=None, length=None, pattern=None):
     """Start a bar show, rendering all styles simultaneously in your screen.
 
     Args:
         fps (float): the desired frames per second rendition
         options (dict): configuration options
+        pattern (Pattern): to filter objects displayed
     """
-    max_name_length = max(map(lambda x: len(x), BARS.keys())) + 2
-    prepared_gen = OrderedDict(('{:>{}}'.format(k, max_name_length), _bar_gen(b))
-                               for k, b in BARS.items())
+    selected = _filter(BARS, pattern)
+    max_name_length = max(map(lambda x: len(x), selected)) + 2
+    prepared_gen = OrderedDict((f'{k:>{max_name_length}}', _bar_gen(b))
+                               for k, b in selected.items())
+    """
     displaying, line_pattern = 'bars', '{0} {1}{2}'
     total_lines = 1 + 2 * len(prepared_gen)
     _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, **options)
@@ -55,6 +62,12 @@ def show_bars(fps=None, length=None):
 
     fps = min(300., max(2., float(fps or 15.)))  # since one can't set the total, max_fps is higher.
     sleep, config = 1. / fps, config_handler(**options)
+def _filter(source, pattern):
+    p = re.compile(pattern or '')
+    selected = {k: v for k, v in source.items() if p.search(k)}
+    if not selected:
+        raise ValueError(f'Nothing was selected with pattern "{pattern}".')
+    return selected
 
     print('Welcome to alive-progress, enjoy! (ctrl+c to stop :)')
     print('=================================')
