@@ -2,11 +2,11 @@ from unittest import mock
 
 import pytest
 
-
-from alive_progress.styles.internal import BARS, SPINNERS, THEMES
+from alive_progress import unknown_bar_factory
 # noinspection PyProtectedMember
 from alive_progress.core.configuration import Config, _bool_input_factory, _int_input_factory, \
-    _style_input_factory, create_config
+    _style_input_factory, _unknown_bar_input_factory, create_config
+from alive_progress.styles.internal import BARS, SPINNERS, THEMES
 
 
 @pytest.mark.parametrize('lower, upper, num, expected', [
@@ -34,7 +34,7 @@ def test_bool_input_factory(param, expected):
     assert func(param) == expected
 
 
-def func_style_test():
+def func_style_123():
     def inner_factory():
         pass
 
@@ -45,41 +45,50 @@ def func_not_style():
     pass
 
 
-STYLE_TEST = func_style_test()
-NAMES = dict(name_test='ok')
-NAMES_INDEXED = dict(name_test=(1, 1, 'ok'))
+STYLE_1 = func_style_123()
+STYLE_2 = func_style_123()
+NAMES = dict(name_1=STYLE_1, name_2=STYLE_2)
 
 
 @pytest.mark.parametrize('param, expected', [
-    (STYLE_TEST, STYLE_TEST),
-    ('name_test', 'ok'),
+    (STYLE_1, STYLE_1),
+    (STYLE_2, STYLE_2),
+    ('name_1', STYLE_1),
+    ('name_2', STYLE_2),
 ])
 def test_style_input_factory(param, expected):
     test_style_input_factory.__file__ = __file__
 
-    func = _style_input_factory(NAMES, test_style_input_factory)
-    assert func(param) == expected
-
-
-@pytest.mark.parametrize('param, expected', [
-    (STYLE_TEST, STYLE_TEST),
-    ('name_test', 'ok'),
-])
-def test_style_input_factory_indexed(param, expected):
-    test_style_input_factory_indexed.__file__ = __file__
-
-    func = _style_input_factory(NAMES_INDEXED, test_style_input_factory_indexed, 2)
+    func = _style_input_factory(NAMES, test_style_input_factory, 'inner_factory')
     assert func(param) == expected
 
 
 @pytest.mark.parametrize('param', [
-    'banana', func_not_style, STYLE_TEST,
+    'banana', func_not_style, STYLE_1,
 ])
 def test_style_input_factory_error(param):
     test_style_input_factory_error.__file__ = ''  # simulates a func_style declared elsewhere.
 
-    func = _style_input_factory(NAMES, test_style_input_factory_error)
+    func = _style_input_factory(NAMES, test_style_input_factory_error, 'inner_factory')
     assert func(param) is None
+
+
+@pytest.mark.parametrize('param, expected', [
+    ('pulse', SPINNERS['pulse']),
+    (SPINNERS['waves'], SPINNERS['waves']),
+])
+def test_unknown_input_factory_creation(param, expected):
+    func = _unknown_bar_input_factory()
+    with mock.patch('alive_progress.animations.bars.unknown_bar_factory') as mock_unknown:
+        func(param)
+        mock_unknown.assert_called_once_with(expected)
+
+
+def test_unknown_input_factory_bypass():
+    func, param = _unknown_bar_input_factory(), unknown_bar_factory(SPINNERS['fish'])
+    with mock.patch('alive_progress.animations.bars.unknown_bar_factory') as mock_unknown:
+        assert func(param) is param
+        mock_unknown.assert_not_called()
 
 
 @pytest.fixture
@@ -87,36 +96,48 @@ def handler():
     yield create_config()
 
 
-def test_config_create(handler):
+def test_config_creation(handler):
     config = handler()
     assert isinstance(config, Config)
     assert all(x is not None for x in config)
 
 
+NEW_UNKNOWN = unknown_bar_factory(SPINNERS['pulse'], '[]')
+
+
 @pytest.fixture(params=[
-    dict(length=9),
-    dict(spinner=SPINNERS['pulse'][0]),
-    dict(bar=BARS['solid']),
-    dict(unknown=SPINNERS['pulse'][1]),
-    dict(force_tty=True),
-    dict(manual=True),
-    dict(enrich_print=False),
-    dict(spinner=SPINNERS['pulse'][0], bar=BARS['solid'], unknown=SPINNERS['fish'][1]),
-    dict(force_tty=True, manual=True, enrich_print=False),
+    (dict(length=9), dict()),
+    (dict(spinner='pulse'), dict(spinner=SPINNERS['pulse'])),
+    (dict(spinner=SPINNERS['pulse']), dict()),
+    (dict(bar='solid'), dict(bar=BARS['solid'])),
+    (dict(bar=BARS['solid']), dict()),
+    (dict(unknown=NEW_UNKNOWN), dict()),
+    (dict(force_tty=True), dict()),
+    (dict(manual=True), dict()),
+    (dict(enrich_print=False), dict()),
+    (dict(title_length=20), dict()),
+    (dict(spinner=SPINNERS['pulse'], bar=BARS['solid'], unknown=NEW_UNKNOWN), dict()),
+    (dict(force_tty=True, manual=True, enrich_print=False, title_length=10), dict()),
+    (dict(spinner=None, length=None, manual=None),
+     dict(spinner=SPINNERS['waves'], length=40, manual=False)),
 ])
 def config_params(request):
     yield request.param
 
 
 def test_config_global(config_params, handler):
-    handler.set_global(**config_params)
+    params, expected = config_params
+    expected = dict(params, **expected)
+    handler.set_global(**params)
     config = handler()
-    assert {k: v for k, v in config._asdict().items() if k in config_params} == config_params
+    assert {k: v for k, v in config._asdict().items() if k in params} == expected
 
 
 def test_config_local(config_params, handler):
-    config = handler(**config_params)
-    assert {k: v for k, v in config._asdict().items() if k in config_params} == config_params
+    params, expected = config_params
+    expected = dict(params, **expected)
+    config = handler(**params)
+    assert {k: v for k, v in config._asdict().items() if k in params} == expected
 
 
 @pytest.fixture(params=[
@@ -125,7 +146,7 @@ def test_config_local(config_params, handler):
     dict(bar='coolest'),
     dict(unknown='nope'),
     dict(theme='rogerio'),
-    dict(spinner=SPINNERS['pulse'][0], bar='oops', unknown=SPINNERS['fish'][1]),
+    dict(spinner=SPINNERS['pulse'], bar='oops', unknown=SPINNERS['fish']),
     dict(hey=True),
     dict(length=10, cool='very'),
 ])
@@ -145,11 +166,13 @@ def test_config_local_error(config_params_error, handler):
 
 @pytest.fixture
 def config_params_theme(config_params):
-    with mock.patch.dict(THEMES, cool=config_params):
+    with mock.patch.dict(THEMES, cool=config_params[0]):
         yield config_params
 
 
 def test_config_global_theme(config_params_theme, handler):
+    params, expected = config_params_theme
+    expected = dict(params, **expected)
     handler.set_global(theme='cool')
     config = handler()
-    assert {k: getattr(config, k) for k in config_params_theme} == config_params_theme
+    assert {k: getattr(config, k) for k in params} == expected
