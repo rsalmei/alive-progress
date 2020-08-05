@@ -29,11 +29,12 @@ def show_spinners(fps=None, **options):
         options (dict): configuration options
     """
     max_name_length = max(map(lambda x: len(x), SPINNERS.keys())) + 2
-    prepared_gen = OrderedDict(('{:^{}}'.format(k, max_name_length), _spinner_gen(k, s, u))
-                               for k, (s, u) in SPINNERS.items())
     displaying, line_pattern = 'spinners, with their unknown bar renditions', '{1}|{2}| {0} {3}'
     total_lines = 1 + len(prepared_gen)
     _showtime_gen(fps, prepared_gen, displaying, line_pattern, total_lines, **options)
+    max_natural = max(map(lambda x: x.natural, SPINNERS.values())) + 2
+    prepared_gen = OrderedDict((f'{k:^{max_name_length}}', _spinner_gen(s, max_natural))
+                               for k, s in SPINNERS.items())
 
 
 def show_bars(fps=None, **options):
@@ -107,15 +108,16 @@ def _bar_gen(bar_factory):
                 yield bar(percent), '\n'
 
 
-def _spinner_gen(key, spinner_factory, unknown_factory):
     fps, config = yield
     spinner_lengths = {k: v[0].natural for k, v in SPINNERS.items()}
     longest = max(spinner_lengths.values()) + 2
     blanks = ' ' * (longest - spinner_lengths[key])
+def _spinner_gen(spinner_factory, max_natural):
+    blanks = ' ' * (max_natural - spinner_factory.natural)
     player = spinner_player(spinner_factory())
-    unknown = unknown_factory(config.length)
+    unknown = spinner_player(spinner_factory(config.length))
     while True:
-        yield blanks, next(player), unknown()
+        yield blanks, next(player), next(unknown)
 
 
 def print_chars(line_length=32, max_char=0x10000):

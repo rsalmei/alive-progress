@@ -1,7 +1,7 @@
 import sys
 from collections import OrderedDict
 
-from ..animations.bars import standard_bar_factory, unknown_bar_factory
+from ..animations.bars import standard_bar_factory
 from ..animations.spinners import bouncing_spinner_factory, compound_spinner_factory, \
     delayed_spinner_factory, frame_spinner_factory, scrolling_spinner_factory
 
