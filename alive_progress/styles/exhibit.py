@@ -2,6 +2,7 @@ import random
 import re
 import time
 from collections import OrderedDict
+from enum import Enum
 from shutil import get_terminal_size
 
 from .internal import BARS, SPINNERS, THEMES
@@ -10,20 +11,24 @@ from ..animations.utils import spinner_player
 from ..core.configuration import config_handler
 from ..core.utils import hide_cursor, show_cursor
 
+Show = Enum('Show', 'SPINNERS BARS THEMES')
 
-def showtime(fps=None, spinners=True, *, length=None, pattern=None):
+
+def showtime(fps=None, show=Show.SPINNERS, *, length=None, pattern=None):
     """Start a show, rendering all styles simultaneously in your screen.
 
     Args:
-        spinners (bool): shows spinners if True, or bars otherwise
         fps (float): the desired frames per second refresh rate
+        show (Show): chooses which show will run
         length (int): the bar length, as in configuration options
         pattern (Pattern): to filter objects displayed
     """
-    if spinners:
-        show_spinners(fps, **options)
-    else:
-        show_bars(fps, **options)
+    show_funcs = {
+        Show.SPINNERS: show_spinners,
+        Show.BARS: show_bars,
+        Show.THEMES: show_themes,
+    }
+    show_funcs[show](fps, length=length, pattern=pattern)
 
 
 def show_spinners(fps=None, *, length=None, pattern=None):
@@ -56,6 +61,24 @@ def show_bars(fps=None, *, length=None, pattern=None):
     prepared_gen = OrderedDict((f'{k:>{max_name_length}}', _bar_gen(b))
                                for k, b in selected.items())
     displaying, line_pattern = 'bars, with their underflow and overflow states', '{0} {1}'
+    _showtime_gen(fps, prepared_gen, displaying, line_pattern, length)
+
+
+def show_themes(fps=None, *, length=None, pattern=None):
+    """Start a theme show, rendering all styles simultaneously in your screen.
+
+    Args:
+        fps (float): the desired frames per second rendition
+        length (int): the bar length, as in configuration options
+        pattern (Pattern): to filter objects displayed
+    """
+    selected = _filter(THEMES, pattern)
+    themes = {k: config_handler(**v) for k, v in selected.items()}
+    max_natural = max(x.spinner.natural for x in themes.values())
+    max_name_length = max(map(lambda x: len(x), selected)) + 2
+    prepared_gen = OrderedDict((f'{k:>{max_name_length}}', _theme_gen(c, max_natural))
+                               for k, c in themes.items())
+    displaying, line_pattern = 'themes: bounded bar, spinner and unknown bar', '{0} {1} {2}{3} {4}'
     _showtime_gen(fps, prepared_gen, displaying, line_pattern, length)
 
 
@@ -142,6 +165,17 @@ def _spinner_gen(spinner_factory, max_natural):
     unknown = spinner_player(spinner_factory(length))
     while True:
         yield blanks, next(player), next(unknown)
+
+
+def _theme_gen(config, max_natural):
+    fps, length = yield
+    bar = _bar_gen(config.bar)
+    next(bar), bar.send((fps, length))  # initialize generator
+    blanks = ' ' * (max_natural - config.spinner.natural)
+    player = spinner_player(config.spinner())
+    unknown = config.unknown(length)
+    while True:
+        yield next(bar)[0], next(player), blanks, unknown()
 
 
 def print_chars(line_length=32, max_char=0x10000):

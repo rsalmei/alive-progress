@@ -4,7 +4,7 @@ from .animations.spinners import bouncing_spinner_factory, compound_spinner_fact
 from .animations.utils import spinner_player
 from .core.configuration import config_handler
 from .core.progress import alive_bar
-from .styles.exhibit import print_chars, show_bars, show_spinners, showtime
+from .styles.exhibit import Show, print_chars, show_bars, show_spinners, show_themes, showtime
 from .styles.internal import BARS, SPINNERS, THEMES
 
 VERSION = (1, 6, 1)
@@ -18,6 +18,6 @@ __description__ = 'A new kind of Progress Bar, with real-time throughput, ' \
 __all__ = (
     'alive_bar', 'config_handler', 'standard_bar_factory', 'unknown_bar_factory', 'spinner_player',
     'frame_spinner_factory', 'scrolling_spinner_factory', 'bouncing_spinner_factory',
-    'compound_spinner_factory', 'delayed_spinner_factory', 'BARS', 'SPINNERS', 'THEMES',
-    'showtime', 'show_spinners', 'show_bars', 'print_chars'
+    'compound_spinner_factory', 'delayed_spinner_factory', 'BARS', 'SPINNERS', 'THEMES', 'Show',
+    'showtime', 'show_spinners', 'show_bars', 'show_themes', 'print_chars'
 )
