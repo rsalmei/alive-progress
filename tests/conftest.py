@@ -4,10 +4,10 @@ import pytest
 @pytest.fixture
 def spinner_test():
     def spinner_test(output):
-        # noinspection PyUnusedLocal
         def inner_factory(length_actual=None):
             def inner_spinner():
-                yield from output
+                for c in output:
+                    yield (c * (length_actual or 1))[:length_actual]
 
             inner_spinner.cycles = len(output)
             return inner_spinner
