@@ -202,9 +202,18 @@ def compound_spinner_factory(*spinner_factories, alongside=True):
     return inner_factory
 
 
-def delayed_spinner_factory(spinner_factory, copies, offset):
-    """Create a factory of a spinner that copies itself several times,
-    with an increasing iteration offset between them.
+def delayed_spinner_factory(spinner_factory, copies, offset=1):
+    """Create a factory of a spinner that combines itself several times alongside,
+    with an increasing iteration offset on each one.
+
+    Args:
+        spinner_factory (a spinner): the source spinner
+        copies (int): the number of copies
+        offset (int): the offset to be applied incrementally to each copy
+
+    Returns:
+        a styled spinner factory
+
     """
 
     # this spinner is not actually a spinner, it is more a helper factory method.
@@ -215,7 +224,7 @@ def delayed_spinner_factory(spinner_factory, copies, offset):
         copies_actual = math.ceil(length_actual / spinner_factory.natural) \
             if length_actual else copies
         result = compound_spinner_factory(*((spinner_factory,) * copies_actual))(length_actual)
-        for i, s in enumerate(result.players):
+        for i, s in enumerate(result.players):  # noqa
             for _ in range(i * offset):
                 next(s)
         return result
