@@ -45,6 +45,13 @@ def bordered(borders, default):
     return wrapper
 
 
+def extract_fill_chars(string, default):
+    """Extract the exact same number of chars as default, filling missing ones."""
+    if not string:
+        return default
+    return (string * math.ceil(len(default) / len(string)))[:len(default)]
+
+
 
     def sliding_window():
         pos = initial
