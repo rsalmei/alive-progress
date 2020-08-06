@@ -1,20 +1,18 @@
 import pytest
 
-from alive_progress.animations.utils import repeating, sliding_window_factory, spinner_player
+from alive_progress.animations.utils import extract_fill_chars, overlay_sliding_window_factory, \
+    repeating, static_sliding_window_factory, \
+    spinner_player
 
 
-@pytest.mark.parametrize('length, natural, text, expected', [
-    (0, 0, '', ''),
-    (0, 0, 'no length, everything is output', 'no length, everything is output'),
-    (10, 0, '', ''),
-    (10, 0, 'abc', 'abc'),
-    (10, 0, 'more than len', 'more than '),
-    (10, 2, '', ''),
-    (10, 2, 'abc ', 'abc abc ab'),
-    (10, 2, 'more than len', 'more than '),
+@pytest.mark.parametrize('length, text, expected', [
+    (None, 'text', 'text'),
+    (0, 'text', 'text'),
+    (10, 'abc', 'abcabcabca'),
+    (7, 'more than len', 'more th'),
 ])
-def test_repeating(length, natural, text, expected):
-    @repeating(length, natural)
+def test_repeating(length, text, expected):
+    @repeating(length)
     def func():
         yield text
 
@@ -22,34 +20,59 @@ def test_repeating(length, natural, text, expected):
 
 
 def test_repeating_empty():
-    @repeating(10, 0)
+    @repeating(99)
     def func():
-        return ()
+        if False:
+            yield  # noqa
 
     with pytest.raises(StopIteration):
         next(func())
 
 
-@pytest.mark.parametrize('length, content, step, expected_3', [
-    (1, 'ab', 1, ('a', 'b', 'a')),
-    (1, 'abc', -1, ('a', 'c', 'b')),
+@pytest.mark.parametrize('gap, contents, length, step, initial, expected_6', [
+    (0, ('abc',), 1, 1, 0, ('a', 'b', 'c', 'a', 'b', 'c')),
+    (0, ('abc',), 1, -1, 0, ('a', 'c', 'b', 'a', 'c', 'b')),
+    (0, ('abc',), 1, 1, -2, ('b', 'c', 'a', 'b', 'c', 'a')),
+    (0, ('abc',), 1, -1, 1, ('b', 'a', 'c', 'b', 'a', 'c')),
+    (0, ('abcdef',), 4, -1, 7, ('bcde', 'abcd', 'fabc', 'efab', 'defa', 'cdef')),
+    (1, ('abc',), 1, 1, 0, ('!', 'a', 'b', 'c', '!', 'a')),
+    (1, ('abc',), 1, -1, 0, ('!', 'c', 'b', 'a', '!', 'c')),
+    (1, ('abc',), 1, 1, -2, ('b', 'c', '!', 'a', 'b', 'c')),
+    (1, ('abc',), 1, -1, 1, ('a', '!', 'c', 'b', 'a', '!')),
+    (1, ('abcdef',), 4, -1, 7, ('!abc', 'f!ab', 'ef!a', 'def!', 'cdef', 'bcde')),
+    (1, ('abc', 'xy'), 1, 1, 0, ('!', 'a', 'b', 'c', '!', 'x')),
+    (1, ('abc', 'xy'), 1, -1, 0, ('!', 'y', 'x', '!', 'c', 'b')),
+    (1, ('abc', 'xy'), 1, 1, -2, ('x', 'y', '!', 'a', 'b', 'c')),
+    (1, ('abc', 'xy'), 1, -1, 1, ('a', '!', 'y', 'x', '!', 'c')),
+    (1, ('abcdef', 'xy'), 4, -1, 7, ('!xy!', 'f!xy', 'ef!x', 'def!', 'cdef', 'bcde')),
 ])
-def test_sliding_window(length, content, step, expected_3):
-    ribbon = sliding_window_factory(length, content, step, 0)
-    assert tuple(next(ribbon) for _ in range(3)) == expected_3
+def test_static_sliding_window(gap, contents, length, step, initial, expected_6):
+    ribbon = static_sliding_window_factory('!@#$%', gap, contents, length, step, initial)
+    assert tuple(next(ribbon) for _ in range(6)) == expected_6
+
+
+@pytest.mark.parametrize('gap, contents, length, step, initial, expected_6', [
+    (1, ('abcdef',), 4, 1, 0, ('!abc', 'abcd', 'bcde', 'cdef', 'def$', 'ef#a')),
+    (1, ('abcdef',), 4, -1, 0, ('!abc', 'f@ab', 'ef#a', 'def$', 'cdef', 'bcde')),
+    (2, ('abc', 'xy'), 2, 1, 0, ('!@', '!a', 'ab', 'bc', 'c@', '!@')),
+    (3, ('abc', 'xy'), 4, -1, 0, ('!@#a', 'y@#$', 'xy#$', '!xy$', '!@xy', '!@#x')),
+    (4, ('abc', 'xy'), 6, 1, -2, ('xy#$%!', 'y@#$%a', '!@#$ab', '!@#abc', '!@abc!', '!abc%!')),
+])
+def test_overlay_sliding_window(gap, contents, length, step, initial, expected_6):
+    ribbon = overlay_sliding_window_factory('!@#$%', gap, contents, length, step, initial)
+    assert tuple(next(ribbon) for _ in range(6)) == expected_6
 
 
 def test_sliding_window_error():
     with pytest.raises(AssertionError):
-        sliding_window_factory(100, 'window that slides', 1, 0)
+        static_sliding_window_factory('back', 10, ('window that slides',), 100, 1, 0)
 
 
-def spinner_cycle_test():
+def spinner_cycle_123():
     # noinspection PyUnusedLocal
     def inner_factory(length=None):
         def inner_spinner():
-            for c in '123':  # TODO python 2.7...
-                yield c
+            yield from '123'
 
         return inner_spinner
 
@@ -57,5 +80,17 @@ def spinner_cycle_test():
 
 
 def test_spinner_player():
-    player = spinner_player(spinner_cycle_test()())
+    player = spinner_player(spinner_cycle_123()())
     assert tuple(next(player) for _ in range(4)) == ('1', '2', '3', '1')
+
+
+@pytest.mark.parametrize('text, default, expected', [
+    (None, '<>', '<>'),
+    ('', '<>', '<>'),
+    ('a', '---', 'aaa'),
+    ('ab', '!!!', 'aba'),
+    ('ab', '$$', 'ab'),
+    ('abc', '##', 'ab'),
+])
+def test_extract_exactly_n_chars(text, default, expected):
+    assert extract_fill_chars(text, default) == expected
