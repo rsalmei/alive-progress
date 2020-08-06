@@ -88,41 +88,59 @@ def scrolling_spinner_factory(chars, length=None, block=None, background=None,
     return inner_factory
 
 
-def bouncing_spinner_factory(right_chars, length, block=None, left_chars=None,
-                             blank=' ', hiding=True):
-    """Create a factory of a spinner that bounces characters inside a line."""
+def bouncing_spinner_factory(chars, length=None, block=None, background=None,
+                             hiding=True, is_text=False, overlay=False):
+    """Create a factory of a spinner that scrolls characters from one side to
+    the other and bounce back, configurable with various constraints.
+
+    Args:
+        chars (Union[str, Tuple[str, str]]): the characters to be scrolled, either
+            together or split in blocks. Also accepts a tuple of two strings,
+            which are used one in each direction
+        length (Optional[int]): the natural length that should be used in the style
+        block (Optional[int]): if defined, split chars in blocks with this size
+        background (Optional[str]): the pattern to be used besides or underneath the animations
+        hiding (bool): controls whether the animation goes outside the borders or stays inside
+        is_text (bool): optimizes text display, scrolling slower and pausing at the edges
+        overlay (bool): fixes the background in place if overlay, scrolls it otherwise
+
+    Returns:
+        a styled spinner factory
+
+    """
 
     def inner_factory(length_actual=None):
-        right_scroll = scrolling_spinner_factory(right_chars, length, block=block, blank=blank,
-                                                 right=True, hiding=hiding)(length_actual)
-        left_scroll = scrolling_spinner_factory(left_chars, length, block=block, blank=blank,
-                                                right=False, hiding=hiding)(length_actual)
+        first_scroll = scrolling_spinner_factory(
+            right_chars, length, block, background,
+            right=not is_text, hiding=hiding, overlay=overlay)(length_actual)
+        second_scroll = scrolling_spinner_factory(
+            left_chars, length, block, background,
+            right=is_text, hiding=hiding, overlay=overlay)(length_actual)
 
         ratio = float(length_actual) / length if length and length_actual else 1
         length_actual = length_actual or inner_factory.natural
 
-        @repeating(length_actual)
         def inner_spinner():
-            for i, fill in enumerate(right_scroll()):
-                if i < right_direction_size:
-                    yield fill
-            for i, fill in enumerate(left_scroll()):
-                if i < left_direction_size:
-                    yield fill
+            for gen, size in (first_scroll, first_size), (second_scroll, second_size):
+                for i, fill in enumerate(gen()):
+                    if i <= size:
+                        for _ in range(frames_edges if i in (0, size) else frames_middle):
+                            yield fill
 
-        right_block_size = int((block or 0) * ratio) or len(right_chars)
-        left_block_size = int((block or 0) * ratio) or len(left_chars)
-        right_direction_size = length_actual + right_block_size \
-            if hiding else abs(length_actual - right_block_size) or 1
-        left_direction_size = length_actual + left_block_size \
-            if hiding else abs(length_actual - left_block_size) or 1
+        first_block_size = int((block or 0) * ratio) or len(right_chars)
+        second_block_size = int((block or 0) * ratio) or len(left_chars)
+        first_size = length_actual + first_block_size if hiding \
+            else abs(length_actual - first_block_size)
+        second_size = length_actual + second_block_size if hiding \
+            else abs(length_actual - second_block_size)
 
-        inner_spinner.cycles = right_direction_size + left_direction_size
+        inner_spinner.cycles = first_size + second_size
         return inner_spinner
 
-    left_chars = left_chars or right_chars
+    right_chars, left_chars = chars if isinstance(chars, tuple) else (chars, chars)
+    frames_edges, frames_middle = (6, 2) if is_text else (1, 1)
 
-    inner_factory.natural = length
+    inner_factory.natural = length or max(len(right_chars), len(left_chars))
     return inner_factory
 
 
