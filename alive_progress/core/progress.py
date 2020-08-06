@@ -180,16 +180,17 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         logic_total, current = 1., lambda: run.percent
         rate_spec, factor, print_template = '%', 1., 'on {:.1%}: '
 
+    known, unknown = (impl(config.length) for impl in (config.bar, config.unknown))
     if total or config.manual:  # we can track progress and therefore eta.
         spec = '({{:.1{}}}/s, eta: {{}})'.format(rate_spec)
+        bar_repr = known
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
         gen_eta.send(None)
         stats = lambda: spec.format(run.rate, to_eta_text(gen_eta.send((current(), run.rate))))
-        bar_repr = config.bar(config.length)
     else:  # unknown progress.
-        bar_repr = config.unknown(config.length, config.bar)
         stats = lambda: '({:.1f}/s)'.format(run.rate)  # noqa
     stats_end = lambda: '({:.2{}}/s)'.format(run.rate, rate_spec)  # noqa
+        bar_repr = unknown
 
 
     end, run.text, run.last_line_len = False, '', 0
@@ -230,5 +231,8 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
             thread = None  # lets the internal thread terminate gracefully.
             local_copy.join()
 
-        end, run.text, stats = True, '', stats_end
-        alive_repr()
+    # prints the nice final receipt.
+    end, run.text, stats = True, '', stats_end
+    if bar_repr is unknown:
+        bar_repr, run.percent = known, 1.
+    alive_repr()
