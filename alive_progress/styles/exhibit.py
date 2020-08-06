@@ -14,7 +14,7 @@ from ..core.utils import hide_cursor, show_cursor
 Show = Enum('Show', 'SPINNERS BARS THEMES')
 
 
-def showtime(fps=None, show=Show.SPINNERS, *, length=None, pattern=None):
+def showtime(show=Show.SPINNERS, *, fps=None, length=None, pattern=None):
     """Start a show, rendering all styles simultaneously in your screen.
 
     Args:
@@ -28,10 +28,10 @@ def showtime(fps=None, show=Show.SPINNERS, *, length=None, pattern=None):
         Show.BARS: show_bars,
         Show.THEMES: show_themes,
     }
-    show_funcs[show](fps, length=length, pattern=pattern)
+    show_funcs[show](fps=fps, length=length, pattern=pattern)
 
 
-def show_spinners(fps=None, *, length=None, pattern=None):
+def show_spinners(*, fps=None, length=None, pattern=None):
     """Start a spinner show, rendering all styles simultaneously in your screen.
 
     Args:
@@ -48,7 +48,7 @@ def show_spinners(fps=None, *, length=None, pattern=None):
     _showtime_gen(fps, prepared_gen, displaying, line_pattern, length)
 
 
-def show_bars(fps=None, *, length=None, pattern=None):
+def show_bars(*, fps=None, length=None, pattern=None):
     """Start a bar show, rendering all styles simultaneously in your screen.
 
     Args:
@@ -64,7 +64,7 @@ def show_bars(fps=None, *, length=None, pattern=None):
     _showtime_gen(fps, prepared_gen, displaying, line_pattern, length)
 
 
-def show_themes(fps=None, *, length=None, pattern=None):
+def show_themes(*, fps=None, length=None, pattern=None):
     """Start a theme show, rendering all styles simultaneously in your screen.
 
     Args:
