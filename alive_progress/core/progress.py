@@ -16,7 +16,7 @@ from ..animations.utils import spinner_player
 
 
 @contextmanager
-def alive_bar(total=None, title=None, calibrate=None, **options):
+def alive_bar(total=None, title=None, *, calibrate=None, **options):
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, elapsed time, throughput and ETA.
     When the operation finishes, a receipt is displayed with statistics.
