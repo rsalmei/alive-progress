@@ -79,5 +79,21 @@ def static_sliding_window_factory(sep, gap, contents, length, step, initial):
     return sliding_window()
 
 
+def overlay_sliding_window_factory(background, gap, contents, length, step, initial):
+    """Implement a sliding window over some content on top of a background.
+    It uses internally a static sliding window, but dynamically swaps the separator
+    characters for the background ones, thus making it appear immobile, with the
+    contents sliding over it.
 
+    """
 
+    def change(c, a):
+        return a if c == '\0' else c
+
+    def overlay_window():
+        for snapshot in window:  # pragma: no cover
+            yield ''.join(map(change, snapshot, adjusted_background))
+
+    adjusted_background = (background * math.ceil(length / len(background)))[:length]
+    window = static_sliding_window_factory('\0', gap, contents, length, step, initial)
+    return overlay_window()
