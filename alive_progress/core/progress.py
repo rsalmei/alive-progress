@@ -182,16 +182,21 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
 
     known, unknown = (impl(config.length) for impl in (config.bar, config.unknown))
     if total or config.manual:  # we can track progress and therefore eta.
-        spec = '({{:.1{}}}/s, eta: {{}})'.format(rate_spec)
         bar_repr = known
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
         gen_eta.send(None)
-        stats = lambda: spec.format(run.rate, to_eta_text(gen_eta.send((current(), run.rate))))
+
+        def stats():
+            eta = to_eta_text(gen_eta.send((current(), run.rate)))
+            return f'({run.rate:.1{rate_spec}}/s, eta: {eta})'
     else:  # unknown progress.
-        stats = lambda: '({:.1f}/s)'.format(run.rate)  # noqa
-    stats_end = lambda: '({:.2{}}/s)'.format(run.rate, rate_spec)  # noqa
         bar_repr = unknown
 
+        def stats():
+            return f'({run.rate:.1f}/s)'
+
+    def stats_end():
+        return f'({run.rate:.2{rate_spec}}/s)'
 
     end, run.text, run.last_line_len = False, '', 0
     run.count, run.percent, run.rate, run.init = 0, 0., 0., 0.
@@ -204,18 +209,20 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
             def update_hook():
                 run.percent = run.count / total
 
-        monitor = lambda: '{}{}/{} [{:.0%}]'.format(  # noqa
-            '(!) ' if end and run.count != total else '', run.count, total, run.percent
-        )
-    elif config.manual:
-        update_hook = lambda: None  # noqa
-        monitor = lambda: '{}{:.0%}'.format(  # noqa
-            '(!) ' if end and run.percent != 1. else '', run.percent
-        )
+        def monitor():
+            warning = '(!) ' if end and run.count != total else ''
+            return f'{warning}{run.count}/{total} [{run.percent:.0%}]'
     else:
-        run.percent = 1.
-        update_hook = lambda: None  # noqa
-        monitor = lambda: '{}'.format(run.count)  # noqa
+        def update_hook():
+            pass
+
+        if config.manual:
+            def monitor():
+                warning = '(!) ' if end and run.percent != 1. else ''
+                return f'{warning}{run.percent:.0%}'
+        else:
+            def monitor():
+                return f'{run.count}'
 
     title = render_title(title, config.title_length)
     fps = calibrated_fps(calibrate or factor)
