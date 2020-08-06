@@ -1,5 +1,6 @@
 import math
 from functools import wraps
+from itertools import chain, repeat
 
 
 def spinner_player(spinner):
@@ -27,8 +28,6 @@ def repeating(length):
     return wrapper
 
 
-def sliding_window_factory(length, content, step, initial):
-    """Implement a sliding window over a text content, which can go left or right."""
 def bordered(borders, default):
     """Decorator to include controllable borders in the outputs of a function."""
 
@@ -52,6 +51,15 @@ def extract_fill_chars(string, default):
     return (string * math.ceil(len(default) / len(string)))[:len(default)]
 
 
+def static_sliding_window_factory(sep, gap, contents, length, step, initial):
+    """Implement a sliding window over some content interspersed with a separator.
+    It is very efficient, storing data in only one string.
+
+    Note that the implementation is "static" in the sense that the content is pre-
+    calculated and maintained static, but actually when the window slides both the
+    separator and content seem to be moved.
+
+    """
 
     def sliding_window():
         pos = initial
@@ -63,10 +71,12 @@ def extract_fill_chars(string, default):
             yield content[pos:pos + length]
             pos += step
 
-    original, window = len(content), sliding_window()
+    adjusted_sep = (sep * math.ceil(gap / len(sep)))[:gap]
+    content = ''.join(chain.from_iterable(zip(repeat(adjusted_sep), contents)))
+    original = len(content)
     assert length <= original, 'window slides inside content, length must be <= len(content)'
     content += content[:length]
-    return window
+    return sliding_window()
 
 
 
