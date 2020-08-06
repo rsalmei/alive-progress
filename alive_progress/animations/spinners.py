@@ -1,5 +1,5 @@
 import math
-import operator
+from itertools import accumulate
 
 from .utils import overlay_sliding_window_factory, repeating, spinner_player, \
     static_sliding_window_factory
@@ -144,29 +144,61 @@ def bouncing_spinner_factory(chars, length=None, block=None, background=None,
     return inner_factory
 
 
-def compound_spinner_factory(*spinner_factories):
-    """Create a factory of a spinner that combines any other spinners together."""
+def compound_spinner_factory(*spinner_factories, alongside=True):
+    """Create a factory of a spinner that combines other spinners together, either
+    alongside simultaneously or one at a time sequentially.
+
+    Alongside
+        advantages: each spinner can have a different length (their natural lengths).
+        compromises: the number of cycles will be the longest of the spinners, so
+            the shorter ones must be repeated.
+
+    Sequential
+        advantages: each spinner can have a different number of cycles.
+        compromises: the length will be the longest of the spinners, so the others
+            must be stretched.
+
+    Args:
+        spinner_factories (other spinners): the spinners to be combined
+        alongside (bool): alongside if True, sequential otherwise
+
+    Returns:
+        a styled spinner factory
+
+    """
 
     def inner_factory(length_actual=None):
-        @repeating(length_actual)
-        def inner_spinner():
-            for fills in zip(range(inner_spinner.cycles), *players):
-                yield ''.join(fills[1:])
+        if alongside:
+            def inner_spinner():
+                for fills in zip(range(inner_spinner.cycles), *players):
+                    yield ''.join(fills[1:])[:length_actual]  # needed because of the `or 1` -->
 
-        # this could be weighted on the natural length of the factories,
-        # but they will usually be the same types of factories.
-        each_length = length_actual and int(math.ceil(length_actual / len(spinner_factories)))
-        spinners = [factory(each_length) for factory in spinner_factories]
-        op_cycles = operator.attrgetter('cycles')
-        longest = max(spinners, key=op_cycles)
-        players = [spinner_player(x) for x in spinners]
+            if length_actual:
+                # calculate weighted spreading of the available space for all factories.
+                lengths = (length_actual / inner_factory.natural * x for x in naturals)
+                lengths = [round(x) for x in accumulate(lengths)]  # needs to be resolved.
+                lengths = tuple(map(lambda a, b: (a - b) or 1, lengths, [0] + lengths))  # <-- here
+            else:
+                lengths = (None,) * len(spinner_factories)
+            spinners = [factory(length)
+                        for factory, length in zip(spinner_factories, lengths)]
+            cycles = max(spinner.cycles for spinner in spinners)
+            players = [spinner_player(x) for x in spinners]
+            inner_spinner.players = players
+        else:
+            def inner_spinner():
+                for spinner in spinners:
+                    yield from spinner()
 
-        inner_spinner.cycles = longest.cycles
-        inner_spinner.players = players
+            spinners = [factory(length_actual or inner_factory.natural)
+                        for factory in spinner_factories]
+            cycles = sum(spinner.cycles for spinner in spinners)
+
+        inner_spinner.cycles = cycles
         return inner_spinner
 
-    op_natural = operator.attrgetter('natural')
-    inner_factory.natural = sum(map(op_natural, spinner_factories))
+    naturals = [spinner.natural for spinner in spinner_factories]  # needs to be resolved.
+    inner_factory.natural = sum(naturals) if alongside else max(naturals)
     return inner_factory
 
 
