@@ -174,9 +174,11 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         thread.start()
 
     if total or not config.manual:  # we can count items.
-        logic_total, rate_spec, factor, current = total, 'f', 1.e6, lambda: run.count  # noqa
+        logic_total, current = total, lambda: run.count
+        rate_spec, factor, print_template = 'f', 1.e6, 'on {:d}: '
     else:  # there's only a manual percentage.
-        logic_total, rate_spec, factor, current = 1., '%', 1., lambda: run.percent  # noqa
+        logic_total, current = 1., lambda: run.percent
+        rate_spec, factor, print_template = '%', 1., 'on {:.1%}: '
 
     if total or config.manual:  # we can track progress and therefore eta.
         spec = '({{:.1{}}}/s, eta: {{}})'.format(rate_spec)
