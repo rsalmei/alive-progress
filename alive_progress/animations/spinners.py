@@ -1,8 +1,8 @@
 import math
 import operator
-from itertools import chain, repeat
 
-from .utils import repeating, sliding_window_factory, spinner_player
+from .utils import overlay_sliding_window_factory, repeating, spinner_player, \
+    static_sliding_window_factory
 
 
 def frame_spinner_factory(*frames):
@@ -32,8 +32,24 @@ def frame_spinner_factory(*frames):
     return inner_factory
 
 
-def scrolling_spinner_factory(chars, length=None, block=None, blank=' ', right=True, hiding=True):
-    """Create a factory of a spinner that scrolls characters alongside a line."""
+def scrolling_spinner_factory(chars, length=None, block=None, background=None,
+                              right=True, hiding=True, overlay=False):
+    """Create a factory of a spinner that scrolls characters from one side to
+    the other, configurable with various constraints.
+
+    Args:
+        chars (str): the characters to be scrolled, either together or split in blocks
+        length (Optional[int]): the natural length that should be used in the style
+        block (Optional[int]): if defined, split chars in blocks with this size
+        background (Optional[str]): the pattern to be used besides or underneath the animations
+        right (bool): the scroll direction to animate
+        hiding (bool): controls whether the animation goes outside the borders or stays inside
+        overlay (bool): fixes the background in place if overlay, scrolls it otherwise
+
+    Returns:
+        a styled spinner factory
+
+    """
 
     def inner_factory(length_actual=None):
         if block and not (length_actual or length):  # pragma: no cover
@@ -42,36 +58,31 @@ def scrolling_spinner_factory(chars, length=None, block=None, blank=' ', right=T
         ratio = float(length_actual) / length if length and length_actual else 1
         length_actual = length_actual or inner_factory.natural
 
-        if not hiding and block and block >= length_actual:  # pragma: no cover
-            raise ValueError('cannot animate with block >= length')
-
-        @repeating(length_actual)
         def inner_spinner():
             for _ in range(inner_spinner.cycles):
                 yield next(infinite_ribbon)
 
-        initial = 0
-        block_size = int((block or 0) * ratio) or len(chars)
+        initial, block_size = 0, int((block or 0) * ratio) or len(chars)
         if hiding:
             gap = length_actual
         else:
             gap = max(0, length_actual - block_size)
             if right:
-                initial = -block_size
+                initial = -block_size if block else abs(length_actual - block_size)
 
         if block:
-            content = reversed(chars) if right else chars
-            content = ''.join(chain.from_iterable(zip(repeat(blank * gap),
-                                                      map(lambda c: c * block_size, content))))
+            contents = map(lambda c: c * block_size, reversed(chars) if right else chars)
         else:
-            content = ''.join(chain(blank * gap, chars))
+            contents = (chars,)
 
-        infinite_ribbon = sliding_window_factory(length_actual, content, step, initial)
+        window_impl = overlay_sliding_window_factory if overlay else static_sliding_window_factory
+        infinite_ribbon = window_impl(background, gap, contents, length_actual, step, initial)
 
         inner_spinner.cycles = gap + block_size
         return inner_spinner
 
     step = -1 if right else 1
+    background = background or ' '
 
     inner_factory.natural = length or len(chars)
     return inner_factory
