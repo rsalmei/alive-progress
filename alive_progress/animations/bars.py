@@ -1,40 +1,51 @@
 import math
-from itertools import chain
 
-from .utils import spinner_player
+from .utils import bordered, extract_fill_chars, spinner_player
 
 
-def standard_bar_factory(chars='=', borders='||', background=' ', tip='>', errors='!x'):
-    def inner_factory(length):
-        def inner_standard_bar(percent, end):
-            virtual_fill = int(virtual_length * max(0., min(1., percent)))
-            complete, filling = divmod(virtual_fill, len(chars))
+def standard_bar_factory(chars, tip=None, background=None, borders=None, errors=None):
+    def inner_standard_bar_factory(length):
+        def char_fill(complete, filling):
             fill = chars[-1] * complete
             if filling:
-                fill += chars[filling - 1]
+                fill = fill + chars[filling - 1]
+            return fill[len_tip:]
 
-            if percent < 1.:
-                texts = (underflow, blanks) if end else (tip, padding[len(fill):])
-                return ''.join(chain((fill,), texts))[:length], True  # with border
-            if percent == 1.:
-                return fill, True  # no tip, with border
-            return fill + overflow, False  # no border
+        def invisible_fill(complete, filling):
+            return padding[:complete + bool(filling) - len_tip]
 
+        @bordered(borders, '||')
         def draw_bar(percent, end=False):
-            bar, right = inner_standard_bar(percent, end)
-            return draw_bar.left_border + bar + (draw_bar.right_border if right else '')
+            virtual_fill = round(virtual_length * max(0., percent))
+            complete, filling = divmod(virtual_fill, len_chars)
+            fill = fill_style(complete, filling)
 
-        virtual_length = length * len(chars)
-        blanks = ' ' * (length - len(tip))
+            if percent >= 1.:
+                return fill[:length], None if percent == 1. else overflow
 
-        draw_bar.left_border, draw_bar.right_border = borders
+            size_fill = complete + bool(filling)
+            if end:
+                texts = fill, underflow, blanks
+            elif size_fill > len_tip:
+                texts = fill, tip, padding[size_fill:]
+            elif size_fill == len_tip:
+                texts = tip, padding[size_fill:]
+            else:
+                texts = tip[-size_fill:] if size_fill else '', padding[size_fill:]
+            return ''.join(texts)[:length], None  # with normal border
+
+        virtual_length, blanks = len_chars * (length + len_tip), ' ' * length
         padding = background * math.ceil((length + len_tip) / len(background))
+        fill_style = char_fill if chars else invisible_fill
         return draw_bar
 
-    tip = tip or ''
-    underflow, overflow = errors
+    if not chars and not tip:
+        raise ValueError('tip is mandatory for transparent bars')
+    tip, background = tip or '', background or ' '
+    underflow, overflow = extract_fill_chars(errors, '⚠✗')
+    len_chars, len_tip = len(chars) or 1, len(tip)
 
-    return inner_factory
+    return inner_standard_bar_factory
 
 
 def unknown_bar_factory(spinner_factory):
