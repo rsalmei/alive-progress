@@ -6,10 +6,19 @@ from .utils import repeating, sliding_window_factory, spinner_player
 
 
 def frame_spinner_factory(*frames):
-    """Create a factory of a spinner that delivers frames in sequence."""
+    """Create a factory of a spinner that delivers frames in sequence.
+
+    Args:
+        frames (str): the frames to be displayed
+            if sent only one, it is interpreted as frames of one char each.
+
+    Returns:
+        a styled spinner factory
+
+    """
 
     def inner_factory(length_actual=None):
-        @repeating(length_actual, inner_factory.natural)
+        @repeating(length_actual)
         def inner_spinner():
             yield from frames
 
