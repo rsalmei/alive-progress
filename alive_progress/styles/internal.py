@@ -119,7 +119,7 @@ def __create_bars():
     notes = standard_bar_factory('♩♪♫', borders='𝄞𝄢', errors='♭♯')
     ruler = standard_bar_factory('', '┃', background='∙∙∙∙•')
     ruler2 = standard_bar_factory('', '┃', background='∙∙∙∙+')
-    underwater = standard_bar_factory('', '><>', background='_)_)._∙__⠈__)○____∙○___)__⠈(_(__')
+    underwater = standard_bar_factory('', '>=≗)o', background='_)_)._∙__⠈__)○____∙○___)__⠈(_(__')
 
     return _wrap_ordered(
         locals(),
