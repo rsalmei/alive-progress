@@ -29,6 +29,22 @@ def repeating(length):
 
 def sliding_window_factory(length, content, step, initial):
     """Implement a sliding window over a text content, which can go left or right."""
+def bordered(borders, default):
+    """Decorator to include controllable borders in the outputs of a function."""
+
+    def wrapper(fn):
+        @wraps(fn)
+        def inner_dynamic(*args, **kwargs):
+            content, right = fn(*args, **kwargs)
+            return left_border + content + (right or right_border)
+
+        return inner_dynamic
+
+    left_border, right_border = extract_fill_chars(borders, default)
+
+    return wrapper
+
+
 
     def sliding_window():
         pos = initial
