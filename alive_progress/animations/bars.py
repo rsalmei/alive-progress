@@ -48,21 +48,14 @@ def standard_bar_factory(chars, tip=None, background=None, borders=None, errors=
     return inner_standard_bar_factory
 
 
-def unknown_bar_factory(spinner_factory):
-    def inner_factory(length, receipt_bar_factory=None):
+def unknown_bar_factory(spinner_factory, borders=None):
+    def inner_unknown_bar_factory(length):
         # noinspection PyUnusedLocal
-        def draw_bar(percent=None, end=False):
-            if end:
-                return receipt_bar(1., end=True)
-            # noinspection PyUnresolvedReferences
-            return receipt_bar.left_border + next(player) + receipt_bar.right_border
+        @bordered(borders, '||')
+        def draw_bar(percent=None, end=None):
+            return next(player), None
 
         player = spinner_player(spinner_factory(length))
-        receipt_bar = (receipt_bar_factory or __default_bar)(length)
-
         return draw_bar
 
-    return inner_factory
-
-
-__default_bar = standard_bar_factory()
+    return inner_unknown_bar_factory
