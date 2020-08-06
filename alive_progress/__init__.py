@@ -7,7 +7,7 @@ from .core.progress import alive_bar
 from .styles.exhibit import Show, print_chars, show_bars, show_spinners, show_themes, showtime
 from .styles.internal import BARS, SPINNERS, THEMES
 
-VERSION = (1, 6, 1)
+VERSION = (2, 0, 0)
 
 __author__ = 'Rogério Sampaio de Almeida'
 __email__ = 'rsalmei@gmail.com'
