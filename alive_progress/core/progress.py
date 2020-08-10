@@ -120,7 +120,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         run.text = sanitize_text_marking_wide_chars(message)
 
     if config.manual:
-        def bar_handle(percent, relative=False):
+        def bar_handle(percent, *, relative=False):
             """Bar handle for manual (bounded and unbounded) modes.
             Default is absolute positioning.
             """
@@ -132,7 +132,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
             update_hook()
             return run.percent
     else:
-        def bar_handle(count=1, relative=True):
+        def bar_handle(count=1, *, relative=True):
             """Bar handle for definite and unknown modes.
             Default is relative positioning.
             """
