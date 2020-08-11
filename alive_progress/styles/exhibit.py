@@ -78,7 +78,7 @@ def show_themes(*, fps=None, length=None, pattern=None):
     max_name_length = max(map(lambda x: len(x), selected)) + 2
     prepared_gen = OrderedDict((f'{k:>{max_name_length}}', _theme_gen(c, max_natural))
                                for k, c in themes.items())
-    displaying, line_pattern = 'themes: bounded bar, spinner and unknown bar', '{0} {1} {2}{3} {4}'
+    displaying, line_pattern = 'themes and their bar, spinner and unknown bar', '{0} {1} {2}{3} {4}'
     _showtime_gen(fps, prepared_gen, displaying, line_pattern, length)
 
 
