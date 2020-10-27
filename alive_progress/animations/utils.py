@@ -2,30 +2,17 @@ import math
 from functools import wraps
 from itertools import chain, repeat
 
+from ..utils.cells import combine_cells, fix_cells, mark_graphemes, split_graphemes
+
 
 def spinner_player(spinner):
     """Create an infinite generator that plays all cycles of a spinner indefinitely."""
 
     def inner_play():
         while True:
-            yield from spinner()
+            yield from spinner()  # instantiates a new cycle in each iteration.
 
     return inner_play()  # returns an already initiated generator.
-
-
-def repeating(length):
-    """Decorator to repeat a return value until a certain length."""
-
-    def wrapper(fn):
-        @wraps(fn)
-        def inner(*args, **kwargs):
-            for text in fn(*args, **kwargs):
-                yield (text * math.ceil((length or 1) / len(text)))[:length]
-
-        return inner if length else fn
-
-    assert not length or length > 0, 'length must be None or non negative'
-    return wrapper
 
 
 def bordered(borders, default):
@@ -33,33 +20,29 @@ def bordered(borders, default):
 
     def wrapper(fn):
         @wraps(fn)
-        def inner_dynamic(*args, **kwargs):
+        def inner_bordered(*args, **kwargs):
             content, right = fn(*args, **kwargs)
-            return left_border + content + (right or right_border)
+            return combine_cells(left_border, content, right or right_border)
 
-        return inner_dynamic
+        return inner_bordered
 
-    left_border, right_border = extract_fill_chars(borders, default)
-
+    left_border, right_border = extract_fill_graphemes(borders, default)
     return wrapper
 
 
-def extract_fill_chars(string, default):
-    """Extract the exact same number of chars as default, filling missing ones."""
-    if not string:
-        return default
-    return (string * math.ceil(len(default) / len(string)))[:len(default)]
+def extract_fill_graphemes(text, default):
+    """Extract the exact same number of graphemes as default, filling missing ones."""
+    text, default = (tuple(split_graphemes(c or '') for c in p) for p in (text or default, default))
+    return (mark_graphemes(t or d) for t, d in zip(chain(text, repeat('')), default))
 
 
-def static_sliding_window_factory(sep, gap, contents, length, step, initial):
+def static_sliding_window(sep, gap, contents, length, right, initial):
     """Implement a sliding window over some content interspersed with a separator.
     It is very efficient, storing data in only one string.
 
     Note that the implementation is "static" in the sense that the content is pre-
     calculated and maintained static, but actually when the window slides both the
-    separator and content seem to be moved.
-
-    """
+    separator and content seem to be moved."""
 
     def sliding_window():
         pos = initial
@@ -71,29 +54,24 @@ def static_sliding_window_factory(sep, gap, contents, length, step, initial):
             yield content[pos:pos + length]
             pos += step
 
-    adjusted_sep = (sep * math.ceil(gap / len(sep)))[:gap]
-    content = ''.join(chain.from_iterable(zip(repeat(adjusted_sep), contents)))
-    original = len(content)
+    adjusted_sep = fix_cells((sep * math.ceil(gap / len(sep)))[:gap]) if gap else ''
+    content = tuple(chain.from_iterable(chain.from_iterable(zip(repeat(adjusted_sep), contents))))
+    original, step = len(content), -1 if right else 1
     assert length <= original, 'window slides inside content, length must be <= len(content)'
     content += content[:length]
     return sliding_window()
 
 
-def overlay_sliding_window_factory(background, gap, contents, length, step, initial):
+def overlay_sliding_window(background, gap, contents, length, step, initial):
     """Implement a sliding window over some content on top of a background.
     It uses internally a static sliding window, but dynamically swaps the separator
     characters for the background ones, thus making it appear immobile, with the
-    contents sliding over it.
-
-    """
-
-    def change(c, a):
-        return a if c == '\0' else c
+    contents sliding over it."""
 
     def overlay_window():
-        for snapshot in window:  # pragma: no cover
-            yield ''.join(map(change, snapshot, adjusted_background))
+        for cells in window:  # pragma: no cover
+            yield tuple(b if c == '\0' else c for c, b in zip(cells, background))
 
-    adjusted_background = (background * math.ceil(length / len(background)))[:length]
-    window = static_sliding_window_factory('\0', gap, contents, length, step, initial)
+    background = (background * math.ceil(length / len(background)))[:length]
+    window = static_sliding_window('\0', gap, contents, length, step, initial)
     return overlay_window()
