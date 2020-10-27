@@ -2,3 +2,4 @@ ipython
 pdbpp
 twine
 wheel
+nox  # although it is for testing, it is not needed inside each test scope.
