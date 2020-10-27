@@ -176,24 +176,3 @@ def _theme_gen(config, max_natural):
     unknown = config.unknown(length)
     while True:
         yield next(bar)[0], next(player), blanks, unknown()
-
-
-def print_chars(line_length=32, max_char=0x10000):
-    """Print all chars in your terminal, to help you find that cool one to put in your
-    customized spinner or bar. Also useful to determine which ones your terminal do support.
-
-    Args:
-        line_length (int): the desired characters per line
-        max_char (int): the last character in the unicode table to show
-            this goes up to 0x10ffff, but after the default value it seems to return
-            only question marks, increase it if would like to see more.
-    """
-    max_char = min(0x10ffff, max(0, max_char))
-    for i in range(32, max_char + line_length, line_length):
-        print(f'0x{i:05x}', end=': ')
-        for j in range(line_length):
-            try:
-                print(chr(i + j), end=' ')
-            except UnicodeEncodeError:
-                print('?', end=' ')
-        print()

@@ -4,8 +4,9 @@ from .animations.spinners import bouncing_spinner_factory, compound_spinner_fact
 from .animations.utils import spinner_player
 from .core.configuration import config_handler
 from .core.progress import alive_bar
-from .styles.exhibit import Show, print_chars, show_bars, show_spinners, show_themes, showtime
+from .styles.exhibit import Show, show_bars, show_spinners, show_themes, showtime
 from .styles.internal import BARS, SPINNERS, THEMES
+from .tools.domain import print_chars
 
 VERSION = (2, 0, 0)
 
