@@ -1,6 +1,6 @@
 import math
-from functools import wraps
-from itertools import chain, repeat
+from functools import reduce, wraps
+from itertools import accumulate, chain, repeat
 
 from ..utils.cells import combine_cells, fix_cells, mark_graphemes, split_graphemes
 
@@ -98,3 +98,13 @@ def split_options(options, expects_tuple=False):
     if any(isinstance(elem, tuple) for elem in options):
         return tuple(elem if isinstance(elem, tuple) else (elem,) for elem in options)
     return options, options
+
+
+def spread_weighted(actual_length, naturals):
+    """Calculate the weighted spreading of the available space for all natural lengths."""
+    total = sum(naturals)
+    lengths = (actual_length / total * n for n in naturals)
+    lengths = [round(x) for x in accumulate(lengths)]  # needs to be resolved.
+    lengths = tuple(map(lambda a, b: a - b, lengths, [0] + lengths))
+    assert sum(lengths) == actual_length
+    return lengths
