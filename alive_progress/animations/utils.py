@@ -86,3 +86,15 @@ def combinations(nums):
         return a * b // math.gcd(a, b)
 
     return reduce(lcm, nums)
+
+
+def split_options(options, expects_tuple=False):
+    """Split options that apply to dual elements, either duplicating or splitting."""
+    if not expects_tuple:
+        return options if isinstance(options, tuple) else (options, options)
+
+    if not isinstance(options, tuple):
+        return (options,), (options,)
+    if any(isinstance(elem, tuple) for elem in options):
+        return tuple(elem if isinstance(elem, tuple) else (elem,) for elem in options)
+    return options, options
