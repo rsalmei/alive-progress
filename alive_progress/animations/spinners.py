@@ -58,9 +58,9 @@ def frame_spinner_factory(*frames):
 
     return inner_spinner_factory
 
-def scrolling_spinner_factory(chars, length=None, block=None, background=None,
-                              right=True, hiding=True, overlay=False):
 
+def scrolling_spinner_factory(chars, length=None, block=None, background=None, *,
+                              right=True, hide=True, wrap=True, overlay=False):
     """Create a factory of a spinner that scrolls characters from one side to
     the other, configurable with various constraints.
     Supports unicode grapheme clusters and emoji chars, those that has length one but when on
@@ -72,7 +72,8 @@ def scrolling_spinner_factory(chars, length=None, block=None, background=None,
         block (Optional[int]): if defined, split chars in blocks with this size
         background (Optional[str]): the pattern to be used besides or underneath the animations
         right (bool): the scroll direction to animate
-        hiding (bool): controls whether the animation goes outside the borders or stays inside
+        hide (bool): controls whether the animation goes out of the borders or stays inside
+        wrap (bool): makes the animation wrap borders or stop when not hiding.
         overlay (bool): fixes the background in place if overlay, scrolls it otherwise
 
     Returns:
@@ -86,13 +87,13 @@ def scrolling_spinner_factory(chars, length=None, block=None, background=None,
         actual_length = actual_length or inner_spinner_factory.natural
         ratio = actual_length / inner_spinner_factory.natural
 
-        initial, block_size = 0, int((block or 0) * ratio) or len(chars)
-        if hiding:
-            gap = length_actual
+        initial, block_size = 0, math.ceil((block or 0) * ratio) or len(chars)
+        if hide:
+            gap = actual_length
         else:
-            gap = max(0, length_actual - block_size)
+            gap = max(0, actual_length - block_size)
             if right:
-                initial = -block_size if block else abs(length_actual - block_size)
+                initial = -block_size if block else abs(actual_length - block_size)
 
         if block:
             get_block = lambda g: fix_cells((mark_graphemes(g) * block_size)[:block_size])
@@ -109,14 +110,15 @@ def scrolling_spinner_factory(chars, length=None, block=None, background=None,
                 if i <= size:
                     yield fill
 
+        size = gap + block_size if wrap or hide else abs(actual_length - block_size)
         cycles = len(tuple(strip_marks(chars))) if block else 1
         return (frame_data() for _ in range(cycles))
 
     return inner_spinner_factory
 
 
-def bouncing_spinner_factory(chars, length=None, block=None, background=None,
-                             hiding=True, is_text=False, overlay=False):
+def bouncing_spinner_factory(chars, length=None, block=None, background=None, *,
+                             right=True, hide=True, overlay=False):
     """Create a factory of a spinner that scrolls characters from one side to
     the other and bounce back, configurable with various constraints.
     Supports unicode grapheme clusters and emoji chars, those that has length one but when on
@@ -129,8 +131,8 @@ def bouncing_spinner_factory(chars, length=None, block=None, background=None,
         length (Optional[int]): the natural length that should be used in the style
         block (Union[int, Tuple[int, int], None]): if defined, split chars in blocks
         background (Optional[str]): the pattern to be used besides or underneath the animations
-        hiding (bool): controls whether the animation goes outside the borders or stays inside
-        is_text (bool): optimizes text display, scrolling slower and pausing at the edges
+        right (bool): the scroll direction to start the animation
+        hide (bool): controls whether the animation goes out of the borders or stays inside
         overlay (bool): fixes the background in place if overlay, scrolls it otherwise
 
     Returns:
