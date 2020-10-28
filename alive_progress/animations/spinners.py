@@ -1,41 +1,70 @@
 import math
-from itertools import accumulate
+from itertools import chain
 
-from .utils import overlay_sliding_window_factory, repeating, spinner_player, \
-    static_sliding_window_factory
+from .spinner_compiler import compiler_controller
+from .utils import combinations, overlay_sliding_window, spinner_player, split_options, \
+    spread_weighted, static_sliding_window
+from ..utils.cells import combine_cells, fix_cells, mark_graphemes, strip_marks, \
+    to_cells
 
 
 def frame_spinner_factory(*frames):
-    """Create a factory of a spinner that delivers frames in sequence.
+    """Create a factory of a spinner that delivers frames in sequence, split by cycles.
+    Supports unicode grapheme clusters and emoji chars (those that has length one but when on
+    screen occupies two cells). Enjoy! 😜
 
     Args:
-        frames (str): the frames to be displayed
-            if sent only one, it is interpreted as frames of one char each.
+        frames (Union[str, Tuple[str, ...]): the frames to be displayed, split by cycles
+            if sent only a string, it is interpreted as frames of a single char each.
 
     Returns:
         a styled spinner factory
 
+    Examples:
+        To define one cycle:
+        >>> frame_spinner_factory(('cool',))  # only one frame.
+        >>> frame_spinner_factory(('ooo', '---'))  # two frames.
+        >>> frame_spinner_factory('|/_')  # three frames of one char each, same as below.
+        >>> frame_spinner_factory(('|', '/', '_'))
+
+        To define two cycles:
+        >>> frame_spinner_factory(('super',), ('cool',))  # only one frame.
+        >>> frame_spinner_factory(('ooo', '-'), ('vvv', '^'))  # two frames.
+        >>> frame_spinner_factory('|/_', '▁▄█')  # three frames, same as below.
+        >>> frame_spinner_factory(('|', '/', '_'), ('▁', '▄', '█'))
+
+        Mix and match at will:
+        >>> frame_spinner_factory(('oo', '-'), 'cool', ('it', 'is', 'alive!'))
+
     """
+    # shortcut for single char animations.
+    frames = (tuple(cycle) if isinstance(cycle, str) else cycle for cycle in frames)
 
-    def inner_factory(length_actual=None):
-        @repeating(length_actual)
-        def inner_spinner():
-            yield from frames
+    # support for unicode grapheme clusters and emoji chars.
+    frames = tuple(tuple(to_cells(frame) for frame in cycle) for cycle in frames)
 
-        inner_spinner.cycles = len(frames)
-        return inner_spinner
+    @compiler_controller(natural=max(len(frame) for cycle in frames for frame in cycle))
+    def inner_spinner_factory(actual_length=None):
+        actual_length = actual_length or inner_spinner_factory.natural
+        max_ratio = math.ceil(actual_length / min(len(frame) for cycle in frames
+                                                  for frame in cycle))
 
-    if len(frames) == 1:
-        frames = frames[0]
+        def frame_data(cycle):
+            for frame in cycle:
+                # differently sized frames and repeat support.
+                yield (frame * max_ratio)[:actual_length]
 
-    inner_factory.natural = len(frames[0])
-    return inner_factory
+        return (frame_data(cycle) for cycle in frames)
 
+    return inner_spinner_factory
 
 def scrolling_spinner_factory(chars, length=None, block=None, background=None,
                               right=True, hiding=True, overlay=False):
+
     """Create a factory of a spinner that scrolls characters from one side to
     the other, configurable with various constraints.
+    Supports unicode grapheme clusters and emoji chars, those that has length one but when on
+    screen occupies two cells.
 
     Args:
         chars (str): the characters to be scrolled, either together or split in blocks
@@ -50,17 +79,12 @@ def scrolling_spinner_factory(chars, length=None, block=None, background=None,
         a styled spinner factory
 
     """
+    chars = to_cells(chars)
 
-    def inner_factory(length_actual=None):
-        if block and not (length_actual or length):  # pragma: no cover
-            raise ValueError('length must be set with block')
-
-        ratio = float(length_actual) / length if length and length_actual else 1
-        length_actual = length_actual or inner_factory.natural
-
-        def inner_spinner():
-            for _ in range(inner_spinner.cycles):
-                yield next(infinite_ribbon)
+    @compiler_controller(natural=length or len(chars))
+    def inner_spinner_factory(actual_length=None):
+        actual_length = actual_length or inner_spinner_factory.natural
+        ratio = actual_length / inner_spinner_factory.natural
 
         initial, block_size = 0, int((block or 0) * ratio) or len(chars)
         if hiding:
@@ -71,34 +95,39 @@ def scrolling_spinner_factory(chars, length=None, block=None, background=None,
                 initial = -block_size if block else abs(length_actual - block_size)
 
         if block:
-            contents = map(lambda c: c * block_size, reversed(chars) if right else chars)
+            get_block = lambda g: fix_cells((mark_graphemes(g) * block_size)[:block_size])
+            contents = map(get_block, strip_marks(reversed(chars) if right else chars))
         else:
             contents = (chars,)
 
-        window_impl = overlay_sliding_window_factory if overlay else static_sliding_window_factory
-        infinite_ribbon = window_impl(background, gap, contents, length_actual, step, initial)
+        window_impl = overlay_sliding_window if overlay else static_sliding_window
+        infinite_ribbon = window_impl(to_cells(background or ' '),
+                                      gap, contents, actual_length, right, initial)
 
-        inner_spinner.cycles = gap + block_size
-        return inner_spinner
+        def frame_data():
+            for i, fill in zip(range(gap + block_size), infinite_ribbon):
+                if i <= size:
+                    yield fill
 
-    step = -1 if right else 1
-    background = background or ' '
+        cycles = len(tuple(strip_marks(chars))) if block else 1
+        return (frame_data() for _ in range(cycles))
 
-    inner_factory.natural = length or len(chars)
-    return inner_factory
+    return inner_spinner_factory
 
 
 def bouncing_spinner_factory(chars, length=None, block=None, background=None,
                              hiding=True, is_text=False, overlay=False):
     """Create a factory of a spinner that scrolls characters from one side to
     the other and bounce back, configurable with various constraints.
+    Supports unicode grapheme clusters and emoji chars, those that has length one but when on
+    screen occupies two cells.
 
     Args:
         chars (Union[str, Tuple[str, str]]): the characters to be scrolled, either
             together or split in blocks. Also accepts a tuple of two strings,
-            which are used one in each direction
+            which are used one in each direction.
         length (Optional[int]): the natural length that should be used in the style
-        block (Optional[int]): if defined, split chars in blocks with this size
+        block (Union[int, Tuple[int, int], None]): if defined, split chars in blocks
         background (Optional[str]): the pattern to be used besides or underneath the animations
         hiding (bool): controls whether the animation goes outside the borders or stays inside
         is_text (bool): optimizes text display, scrolling slower and pausing at the edges
