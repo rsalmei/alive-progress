@@ -183,18 +183,48 @@ def sequential_spinner_factory(*spinner_factories, intermix=True):
     return inner_spinner_factory
 
 
+def alongside_spinner_factory(*spinner_factories, pivot=None):
+    """Create a factory of a spinner that combines other spinners together, playing them
+    alongside simultaneously. Each one uses its own natural length, which is spread weighted
+    to the available space.
 
     Args:
+        spinner_factories (spinner): the spinners to be combined
+        pivot (Optional[int]): the index of the spinner to dictate the animation cycles
+            if None, the whole animation will be compiled into a unique cycle.
 
     Returns:
         a styled spinner factory
 
     """
 
+    @compiler_controller(natural=sum(factory.natural for factory in spinner_factories))
+    def inner_spinner_factory(actual_length=None, offset=0):
+        if actual_length:
+            lengths = spread_weighted(actual_length, [f.natural for f in spinner_factories])
+            actual_pivot = None if pivot is None or not lengths[pivot] \
+                else spinner_factories[pivot](lengths[pivot])
+            spinners = [factory(length) for factory, length in
+                        zip(spinner_factories, lengths) if length]
         else:
+            actual_pivot = None if pivot is None else spinner_factories[pivot]()
+            spinners = [factory() for factory in spinner_factories]
 
+        def frame_data(cycle_gen):
+            yield from (combine_cells(*fragments) for _, *fragments in cycle_gen)
 
+        frames = combinations(spinner.total_frames for spinner in spinners)
+        spinners = [spinner_player(spinner) for spinner in spinners]
+        [[next(player) for _ in range(i * offset)] for i, player in enumerate(spinners)]
 
+        if actual_pivot is None:
+            breaker, cycles = lambda: range(frames), 1
+        else:
+            breaker, cycles = lambda: actual_pivot(), \
+                              frames // actual_pivot.total_frames * actual_pivot.cycles
+        return (frame_data(zip(breaker(), *spinners)) for _ in range(cycles))
+
+    return inner_spinner_factory
 
 
 def delayed_spinner_factory(spinner_factory, copies, offset=1):
