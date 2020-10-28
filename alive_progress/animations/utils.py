@@ -75,3 +75,14 @@ def overlay_sliding_window(background, gap, contents, length, step, initial):
     background = (background * math.ceil(length / len(background)))[:length]
     window = static_sliding_window('\0', gap, contents, length, step, initial)
     return overlay_window()
+
+
+def combinations(nums):
+    """Calculate the number of total combinations a few spinners should have together,
+    can be used for example with cycles or with frames played at the same time."""
+
+    def lcm(a, b):
+        """Calculate the lowest common multiple of two numbers."""
+        return a * b // math.gcd(a, b)
+
+    return reduce(lcm, nums)
