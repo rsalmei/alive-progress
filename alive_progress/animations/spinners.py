@@ -148,13 +148,39 @@ def bouncing_spinner_factory(chars, length=None, block=None, background=None, *,
     return sequential_spinner_factory(scroll_1, scroll_2)
 
 
+def sequential_spinner_factory(*spinner_factories, intermix=True):
+    """Create a factory of a spinner that combines other spinners together, playing them
+    one at a time sequentially, either intermixing their cycles or until depletion.
 
+    Args:
+        spinner_factories (spinner): the spinners to be combined
+        intermix (bool): intermixes the cycles if True, generating all possible combinations;
+            runs until depletion each one otherwise.
 
+    Returns:
+        a styled spinner factory
 
+    """
 
+    @compiler_controller(natural=max(factory.natural for factory in spinner_factories))
+    def inner_spinner_factory(actual_length=None):
+        actual_length = actual_length or inner_spinner_factory.natural
+        spinners = [factory(actual_length) for factory in spinner_factories]
 
+        def frame_data(spinner):
+            yield from spinner()
 
+        if intermix:
+            cycles = combinations(spinner.cycles for spinner in spinners)
+            gen = ((frame_data(spinner) for spinner in spinners)
+                   for _ in range(cycles))
+        else:
+            gen = ((frame_data(spinner) for _ in range(spinner.cycles))
+                   for spinner in spinners)
 
+        return (c for c in chain.from_iterable(gen))  # transforms the chain to a gen exp.
+
+    return inner_spinner_factory
 
 
 
