@@ -9,7 +9,7 @@ from typing import Callable
 
 from about_time import about_time
 
-from ..utils.cells import fix_cells, join_cells, is_wide, strip_marks, to_cells
+from ..utils.cells import fix_cells, is_wide, join_cells, strip_marks, to_cells
 from ..utils.colors import BLUE, BLUE_BOLD, CYAN, DIM, GREEN, ORANGE, ORANGE_BOLD, RED, YELLOW_BOLD
 from ..utils.terminal import hide_cursor, show_cursor
 
@@ -43,13 +43,12 @@ def compiler_controller(*, natural, skip_compiler=False):
             compiler_dispatcher().check(*args, **kwargs)
 
         def set_operational(**params):
-            # test arguments (actual_length is provided).
-            signature(spinner_inner_factory).bind(None, **params)
+            signature(spinner_inner_factory).bind(1, **params)  # test arguments (one is provided).
             return inner_controller(spinner_inner_factory, params, extra_commands)
 
         def schedule_command(command):
             def inner_schedule(*args, **kwargs):
-                signature(command).bind(1, *args, **kwargs)  # test arguments (spec is provided).
+                signature(command).bind(1, *args, **kwargs)  # test arguments (one is provided).
                 extra, cmd_type = dict(extra_commands), EXTRA_COMMANDS[command]
                 extra[cmd_type] = extra.get(cmd_type, ()) + ((command, args, kwargs),)
                 return inner_controller(spinner_inner_factory, op_params, extra)
@@ -118,14 +117,18 @@ def replace(spec, old, new):  # noqa
 
 @compiler_command
 def pause(spec, n_edges=None, n_middle=None):  # noqa
-    """Pause the animation on the edges, or slow it as a whole, or both.
+    """Make the animation appear to pause on the edges or the middle, or make it slower as
+    a whole, or both.
 
-    This could easily be implemented as a post compiler command, which takes place on the
-    runner, but I wanted to actually see its effect on the check tool.
+    In the future, I'd like to make this a `pace` command, which would receive a sequence
+    of ints of any length, and apply it bouncing across the cycle. For example to smoothly
+    decelerate it could be (6, 3, 2, 1), which would become (6, 3, 2, 1, 1, ..., 1, 2, 3, 6).
 
     Args:
-        n_edges (int): how many times the first and last frames on a cycle runs (default 6)
-        n_middle (int): how many times the other frames on a cycle runs (default 1)
+        n_edges (Optional[int]): how many times the first and last frames on a cycle repeats
+            default is 6.
+        n_middle (Optional[int]): how many times the middle frames on a cycle repeats
+            default is 1.
 
     """
     n_edges, n_middle = max(1, n_edges or 6), max(1, n_middle or 1)
@@ -264,13 +267,13 @@ def check(spec, verbosity=0):  # noqa
     
     Args:
         verbosity (int): change the verbosity level
-                                 0 for specs only (default)
-                                   /                 \
-                                  /           3 to include animation
-                                 /                      \
-                1 to unfold frame data   --------   4 to unfold frame data
-                                |                        |
-                2 to reveal codepoints   --------   5 to reveal codepoints
+                             0 for specs only (default)
+                               /                 \
+                              /           3 to include animation
+                             /                      \
+            1 to unfold frame data   --------   4 to unfold frame data
+                            |                        |
+            2 to reveal codepoints   --------   5 to reveal codepoints
 
     """
     verbosity = max(0, min(5, verbosity or 0))
