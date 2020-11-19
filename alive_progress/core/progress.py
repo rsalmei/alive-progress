@@ -92,14 +92,13 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
             total = None
     config = config_handler(**options)
 
-    def run(spinner):
-        player = spinner_player(spinner)
+    def run(spinner_player):
         while thread:
             release_thread.wait()
-            alive_repr(next(player))
+            alive_repr(next(spinner_player))
             time.sleep(1. / fps(run.rate))
 
-    def alive_repr(spin=''):
+    def alive_repr(spin=None):
         elapsed = time.perf_counter() - run.init
         run.rate = current() / elapsed if elapsed else 0.
 
@@ -161,7 +160,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
             start_monitoring(offset)
 
         bar_handle.pause = pause_monitoring
-        thread = threading.Thread(target=run, args=(config.spinner(),))
+        thread = threading.Thread(target=run, args=(config.spinner_player,))
         thread.daemon = True
         thread.start()
 
@@ -172,10 +171,9 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         logic_total, current = 1., lambda: run.percent
         rate_spec, factor, print_template = '%', 1., 'on {:.1%}: '
 
-    known, unknown = (impl(config.length) for impl in (config.bar, config.unknown))
     bar_handle.text, bar_handle.current = set_text, current
     if total or config.manual:  # we can track progress and therefore eta.
-        bar_repr = known
+        bar_repr = config.bars
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
         gen_eta.send(None)
 
@@ -183,7 +181,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
             eta = to_eta_text(gen_eta.send((current(), run.rate)))
             return f'({run.rate:.1{rate_spec}}/s, eta: {eta})'
     else:  # unknown progress.
-        bar_repr = unknown
+        bar_repr = config.bars.unknown
 
         def stats():
             return f'({run.rate:.1f}/s)'
@@ -232,9 +230,9 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
             local_copy.join()
 
     # prints the nice final receipt.
-    if bar_repr is unknown:
-        bar_repr, run.percent = known, 1.
     end, stats = True, stats_end
     if not config.show_receipt_text:
         run.text = ''
+    if bar_repr is config.bars.unknown:
+        bar_repr, run.percent = config.bars, 1.
     alive_repr()
