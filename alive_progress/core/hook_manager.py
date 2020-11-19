@@ -5,11 +5,11 @@ from functools import partial
 from itertools import chain, islice, repeat
 from types import SimpleNamespace
 
-from .utils import clear_traces
+from ..utils.terminal import clear_traces
 
 
 def buffered_hook_manager(header_template, get_pos):
-    """Creates and maintain a buffered hook manager, used for instrumenting print
+    """Create and maintain a buffered hook manager, used for instrumenting print
     statements and logging.
 
     Args:
@@ -45,7 +45,7 @@ def buffered_hook_manager(header_template, get_pos):
                     # this avoids potential flickering, since now the stream can also be
                     # files from logging, and thus not needing to clear the screen...
                     clear_traces()
-                stream.write('{}{}\n'.format(header, nested.strip()))
+                stream.write(f'{header}{nested.strip()}\n')
                 buffer[:] = []
 
     def get_hook_for(stream):
