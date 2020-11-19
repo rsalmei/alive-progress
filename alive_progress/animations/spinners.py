@@ -96,7 +96,7 @@ def scrolling_spinner_factory(chars, length=None, block=None, background=None, *
                 initial = -block_size if block else abs(actual_length - block_size)
 
         if block:
-            get_block = lambda g: fix_cells((mark_graphemes(g) * block_size)[:block_size])
+            get_block = lambda g: fix_cells((mark_graphemes((g,)) * block_size)[:block_size])
             contents = map(get_block, strip_marks(reversed(chars) if right else chars))
         else:
             contents = (chars,)
