@@ -149,6 +149,12 @@ def reshape(spec, num_frames):  # noqa
 
 
 @compiler_command
+def bounce(spec):
+    """Make the animation bounce its cycles."""
+    spec.data = tuple(chain(spec.data, spec.data[-2:0:-1]))
+
+
+@compiler_command
 def transpose(spec):
     """Transpose the frame content matrix, exchanging columns for rows. It can be used
     to simplify content description, or for artistic effects."""
