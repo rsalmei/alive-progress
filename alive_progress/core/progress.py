@@ -235,3 +235,4 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
     if bar_repr is config.bars.unknown:
         bar_repr, run.percent = config.bars, 1.
     alive_repr()
+    print()
