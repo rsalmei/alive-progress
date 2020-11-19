@@ -155,16 +155,33 @@ def transpose(spec):
     spec.data = tuple(tuple(cycle) for cycle in zip(*spec.data))
 
 
-@post_compiler_command
-def randomize(spec, cycles=None):  # noqa
+@runner_command
+def sequential(spec):
+    """Configure the runner to play the compiled cycles in sequential order."""
+
+    def cycle_data(data):
+        while True:
+            yield from data
+
+    cycle_data.name = 'sequential'
+    spec.__dict__.update(strategy=cycle_data, cycles=len(spec.data))
+
+
+@runner_command
+def randomized(spec, cycles=None):  # noqa
     """Configure the runner to play the compiled cycles in random order.
 
     Args:
         cycles (Optional[int]): number of cycles to play randomized
 
     """
-    spec.__dict__.update(randomize=True,
-                         cycles=max(0, cycles or 0) or spec.cycles)
+
+    def cycle_data(data):
+        while True:
+            yield random.choice(data)
+
+    cycle_data.name = 'randomized'
+    spec.__dict__.update(strategy=cycle_data, cycles=max(0, cycles or 0) or spec.cycles)
 
 
 def apply_extra_commands(spec, extra_commands):
@@ -188,7 +205,7 @@ def spinner_compiler(gen, natural, extra_commands):
 
     spec = SimpleNamespace(
         data=tuple(tuple(fix_cells(frame) for frame in cycle) for cycle in gen),
-        natural=natural, randomize=False)
+        natural=natural, strategy=None)
     apply_extra_commands(spec, extra_commands)
 
     # generate spec info.
@@ -218,14 +235,6 @@ def spinner_runner_factory(spec, t_compile, extra_commands):
 
     """
 
-    def ordered_cycle_data():
-        while True:
-            yield from spec.data
-
-    def random_cycle_data():
-        while True:
-            yield random.choice(spec.data)
-
     def spinner_runner():
         """Wow, you are really deep! This is the runner of a compiled spinner.
         Every time you call this function, a different generator will kick in,
@@ -238,9 +247,9 @@ def spinner_runner_factory(spec, t_compile, extra_commands):
 
     spinner_runner.__dict__.update(spec.__dict__, check=fix_signature(runner_check, check, 1))
     spec.__dict__.update(t_compile=t_compile, runner=spinner_runner)  # set after the update above.
-    cycle_gen = random_cycle_data() if spec.randomize else ordered_cycle_data()
 
     apply_extra_commands(spec, extra_commands or ((sequential, (), {}),))
+    cycle_gen = spec.strategy(spec.data)
     return spinner_runner
 
 
