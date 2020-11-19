@@ -3,7 +3,7 @@ import sys
 import threading
 import time
 from contextlib import contextmanager
-from shutil import get_terminal_size
+from os import get_terminal_size
 
 from .calibration import calibrated_fps
 from .configuration import config_handler
