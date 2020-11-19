@@ -1,3 +1,4 @@
+import operator
 import random
 import time
 from functools import update_wrapper
@@ -263,9 +264,9 @@ def check(spec, verbosity=0):  # noqa
         print(f'(call {HELP_MSG[verbosity]})')
 
     print(f'\n{SECTION("Specs")}')
-    info = lambda field: f'{YELLOW_BOLD(field)}: {getattr(spec, field)}'
+    info = lambda field: f'{YELLOW_BOLD(field.split(".")[0])}: {operator.attrgetter(field)(spec)}'
     print(info('length'), f'({info("natural")})')
-    print(info('cycles'), f'({"randomized" if spec.randomize else "ordered"})')
+    print(info('cycles'), f'({info("strategy.name")})')
     print('\n'.join(info(field) for field in ('frames', 'total_frames')))
 
     if verbosity in (3, 4, 5):
