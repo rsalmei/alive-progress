@@ -89,6 +89,7 @@ CONFIG_VARS = dict(  # the ones the user can configure.
     enrich_print=_bool_input_factory(),
     title_length=_int_input_factory(0, 100),
     show_receipt_text=_bool_input_factory(),
+    # title_effect=_enum_input_factory(),  # TODO someday.
 )
 ADDITIONAL_VARS = dict(  # dynamically generated ones.
     spinner_player=_create_spinner_player,
