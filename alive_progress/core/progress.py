@@ -130,7 +130,6 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
                 percent += run.percent
             run.percent = max(0., percent)
             update_hook()
-            return run.percent
     else:
         def bar_handle(count=1, *, relative=True):
             """Bar handle for definite and unknown modes.
@@ -142,8 +141,6 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
                 count += run.count
             run.count = max(0, count)
             update_hook()
-            return run.count
-    bar_handle.text = set_text
 
     def start_monitoring(offset=0.):
         hide_cursor()
@@ -181,6 +178,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         rate_spec, factor, print_template = '%', 1., 'on {:.1%}: '
 
     known, unknown = (impl(config.length) for impl in (config.bar, config.unknown))
+    bar_handle.text, bar_handle.current = set_text, current
     if total or config.manual:  # we can track progress and therefore eta.
         bar_repr = known
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
