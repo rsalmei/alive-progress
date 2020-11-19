@@ -34,8 +34,8 @@ def compiler_controller(*, natural, skip_compiler=False):
 
             with about_time() as t_compile:
                 gen = spinner_inner_factory(actual_length, **op_params)
-                spec = spinner_compiler(gen, natural, extra_commands)
-            return spinner_runner_factory(spec, t_compile)
+                spec = spinner_compiler(gen, natural, extra_commands.get(True, ()))
+            return spinner_runner_factory(spec, t_compile, extra_commands.get(False, ()))
 
         def compile_and_check(*args, **kwargs):
             """Compile this spinner factory at its natural length, and check its specs."""
@@ -50,7 +50,8 @@ def compiler_controller(*, natural, skip_compiler=False):
         def schedule_command(command):
             def inner_schedule(*args, **kwargs):
                 signature(command).bind(1, *args, **kwargs)  # test arguments (spec is provided).
-                extra = extra_commands + [(command, args, kwargs)]
+                extra, cmd_type = dict(extra_commands), EXTRA_COMMANDS[command]
+                extra[cmd_type] = extra.get(cmd_type, ()) + ((command, args, kwargs),)
                 return inner_controller(spinner_inner_factory, op_params, extra)
 
             return fix_signature(inner_schedule, command, 1)
@@ -59,7 +60,7 @@ def compiler_controller(*, natural, skip_compiler=False):
             check=fix_signature(compile_and_check, check, 1), op=set_operational,
             **{c.__name__: schedule_command(c) for c in EXTRA_COMMANDS},
         )
-        op_params, extra_commands = op_params or {}, extra_commands or []
+        op_params, extra_commands = op_params or {}, extra_commands or {}
         compiler_dispatcher.natural = natural  # share with the spinner code.
         return compiler_dispatcher
 
@@ -164,6 +165,11 @@ def randomize(spec, cycles=None):  # noqa
                          cycles=max(0, cycles or 0) or spec.cycles)
 
 
+def apply_extra_commands(spec, extra_commands):
+    for command, args, kwargs in extra_commands:
+        command(spec, *args, **kwargs)
+
+
 def spinner_compiler(gen, natural, extra_commands):
     """Optimized spinner compiler, which compiles ahead of time all frames of all cycles
     of a spinner.
@@ -171,30 +177,22 @@ def spinner_compiler(gen, natural, extra_commands):
     Args:
         gen (Generator): the generator expressions that defines the cycles and their frames
         natural (int): the natural length of the spinner
-        extra_commands (list): requested extra commands to be applied to the data
+        extra_commands (tuple[tuple[cmd, list[Any], dict[Any]]]): requested extra commands
 
     Returns:
         the spec of a compiled animation
 
     """
 
-    def apply_commands(post_info):
-        commands = filter(lambda x: EXTRA_COMMANDS[x[0]] == post_info, extra_commands)
-        for command, args, kwargs in commands:
-            command(spec, *args, **kwargs)
-
     spec = SimpleNamespace(
         data=tuple(tuple(fix_cells(frame) for frame in cycle) for cycle in gen),
         natural=natural, randomize=False)
-
-    apply_commands(False)  # pre-info commands.
+    apply_extra_commands(spec, extra_commands)
 
     # generate spec info.
     frames = tuple(len(cycle) for cycle in spec.data)
     spec.__dict__.update(cycles=len(spec.data), length=len(spec.data[0][0]),
                          frames=frames, total_frames=sum(frames))
-
-    apply_commands(True)  # post-info commands.
 
     assert (max(len(frame) for cycle in spec.data for frame in cycle) ==
             min(len(frame) for cycle in spec.data for frame in cycle)), \
@@ -202,7 +200,7 @@ def spinner_compiler(gen, natural, extra_commands):
     return spec
 
 
-def spinner_runner_factory(spec, t_compile):
+def spinner_runner_factory(spec, t_compile, extra_commands):
     """Optimized spinner runner, which receives the spec of an animation, and controls
     the flow of cycles and frames already compiled to a certain screen length and with
     wide chars fixed, thus avoiding any overhead in runtime within complex spinners,
@@ -211,6 +209,7 @@ def spinner_runner_factory(spec, t_compile):
     Args:
         spec (SimpleNamespace): the spec of an animation
         t_compile (about_time.Handler): the compile time information
+        extra_commands (tuple[tuple[cmd, list[Any], dict[Any]]]): requested extra commands
 
     Returns:
         a spinner runner
@@ -238,6 +237,8 @@ def spinner_runner_factory(spec, t_compile):
     spinner_runner.__dict__.update(spec.__dict__, check=fix_signature(runner_check, check, 1))
     spec.__dict__.update(t_compile=t_compile, runner=spinner_runner)  # set after the update above.
     cycle_gen = random_cycle_data() if spec.randomize else ordered_cycle_data()
+
+    apply_extra_commands(spec, extra_commands or ((sequential, (), {}),))
     return spinner_runner
 
 
