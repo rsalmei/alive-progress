@@ -81,25 +81,27 @@ def fix_signature(func: Callable, source: Callable, skip_n_params: int):
 The commands here are made available in the compiler controller, thus in all spinners.
 
 They work lazily: when called they only schedule themselves to be run when the spinner
-is compiled, i.e., when it receives the operational parameters like `actual_length`.
+gets compiled, i.e., when it receives the operational parameters like `actual_length`.
 
-They also can run before generating the spec info or after it.
+They can take place inside the compiler or inside the runner.
+Compiler commands can change the data at will, before the animation specs are computed.
+Runner commands can only change presentation order.
 """
 
 
-def extra_command(post_info):
+def extra_command(is_compiler):
     def inner_command(command):
-        EXTRA_COMMANDS[command] = post_info
+        EXTRA_COMMANDS[command] = is_compiler
         return command
 
     return inner_command
 
 
 EXTRA_COMMANDS = {}
-pre_compiler_command, post_compiler_command = extra_command(False), extra_command(True)
+compiler_command, runner_command = extra_command(True), extra_command(False)
 
 
-@pre_compiler_command
+@compiler_command
 def replace(spec, old, new):  # noqa
     """Replace a portion of the frames by another with the same length.
 
@@ -114,7 +116,7 @@ def replace(spec, old, new):  # noqa
     ) for cycle in spec.data)
 
 
-@pre_compiler_command
+@compiler_command
 def pause(spec, n_edges=None, n_middle=None):  # noqa
     """Pause the animation on the edges, or slow it as a whole, or both.
 
@@ -133,7 +135,7 @@ def pause(spec, n_edges=None, n_middle=None):  # noqa
                       for cycle, length in ((cycle, len(cycle)) for cycle in spec.data))
 
 
-@pre_compiler_command
+@compiler_command
 def reshape(spec, num_frames):  # noqa
     """Reshape frame data into another grouping. It can be used to simplify content
     description, or for artistic effects.
@@ -146,7 +148,7 @@ def reshape(spec, num_frames):  # noqa
     spec.data = tuple(iter(lambda: tuple(islice(flatten, num_frames)), ()))
 
 
-@pre_compiler_command
+@compiler_command
 def transpose(spec):
     """Transpose the frame content matrix, exchanging columns for rows. It can be used
     to simplify content description, or for artistic effects."""
