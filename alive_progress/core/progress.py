@@ -10,9 +10,9 @@ from .configuration import config_handler
 from .hook_manager import buffered_hook_manager
 from .logging_hook import install_logging_hooks, uninstall_logging_hooks
 from .timing import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
-from .utils import clear_traces, hide_cursor, render_title, sanitize_text_marking_wide_chars, \
-    show_cursor
-from ..animations.utils import spinner_player
+from .utils import render_title
+from ..utils.cells import print_cells, to_cells
+from ..utils.terminal import hide_cursor, show_cursor
 
 
 @contextmanager
@@ -103,21 +103,16 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         elapsed = time.perf_counter() - run.init
         run.rate = current() / elapsed if elapsed else 0.
 
-        line = ' '.join(filter(None, (
-            title, bar_repr(run.percent, end), spin, monitor(), 'in',
-            to_elapsed_text(elapsed, end), stats(), run.text)))
+        fragments = (title, bar_repr(run.percent, end), spin, monitor(),
+                     'in', to_elapsed_text(elapsed, end), stats(), run.text)
 
-        line_len, (cols, _) = len(line), get_terminal_size()
+        cols, _ = get_terminal_size()
         with hook_manager.lock:
-            if line_len < run.last_line_len:
-                clear_traces()
-            sys.__stdout__.write(line[:cols] + (spin and '\r' or '\n'))
+            run.last_line_len = print_cells(fragments, cols, run.last_line_len)
             sys.__stdout__.flush()
 
-        run.last_line_len = line_len
-
     def set_text(message):
-        run.text = sanitize_text_marking_wide_chars(message)
+        run.text = to_cells(message)
 
     if config.manual:
         def bar_handle(percent, *, relative=False):
