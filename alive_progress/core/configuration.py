@@ -1,45 +1,30 @@
 import os
 from collections import namedtuple
+from itertools import repeat
 from types import FunctionType
 
 from ..animations import bars, spinners
+from ..animations.utils import spinner_player
 from ..styles.internal import BARS, SPINNERS, THEMES
 
+NO_SPINNER = object()  # now it is possible to disable the spinner and the bar at will.
+NO_BAR = object()  # these markers represent the empty config.
 
-def _style_input_factory(name_lookup, module_lookup, inner_name):
+
+def _spinner_input_factory(default):
+    return __style_input_factory(SPINNERS, spinners, 'inner_spinner_factory', default)
+
+
+def _bar_input_factory():
+    return __style_input_factory(BARS, bars, 'inner_bar_factory', NO_BAR)
+
+
+def __style_input_factory(name_lookup, module_lookup, inner_name, default):
     def _input(x):
-        return name_lookup(x) or func_lookup(x)
+        return name_lookup(x) or func_lookup(x) or default
 
     name_lookup = __name_lookup_factory(name_lookup)
     func_lookup = __func_lookup_factory(module_lookup, inner_name)
-    return _input
-
-
-def _unknown_bar_input_factory():
-    def _input(x):
-        obj = name_lookup(x) or spinner_lookup(x)
-        if obj:
-            return bars.unknown_bar_factory(obj)
-        return unknown_lookup(x)
-
-    name_lookup = __name_lookup_factory(SPINNERS)
-    spinner_lookup = __func_lookup_factory(spinners, 'inner_factory')
-    unknown_lookup = __func_lookup_factory(bars, 'inner_unknown_bar_factory')
-    return _input
-
-
-def _int_input_factory(lower, upper):
-    def _input(x):
-        if lower <= int(x) <= upper:
-            return int(x)
-
-    return _input
-
-
-def _bool_input_factory():
-    def _input(x):
-        return bool(x)
-
     return _input
 
 
@@ -62,18 +47,53 @@ def __func_lookup_factory(module_lookup, inner_name):
     return _input
 
 
-CONFIG_VARS = dict(
+def _int_input_factory(lower, upper):
+    def _input(x):
+        if lower <= int(x) <= upper:
+            return int(x)
+
+    return _input
+
+
+def _bool_input_factory():
+    def _input(x):
+        return bool(x)
+
+    return _input
+
+
+def _create_spinner_player(local_config):
+    spinner = local_config['spinner']
+    if spinner is NO_SPINNER:
+        return repeat('')
+    return spinner_player(spinner(local_config['spinner_length']))
+
+
+def _create_bars(local_config):
+    bar = local_config['bar']
+    if bar is NO_BAR:
+        obj = lambda p, end: None
+        obj.unknown = obj
+        return obj
+    return bar(local_config['length'], local_config['unknown'])
+
+
+CONFIG_VARS = dict(  # the ones the user can configure.
     length=_int_input_factory(3, 300),
-    spinner=_style_input_factory(SPINNERS, spinners, 'inner_factory'),
-    bar=_style_input_factory(BARS, bars, 'inner_standard_bar_factory'),
-    unknown=_unknown_bar_input_factory(),
+    spinner=_spinner_input_factory(NO_SPINNER),  # accept empty.
+    bar=_bar_input_factory(),
+    unknown=_spinner_input_factory(None),  # do not accept empty.
     force_tty=_bool_input_factory(),
     manual=_bool_input_factory(),
     enrich_print=_bool_input_factory(),
     title_length=_int_input_factory(0, 100),
 )
+ADDITIONAL_VARS = dict(  # dynamically generated ones.
+    spinner_player=_create_spinner_player,
+    bars=_create_bars,
+)
 
-Config = namedtuple('Config', tuple(CONFIG_VARS))
+Config = namedtuple('Config', tuple(CONFIG_VARS) + tuple(ADDITIONAL_VARS))
 
 
 def create_config():
@@ -99,10 +119,10 @@ def create_config():
 
     def create_context(theme=None, **options):
         """Create an immutable copy of the current configuration, with optional customization."""
-        local_config = dict(global_config)
-        local_config.update(_parse(theme, options))
+        local_config = {**global_config, **_parse(theme, options)}
         # noinspection PyArgumentList
-        return Config(**local_config)
+        return Config(**{k: local_config[k] for k in CONFIG_VARS},
+                      **{k: v(local_config) for k, v in ADDITIONAL_VARS.items()})
 
     def _parse(theme, options):
         """Validate and convert some configuration options."""
@@ -124,7 +144,7 @@ def create_config():
             swap = options
             options = dict(THEMES[theme])
             options.update(swap)
-        return {k: validator(k, v) for k, v in options.items() if v is not None}
+        return {k: validator(k, v) for k, v in options.items()}
 
     global_config = {}
     reset()
