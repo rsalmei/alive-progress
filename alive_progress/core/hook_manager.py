@@ -50,6 +50,8 @@ def buffered_hook_manager(header_template, get_pos):
 
     def get_hook_for(stream):
         stream.flush()
+        if stream == sys.stderr:  # this stream also goes to screen, which can mess with stdout.
+            stream = base_stdout
         # generates multiple hooks, one for each stream.
         return SimpleNamespace(write=partial(write, stream),
                                flush=partial(flush, stream),
