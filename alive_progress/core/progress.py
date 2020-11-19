@@ -239,7 +239,9 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
             local_copy.join()
 
     # prints the nice final receipt.
-    end, run.text, stats = True, '', stats_end
     if bar_repr is unknown:
         bar_repr, run.percent = known, 1.
+    end, stats = True, stats_end
+    if not config.show_receipt_text:
+        run.text = ''
     alive_repr()
