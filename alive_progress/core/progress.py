@@ -224,9 +224,8 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
     finally:
         hook_manager.flush_buffers()
         stop_monitoring()
-        if thread:
-            local_copy = thread
-            thread = None  # lets the internal thread terminate gracefully.
+        if thread:  # lets the internal thread terminate gracefully.
+            local_copy, thread = thread, None
             local_copy.join()
 
     # prints the nice final receipt.
