@@ -81,6 +81,7 @@ def _create_bars(local_config):
 CONFIG_VARS = dict(  # the ones the user can configure.
     length=_int_input_factory(3, 300),
     spinner=_spinner_input_factory(NO_SPINNER),  # accept empty.
+    spinner_length=_int_input_factory(0, 100),
     bar=_bar_input_factory(),
     unknown=_spinner_input_factory(None),  # do not accept empty.
     force_tty=_bool_input_factory(),
@@ -106,6 +107,7 @@ def create_config():
             manual=False,
             enrich_print=True,
             title_length=0,
+            spinner_length=0,
         )
 
     def set_global(theme=None, **options):
