@@ -127,7 +127,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
 
     if config.manual:
         # FIXME update bar signatures and remove deprecated in v2.
-        def bar(perc=None, text=None):
+        def bar_handle(perc=None, text=None):
             """Bar handle for manual (bounded and unbounded) modes.
             Only absolute positioning.
             """
@@ -143,7 +143,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
                                                  ' please update your code.'), stacklevel=2)
                 set_text(text)
     else:
-        def bar(text=None, incr=1):
+        def bar_handle(text=None, incr=1):
             """Bar handle for definite and unknown modes.
             Only relative positioning.
             """
@@ -200,7 +200,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             yield
             start_monitoring(offset)
 
-        bar.pause = pause_monitoring
+        bar_handle.pause = pause_monitoring
         thread = threading.Thread(target=run, args=(config.spinner(),))
         thread.daemon = True
         thread.start()
@@ -269,7 +269,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     title = render_title(title, config.title_length)
     start_monitoring()
     try:
-        yield bar
+        yield bar_handle
     finally:
         flush_buffer()
         stop_monitoring()
