@@ -155,7 +155,6 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
                 warnings.warn(DeprecationWarning("use bar.text('') instead of bar(text=''),"
                                                  ' please update your code.'), stacklevel=2)
                 set_text(text)
-    bar.text = set_text
 
     def print_hook(part):
         if part != '\n':
@@ -210,6 +209,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     else:  # there's only a manual percentage.
         logic_total, rate_spec, factor, current = 1., '%', 1., lambda: run.percent  # noqa
 
+    bar_handle.text, bar_handle.current = set_text, current
     if total or config.manual:  # we can track progress and therefore eta.
         spec = '({{:.1{}}}/s, eta: {{}})'.format(rate_spec)
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
