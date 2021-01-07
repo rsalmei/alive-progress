@@ -142,7 +142,6 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
                 warnings.warn(DeprecationWarning("use bar.text('') instead of bar(text=''),"
                                                  ' please update your code.'), stacklevel=2)
                 set_text(text)
-            return run.percent
     else:
         def bar(text=None, incr=1):
             """Bar handle for definite and unknown modes.
@@ -156,7 +155,6 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
                 warnings.warn(DeprecationWarning("use bar.text('') instead of bar(text=''),"
                                                  ' please update your code.'), stacklevel=2)
                 set_text(text)
-            return run.count
     bar.text = set_text
 
     def print_hook(part):
