@@ -6,6 +6,13 @@ import sys
 import unicodedata
 from itertools import chain
 
+try:
+    # available only in Python 3+.
+    from shutil import get_terminal_size
+except ImportError:
+    def get_terminal_size():
+        return _terminal_columns_fallback(), -1
+
 ZWJ = '\u200d'  # zero-width joiner (it's the only one that actually worked on my terminal)
 
 
@@ -48,7 +55,7 @@ def render_title(title, length):
     return '{:{}.{}}{}'.format(title, length - 1, *data)[:length]
 
 
-def terminal_columns():  # pragma: no cover
+def _terminal_columns_fallback():  # pragma: no cover
     """Gets the size of the terminal.
 
     This should work only on *nix, macOS included.

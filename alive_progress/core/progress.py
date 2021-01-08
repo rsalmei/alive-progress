@@ -13,7 +13,7 @@ from .configuration import config_handler
 from .logging_hook import install_logging_hook, uninstall_logging_hook
 from .timing import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
 from .utils import clear_traces, hide_cursor, render_title, sanitize_text_marking_wide_chars, \
-    show_cursor, terminal_columns
+    show_cursor, get_terminal_size
 from ..animations.utils import spinner_player
 
 
@@ -109,7 +109,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             title, bar_repr(run.percent, end), spin, monitor(), 'in',
             to_elapsed_text(elapsed, end), stats(), run.text)))
 
-        line_len, cols = len(line), terminal_columns()
+        line_len, (cols, _) = len(line), get_terminal_size()
         with print_lock:
             if line_len < run.last_line_len:
                 clear_traces()
