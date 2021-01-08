@@ -40,6 +40,10 @@ I like to think of it as a new kind of progress bar for python, as it has among 
 > - enhanced elapsed time and ETA representation - the smallest rendition possible, so you can maximize the animations!
 > - new `bar.text()` dedicated method - now you can change the situational message without making the bar going forward!
 > - performance optimizations - even less overhead, your processing won't even notice it!
+>
+> ### 📌 Fixed in 1.6.2!
+> - new lines get printed on vanilla Python REPL;
+> - bar is truncated to 80 chars on Windows.
 
 
 ## Get it
@@ -74,7 +78,7 @@ In general lines, just retrieve the items, enter the `alive_bar` context manager
 - the `items` can be any iterable, and usually will be some queryset;
 - the first argument of the `alive_bar` is the expected total, so it can be anything that returns an integer, like `qs.count()` for querysets, `len(items)` for iterables that support it, or even a static integer;
 - the `bar()` call is what makes the bar go forward -- you usually call it in every iteration after consuming an item, but you can get creative! Remember the bar is counting for you _independently of the iteration process_, only when you call `bar()` (something no other progress bar have), so you can use it to count anything you want! For example, you could call `bar()` only when you find something expected and then know how many of those there were, including the percentage that it represents! Or call it more than once in the same iteration, no problem at all, you choose what you are monitoring! The ETA will not be that useful unfortunately;
-- the `bar()` call returns the current count or percentage.
+- to retrieve the current `bar()` count/percentage, you can call `bar.current()`.
 
 So, you could even use it without any loops, like for example:
 
@@ -419,6 +423,7 @@ $ pip install -U "alive_progress<2"
 ```
 
 ## Changelog highlights:
+- 1.6.2: new `bar.current()` method; newlines get printed on vanilla Python REPL; bar is truncated to 80 chars on Windows.
 - 1.6.1: fix logging support for python 3.6 and lower; support logging for file; support for wide unicode chars, which use 2 columns but have length 1
 - 1.6.0: soft wrapping support; hiding cursor support; python logging support; exponential smoothing of ETA time series; proper bar title, always visible; enhanced times representation; new `bar.text()` method, to set situational messages at any time, without incrementing position (deprecates 'text' parameter in `bar()`); performance optimizations
 - 1.5.1: fix compatibility with python 2.7 (should be the last one, version 2 is in the works, with python 3 support only)
