@@ -13,7 +13,7 @@ from .configuration import config_handler
 from .logging_hook import install_logging_hook, uninstall_logging_hook
 from .timing import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
 from .utils import clear_traces, hide_cursor, render_title, sanitize_text_marking_wide_chars, \
-    show_cursor, terminal_columns
+    show_cursor, get_terminal_size
 from ..animations.utils import spinner_player
 
 
@@ -109,7 +109,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             title, bar_repr(run.percent, end), spin, monitor(), 'in',
             to_elapsed_text(elapsed, end), stats(), run.text)))
 
-        line_len, cols = len(line), terminal_columns()
+        line_len, (cols, _) = len(line), get_terminal_size()
         with print_lock:
             if line_len < run.last_line_len:
                 clear_traces()
@@ -127,7 +127,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
 
     if config.manual:
         # FIXME update bar signatures and remove deprecated in v2.
-        def bar(perc=None, text=None):
+        def bar_handle(perc=None, text=None):
             """Bar handle for manual (bounded and unbounded) modes.
             Only absolute positioning.
             """
@@ -142,9 +142,8 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
                 warnings.warn(DeprecationWarning("use bar.text('') instead of bar(text=''),"
                                                  ' please update your code.'), stacklevel=2)
                 set_text(text)
-            return run.percent
     else:
-        def bar(text=None, incr=1):
+        def bar_handle(text=None, incr=1):
             """Bar handle for definite and unknown modes.
             Only relative positioning.
             """
@@ -156,8 +155,6 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
                 warnings.warn(DeprecationWarning("use bar.text('') instead of bar(text=''),"
                                                  ' please update your code.'), stacklevel=2)
                 set_text(text)
-            return run.count
-    bar.text = set_text
 
     def print_hook(part):
         if part != '\n':
@@ -202,7 +199,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             yield
             start_monitoring(offset)
 
-        bar.pause = pause_monitoring
+        bar_handle.pause = pause_monitoring
         thread = threading.Thread(target=run, args=(config.spinner(),))
         thread.daemon = True
         thread.start()
@@ -212,6 +209,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     else:  # there's only a manual percentage.
         logic_total, rate_spec, factor, current = 1., '%', 1., lambda: run.percent  # noqa
 
+    bar_handle.text, bar_handle.current = set_text, current
     if total or config.manual:  # we can track progress and therefore eta.
         spec = '({{:.1{}}}/s, eta: {{}})'.format(rate_spec)
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
@@ -271,7 +269,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     title = render_title(title, config.title_length)
     start_monitoring()
     try:
-        yield bar
+        yield bar_handle
     finally:
         flush_buffer()
         stop_monitoring()

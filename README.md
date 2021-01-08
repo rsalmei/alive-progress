@@ -9,9 +9,9 @@
 [![PyPI version](https://img.shields.io/pypi/v/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
 [![PyPI status](https://img.shields.io/pypi/status/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
-[![PyPI downloads](https://img.shields.io/pypi/dm/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
+[![Downloads](https://pepy.tech/badge/alive-progress)](https://pepy.tech/project/alive-progress)
 
-Ever found yourself in a remote ssh session, doing some lengthy operations, and every now and then you feel the need to hit [enter] just to ensure you didn't lose the connection? Ever wondered where your processing is in, and when will it finish? Ever needed to *pause* the progress bar for a while, return to the python REPL for a manual inspection or fixing an item, and then *resume* the process like it never happened? I did...
+Ever found yourself in a remote ssh session, doing some lengthy operations, and every now and then you feel the need to hit [RETURN] just to ensure you didn't lose the connection? Ever wondered where your processing was in, and when would it finish? Ever needed to *pause* the progress bar for a while, return to the prompt for a manual inspection or for fixing an item, and then *resume* the process like it never happened? I did...
 
 I've made this cool progress bar thinking about all that, the **Alive-Progress** bar! :)
 
@@ -40,6 +40,10 @@ I like to think of it as a new kind of progress bar for python, as it has among 
 > - enhanced elapsed time and ETA representation - the smallest rendition possible, so you can maximize the animations!
 > - new `bar.text()` dedicated method - now you can change the situational message without making the bar going forward!
 > - performance optimizations - even less overhead, your processing won't even notice it!
+>
+> ### 📌 Fixed in 1.6.2!
+> - new lines get printed on vanilla Python REPL;
+> - bar is truncated to 80 chars on Windows.
 
 
 ## Get it
@@ -57,16 +61,16 @@ Open a context manager like this:
 
 ```python
 from alive_progress import alive_bar
-items = range(1000)                  # retrieve your set of items
-with alive_bar(len(items)) as bar:   # declare your expected total
-    for item in items:               # iterate as usual
-        # process each item
-        bar()                        # call after consuming one item
+
+with alive_bar(total) as bar:  # declare your expected total
+    for item in items:         # iterate as usual over your items
+        ...                    # process each item
+        bar()                  # call after consuming one item
 ```
 
 And it's alive! 👏
 
-In general lines, just retrieve the items, enter the `alive_bar()` context manager, and iterate/process normally, calling `bar()` once per item.
+In general lines, just retrieve the items, enter the `alive_bar` context manager with their total, and just iterate/process normally, calling `bar()` once per item! It's that simple! :)
 
 
 ### Understand it
@@ -74,46 +78,82 @@ In general lines, just retrieve the items, enter the `alive_bar()` context manag
 - the `items` can be any iterable, and usually will be some queryset;
 - the first argument of the `alive_bar` is the expected total, so it can be anything that returns an integer, like `qs.count()` for querysets, `len(items)` for iterables that support it, or even a static integer;
 - the `bar()` call is what makes the bar go forward -- you usually call it in every iteration after consuming an item, but you can get creative! Remember the bar is counting for you _independently of the iteration process_, only when you call `bar()` (something no other progress bar have), so you can use it to count anything you want! For example, you could call `bar()` only when you find something expected and then know how many of those there were, including the percentage that it represents! Or call it more than once in the same iteration, no problem at all, you choose what you are monitoring! The ETA will not be that useful unfortunately;
-- the `bar()` call returns the current count or percentage.
+- to retrieve the current `bar()` count/percentage, you can call `bar.current()`.
 
 So, you could even use it without any loops, like for example:
 
 ```python
 with alive_bar(3) as bar:
-    corpus = read_big_file()
-    bar('file read, tokenizing')
+    corpus = read_big_file(file)
+    bar()  # file read, tokenizing
     tokens = tokenize(corpus)
-    bar('tokens ok, processing')
+    bar()  # tokens ok, processing
     process(tokens)
-    bar()
+    bar()  # we're done! 3 calls with total=3
 ```
+
+<details>
+<summary>Oops, there's a caveat using without a loop...</summary>
+
+> Note that if you use `alive-progress` without a loop it is your responsibility to equalize the steps! They probably do not have the same durations, so the ETA can be somewhat misleading. Since you are telling the `alive-progress` there're three steps, when the first one gets completed it will understand 1/3 or 33% of the whole processing is complete, but reading that big file can actually be much faster than tokenizing or processing it.
+> <br>To improve on that, use the **manual mode** and increase the bar by different amounts at each step!
+>
+> You could use my other open source project [about-time](https://github.com/rsalmei/about-time) to easily measure the durations of the steps, then dividing them by the total time and obtaining their percentages. Accumulate those to get the aggregate percentages and that's it! Just try to simulate with some representative inputs, to get better results. Something like:
+>
+> ```python
+> from about_time import about_time
+>
+> with about_time() as t_total:             # this about_time will measure the whole time of the block.
+>     t1 = about_time(read_big_file, file)  #
+>     t2 = about_time(tokenize, t1.result)  # these three will get the relative timings.
+>     t3 = about_time(process, t2.result)   #
+>     # if it gets complicated to write in this format, you can just open other `with` contexts!
+>     # `about_time` supports several syntaxes, just choose your prefered one.
+>
+> print(f'percentage1 = {t1.duration / t_total.duration}')
+> print(f'percentage2 = {t2.duration / t_total.duration + percentage1}')
+> print(f'percentage3 = {t3.duration / t_total.duration + percentage2}')  # the last should always be 1.
+> ```
+>
+> Then you can use those percentages to improve the original code:
+>
+> ```python
+> with alive_bar(3, manual=True) as bar:
+>     corpus = read_big_file()
+>     bar(0.01)  # bring the percentage till first step, e.g. 1% = 0.01
+>     tokens = tokenize(corpus)
+>     bar(0.3)  # bring the percentage till second step, e.g. 30% = 0.3
+>     process(tokens)
+>     bar(1.0)  # the last is always 100%, we're done!
+> ```
+> ---
+</details>
 
 
 ## Modes of operation
 
-Actually, the `total` argument is optional. Providing it makes the bar enter the **definite mode**, the one used for well-bounded tasks. This mode has all statistics widgets `alive-progress` has to offer: counter, throughput and eta.
+Actually, the `total` argument is optional. Providing it makes the bar enter the **definite mode**, the one used for well-bounded tasks. This mode has all statistics widgets `alive-progress` has to offer: count, throughput and eta.
 
-If you do not provide a `total`, the bar enters the **unknown mode**. In this mode, the whole progress-bar is animated like the cool spinners, as it's not possible to determine the percentage of completion. Therefore, it's also not possible to compute an eta, but you still get the counter and throughput widgets.
+If you do not provide a `total`, the bar enters the **unknown mode**. In this mode, the whole progress bar is animated like the cool spinners, as it's not possible to determine the percentage of completion. Therefore, it's also not possible to compute an eta, but you still get the count and throughput widgets.
 
-> The cool spinner are still present in this mode, so the animations from both bar and spinner runs concurrently and independently of each other, rendering a unique show in your terminal 😜.
+> The cool spinner are still present in this mode, and they're both running their own animations, concurrently and independently of each other, rendering a unique show in your terminal! 😜
 
-Then you have the (📌 new) **manual modes**, where you get to actually control the bar! That way, you can put it in whatever position you want, including make it go backwards or act like a gauge of some sort!
-Just pass a `manual=True` argument to `alive_bar()` (or `config_handler.set_global()`), and you get to send a percentage to the very same `bar()` handler! For example to set it at 15%, you would call `bar(0.15)`, which is 15 / 100, as simple as that.
-Call it as frequently as you need, the refresh rate will be asynchronously computed as usual, according to current progress and elapsed time.
+Then you have the **manual modes**, where you get to actually control the bar position. It's used for processes that only feed you back the percentage of completion, so you can inform them directly to the bar.
+Just pass a `manual=True` argument to `alive_bar` (or `config_handler`), and you get to send your own percentage to the very same `bar()` handler! For example to set it to 15%, you would call `bar(0.15)`, which is 15 / 100, as simple as that.
+<br>Call it as frequently as you need, the refresh rate will be asynchronously computed as usual, according to current progress and elapsed time.
 
-And please provide the `total` if you have it, to get all the same counter, throughput and eta widgets as the _definite mode_. The counter will be inferred from the supplied user percentage.
-<br>If you omit the `total`, it's not possible to infer the counter widget, but you'll still kinda get the throughput and eta widgets, a simpler one with only "%/s" (percent per second) and a rough ETA to get to 100%, which are very inaccurate, but better than nothing.
+And do provide the `total` if you have it, to get all the same count, throughput and eta widgets as the _definite mode_! If you don't, it's not possible to infer the count widget, and you'll only get simpler versions of the throughput and eta widgets: throughput is only "%/s" (percent per second) and ETA is only to get to 100%, which are very inaccurate, but better than nothing.
 
-> Just remember: You do not have to think about which mode you should be using, just always pass a `total` if you know it, and use `manual` if you need it! It will just work! 👏
+> But it's quite simple: Do not think about which mode you should use, just always pass the expected `total` if you know it, and use `manual` if you need it! It will just work the best it can! 👏\o/
 
 To summarize it all:
 
-|       mode         |     completion         | counter    | throughput |   eta    | overflow and underflow |
+| mode | completion | count | throughput | eta | overflow and underflow |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-|     definite       | ✅ automatic           | ✅          | ✅         | ✅       | ✅ |
-|     unknown        | ❌ (an animation runs) | ✅          | ✅         | ❌       | ❌ |
-| manual (bounded)   | ✅ you choose          | ✅ inferred | ✅         | ✅       | ✅ |
-| manual (unbounded) | ✅ you choose          | ❌          | ⚠️ simpler | ⚠️ rough | ✅ |
+|     definite        | ✅<br>automatic  | ✅             | ✅            | ✅          | ✅ |
+|     unknown         | ❌               | ✅             | ✅            | ❌          | ❌ |
+| manual<br>bounded   | ✅<br>you choose | ✅<br>inferred | ✅            | ✅          | ✅ |
+| manual<br>unbounded | ✅<br>you choose | ❌             | ⚠️<br>simpler | ⚠️<br>rough | ✅ |
 
 
 ### The `bar()` handler
@@ -383,6 +423,7 @@ $ pip install -U "alive_progress<2"
 ```
 
 ## Changelog highlights:
+- 1.6.2: new `bar.current()` method; newlines get printed on vanilla Python REPL; bar is truncated to 80 chars on Windows.
 - 1.6.1: fix logging support for python 3.6 and lower; support logging for file; support for wide unicode chars, which use 2 columns but have length 1
 - 1.6.0: soft wrapping support; hiding cursor support; python logging support; exponential smoothing of ETA time series; proper bar title, always visible; enhanced times representation; new `bar.text()` method, to set situational messages at any time, without incrementing position (deprecates 'text' parameter in `bar()`); performance optimizations
 - 1.5.1: fix compatibility with python 2.7 (should be the last one, version 2 is in the works, with python 3 support only)
