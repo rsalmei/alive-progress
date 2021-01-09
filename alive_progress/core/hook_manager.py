@@ -46,6 +46,7 @@ def buffered_hook_manager(header_template, get_pos):
                     # files from logging, and thus not needing to clear the screen...
                     clear_traces()
                 stream.write(f'{header}{nested.strip()}\n')
+                stream.flush()
                 buffer[:] = []
 
     def get_hook_for(stream):
