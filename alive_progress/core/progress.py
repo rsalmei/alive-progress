@@ -3,7 +3,6 @@ import sys
 import threading
 import time
 from contextlib import contextmanager
-from os import get_terminal_size
 
 from .calibration import calibrated_fps
 from .configuration import config_handler
@@ -12,7 +11,7 @@ from .logging_hook import install_logging_hooks, uninstall_logging_hooks
 from .timing import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
 from .utils import render_title
 from ..utils.cells import print_cells, to_cells
-from ..utils.terminal import hide_cursor, show_cursor
+from ..utils.terminal import hide_cursor, show_cursor, terminal_size
 
 
 @contextmanager
@@ -105,7 +104,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         fragments = (title, bar_repr(run.percent, end), spin, monitor(),
                      'in', to_elapsed_text(elapsed, end), stats(), run.text)
 
-        cols, _ = get_terminal_size()
+        cols, _ = terminal_size()
         with hook_manager.lock:
             run.last_line_len = print_cells(fragments, cols, run.last_line_len)
             sys.__stdout__.flush()
