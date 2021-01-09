@@ -88,7 +88,7 @@ CONFIG_VARS = dict(  # the ones the user can configure.
     manual=_bool_input_factory(),
     enrich_print=_bool_input_factory(),
     title_length=_int_input_factory(0, 100),
-    show_receipt_text=_bool_input_factory(),
+    receipt_text=_bool_input_factory(),
     # title_effect=_enum_input_factory(),  # TODO someday.
 )
 ADDITIONAL_VARS = dict(  # dynamically generated ones.
@@ -110,7 +110,7 @@ def create_config():
             enrich_print=True,
             title_length=0,
             spinner_length=0,
-            show_receipt_text=False,
+            receipt_text=False,
         )
 
     def set_global(theme=None, **options):

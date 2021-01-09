@@ -230,7 +230,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
 
     # prints the nice final receipt.
     end, stats = True, stats_end
-    if not config.show_receipt_text:
+    if not config.receipt_text:
         run.text = ''
     if bar_repr is config.bars.unknown:
         bar_repr, run.percent = config.bars, 1.
