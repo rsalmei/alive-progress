@@ -17,8 +17,7 @@ I've made this cool progress bar thinking about all that, the **Alive-Progress**
 
 ![alive-progress](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/alive-demo.gif)
 
-
-I like to think of it as a new kind of progress bar for python, as it has among other things:
+I like to think of it as a new kind of progress bar for Python, as it has among other things:
 
 - a **cool live spinner**, which clearly shows your lengthy process did not hang and your ssh connection is healthy;
 - a **visual feedback** of the current speed/throughput, as the spinner runs faster or slower according to the actual processing speed;
@@ -167,7 +166,7 @@ To summarize it all:
 
 ## Styles
 
-Wondering what styles does it have bundled? It's `showtime`! ;)
+Wondering what styles it has bundled? It's `showtime`! ;)
 
 ![alive-progress spinner styles](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/showtime-spinners.gif)
 
@@ -195,7 +194,7 @@ While in any alive progress context, you can display messages with:
 
 > Deprecated: there's still a `bar(text='message')` to update the situational message, but that did not allow you to update it without also changing the bar position, which was inconvenient.
 > Now they are separate methods, and the message can be changed whenever you want.
-> `DeprecationWarning`s should be displayed to alert you if needed, please update your software to `bar.text('message')`, since this will be removed in the next version.
+> `DeprecationWarning`s should be displayed to alert you if needed, please update your software to `bar.text('message')`, since this will be removed in the next major version (2.0).
 
 ![alive-progress messages](https://raw.githubusercontent.com/rsalmei/alive-progress/master/img/print-hook.gif)
 
@@ -315,8 +314,8 @@ And if you want to do even more, exciting stuff lies ahead!
 
 > ### The Pause mechanism
 >
-> Why would you want to pause it, I hear? To get to manually act on some items at will, I say!
-> <br>Suppose you need to reconcile payment transactions. You need to iterate over thousands of them, detect somehow the faulty ones, and fix them. This fix is not simple nor deterministic, you need to study each one to understand what to do. They could be missing a recipient, or have the wrong amount, or not be synced with the server, etc, it's hard to even imagine all possibilities. Typically you would have to let the detection process run until completion, appending to a list each inconsistency found, and waiting potentially a long time until you can actually start fixing them. You could of course mitigate this by processing in chunks or printing them and acting in another shell, but those have their own shortcomings.
+> Why would you want to pause it, I hear? To get to manually act on some items at will, I say!  
+> Suppose you need to reconcile payment transactions. You need to iterate over thousands of them, detect somehow the faulty ones, and fix them. This fix is not simple nor deterministic, you need to study each one to understand what to do. They could be missing a recipient, or have the wrong amount, or not be synced with the server, etc, it's hard to even imagine all possibilities. Typically you would have to let the detection process run until completion, appending to a list each inconsistency found, and waiting potentially a long time until you can actually start fixing them. You could of course mitigate this by processing in chunks or printing them and acting in another shell, but those have their own shortcomings.
 > <br>Now there's a better way, pause the actual detection for a moment! Then you have to wait only until the next one is found, and act in near real time!
 >
 > To use the pause mechanism, you must be inside a function, which you should already be in your code (in the ipython shell just wrap it inside one). This requires a function to act as a generator and `yield` the objects you want to interact with. The `bar` handler includes a context manager for this, just do `with bar.pause(): yield transaction`.
