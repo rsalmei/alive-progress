@@ -52,7 +52,7 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     keywords='progress bar progress-bar progressbar spinner eta monitoring python terminal '
-             'multi-threaded REPL alive animated visual feedback'.split(),
+             'multi-threaded REPL alive animated visual feedback simple live efficient'.split(),
     packages=find_packages(),
     data_files=[('', ['LICENSE'])],
     python_requires='>=2.7, <4',
