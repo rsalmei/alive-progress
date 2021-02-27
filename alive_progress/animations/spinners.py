@@ -1,7 +1,7 @@
 import math
 from itertools import chain
 
-from .spinner_compiler import compiler_controller
+from .spinner_compiler import spinner_controller
 from .utils import combinations, overlay_sliding_window, spinner_player, split_options, \
     spread_weighted, static_sliding_window
 from ..utils.cells import combine_cells, fix_cells, mark_graphemes, strip_marks, \
@@ -43,7 +43,7 @@ def frame_spinner_factory(*frames):
     # support for unicode grapheme clusters and emoji chars.
     frames = tuple(tuple(to_cells(frame) for frame in cycle) for cycle in frames)
 
-    @compiler_controller(natural=max(len(frame) for cycle in frames for frame in cycle))
+    @spinner_controller(natural=max(len(frame) for cycle in frames for frame in cycle))
     def inner_spinner_factory(actual_length=None):
         actual_length = actual_length or inner_spinner_factory.natural
         max_ratio = math.ceil(actual_length / min(len(frame) for cycle in frames
@@ -82,7 +82,7 @@ def scrolling_spinner_factory(chars, length=None, block=None, background=None, *
     """
     chars = to_cells(chars)
 
-    @compiler_controller(natural=length or len(chars))
+    @spinner_controller(natural=length or len(chars))
     def inner_spinner_factory(actual_length=None):
         actual_length = actual_length or inner_spinner_factory.natural
         ratio = actual_length / inner_spinner_factory.natural
@@ -162,7 +162,7 @@ def sequential_spinner_factory(*spinner_factories, intermix=True):
 
     """
 
-    @compiler_controller(natural=max(factory.natural for factory in spinner_factories))
+    @spinner_controller(natural=max(factory.natural for factory in spinner_factories))
     def inner_spinner_factory(actual_length=None):
         actual_length = actual_length or inner_spinner_factory.natural
         spinners = [factory(actual_length) for factory in spinner_factories]
@@ -198,7 +198,7 @@ def alongside_spinner_factory(*spinner_factories, pivot=None):
 
     """
 
-    @compiler_controller(natural=sum(factory.natural for factory in spinner_factories))
+    @spinner_controller(natural=sum(factory.natural for factory in spinner_factories))
     def inner_spinner_factory(actual_length=None, offset=0):
         if actual_length:
             lengths = spread_weighted(actual_length, [f.natural for f in spinner_factories])
@@ -246,7 +246,7 @@ def delayed_spinner_factory(spinner_factory, copies, offset=1, *, dynamic=True):
         factories = (spinner_factory,) * copies
         return alongside_spinner_factory(*factories, pivot=0).op(offset=offset)
 
-    @compiler_controller(natural=spinner_factory.natural * copies, skip_compiler=True)
+    @spinner_controller(natural=spinner_factory.natural * copies, skip_compiler=True)
     def inner_spinner_factory(actual_length=None):
         n = math.ceil(actual_length / spinner_factory.natural) if actual_length else copies
         return delayed_spinner_factory(spinner_factory, n, offset, dynamic=False)(actual_length)

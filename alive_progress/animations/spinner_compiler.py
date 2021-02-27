@@ -13,7 +13,7 @@ from ..utils.colors import BLUE, BLUE_BOLD, CYAN, DIM, GREEN, ORANGE, ORANGE_BOL
 from ..utils.terminal import hide_cursor, show_cursor
 
 
-def compiler_controller(*, natural, skip_compiler=False):
+def spinner_controller(*, natural, skip_compiler=False):
     def inner_controller(spinner_inner_factory, op_params=None, extra_commands=None):
         def compiler_dispatcher(actual_length=None):
             """Compile this spinner factory into an actual spinner runner.
