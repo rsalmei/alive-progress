@@ -64,7 +64,19 @@ VS_15 = '\ufe0e'
 
 def print_cells(fragments, cols, last_line_len=0):
     """Print a tuple of fragments of tuples of cells on the terminal, until a given number of
-    cols is achieved, slicing over cells when needed."""
+    cols is achieved, slicing over cells when needed.
+
+    Args:
+        fragments (Tuple[Union[str, Tuple[str, ...]]): the fragments of message, which are
+            joined and gain spaces between them
+        cols (int): maximum columns to use
+        last_line_len (int): if the size of these fragments are smaller than this, the line is
+            cleared before printing anything
+
+    Returns:
+        the number of actually used cols.
+
+    """
     line = tuple(islice(chain.from_iterable(zip(SPACES, filter(None, fragments))), 1, None))
     line_len = sum(len(fragment) for fragment in line)
 
