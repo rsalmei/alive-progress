@@ -58,5 +58,5 @@ setup(
     packages=find_packages(),
     data_files=[('', ['LICENSE'])],
     python_requires='>=3.6, <4',
-    install_requires=['about_time==3.1.0', 'grapheme==0.6.0'],
+    install_requires=['about_time==3.1.1', 'grapheme==0.6.0'],
 )
