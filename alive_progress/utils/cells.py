@@ -62,7 +62,7 @@ SPACES = repeat(' ')
 VS_15 = '\ufe0e'
 
 
-def print_cells(fragments, cols, last_line_len=0):
+def print_cells(fragments, cols, last_line_len=0, _write=sys.__stdout__.write):  # noqa
     """Print a tuple of fragments of tuples of cells on the terminal, until a given number of
     cols is achieved, slicing over cells when needed.
 
@@ -83,7 +83,7 @@ def print_cells(fragments, cols, last_line_len=0):
         clear_traces()
 
     available = cols
-    sys.__stdout__.write('\r')
+    _write('\r')
     for fragment in line:
         length = len(fragment)
         if length > available:
@@ -91,7 +91,7 @@ def print_cells(fragments, cols, last_line_len=0):
                 break
             length, fragment = available, fix_cells(fragment[:available])
 
-        sys.__stdout__.write(join_cells(fragment))
+        _write(join_cells(fragment))
         available -= length
 
     return cols - available
