@@ -78,9 +78,8 @@ def print_cells(fragments, cols, last_line_len=0):
 
     """
     line = tuple(islice(chain.from_iterable(zip(SPACES, filter(None, fragments))), 1, None))
-    line_len = sum(len(fragment) for fragment in line)
 
-    if line_len < last_line_len:
+    if last_line_len and sum(len(fragment) for fragment in line) < last_line_len:
         clear_traces()
 
     available = cols
