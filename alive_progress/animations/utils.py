@@ -1,6 +1,8 @@
 import math
-from functools import reduce, wraps
+from functools import reduce, update_wrapper, wraps
+from inspect import signature
 from itertools import accumulate, chain, repeat
+from typing import Callable
 
 from ..utils.cells import combine_cells, fix_cells, mark_graphemes, split_graphemes
 
@@ -108,3 +110,13 @@ def spread_weighted(actual_length, naturals):
     lengths = tuple(map(lambda a, b: a - b, lengths, [0] + lengths))
     assert sum(lengths) == actual_length
     return lengths
+
+
+def fix_signature(func: Callable, source: Callable, skip_n_params: int):
+    """Override signature to hide first n parameters."""
+    doc = () if func.__doc__ else ('__doc__',)
+    update_wrapper(func, source, assigned=('__module__', '__name__', '__qualname__') + doc)
+    sig = signature(func)
+    sig = sig.replace(parameters=tuple(sig.parameters.values())[skip_n_params:])
+    func.__signature__ = sig
+    return func

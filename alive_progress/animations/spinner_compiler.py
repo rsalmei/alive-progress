@@ -1,14 +1,13 @@
 import operator
 import random
 import time
-from functools import update_wrapper
 from inspect import signature
 from itertools import chain, count, islice, repeat
 from types import SimpleNamespace
-from typing import Callable
 
 from about_time import about_time
 
+from .utils import fix_signature
 from ..utils.cells import fix_cells, is_wide, join_cells, strip_marks, to_cells
 from ..utils.colors import BLUE, BLUE_BOLD, CYAN, DIM, GREEN, ORANGE, ORANGE_BOLD, RED, YELLOW_BOLD
 from ..utils.terminal import hide_cursor, show_cursor
@@ -64,16 +63,6 @@ def compiler_controller(*, natural, skip_compiler=False):
         return compiler_dispatcher
 
     return inner_controller
-
-
-def fix_signature(func: Callable, source: Callable, skip_n_params: int):
-    """Override signature to hide first n parameters."""
-    doc = () if func.__doc__ else ('__doc__',)
-    update_wrapper(func, source, assigned=('__module__', '__name__', '__qualname__') + doc)
-    sig = signature(func)
-    sig = sig.replace(parameters=tuple(sig.parameters.values())[skip_n_params:])
-    func.__signature__ = sig
-    return func
 
 
 """
