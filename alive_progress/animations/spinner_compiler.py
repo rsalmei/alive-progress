@@ -37,8 +37,7 @@ def spinner_controller(*, natural, skip_compiler=False):
             return spinner_runner_factory(spec, t_compile, extra_commands.get(False, ()))
 
         def compile_and_check(*args, **kwargs):
-            """Compile this spinner factory at its natural length, and check its specs."""
-            # the signature will be fixed below for the docstring.
+            """Compile this spinner factory at its natural length, and..."""
             compiler_dispatcher().check(*args, **kwargs)
 
         def set_operational(**params):
@@ -257,9 +256,9 @@ def check(spec, verbosity=0):  # noqa
     Args:
         verbosity (int): change the verbosity level
                              0 for specs only (default)
-                               /                 \
+                               /                 \\
                               /           3 to include animation
-                             /                      \
+                             /                      \\
             1 to unfold frame data   --------   4 to unfold frame data
                             |                        |
             2 to reveal codepoints   --------   5 to reveal codepoints

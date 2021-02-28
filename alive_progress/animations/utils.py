@@ -114,8 +114,10 @@ def spread_weighted(actual_length, naturals):
 
 def fix_signature(func: Callable, source: Callable, skip_n_params: int):
     """Override signature to hide first n parameters."""
-    doc = () if func.__doc__ else ('__doc__',)
-    update_wrapper(func, source, assigned=('__module__', '__name__', '__qualname__') + doc)
+    original_doc = func.__doc__
+    update_wrapper(func, source)
+    if original_doc:
+        func.__doc__ = f'{original_doc}\n{func.__doc__}'
     sig = signature(func)
     sig = sig.replace(parameters=tuple(sig.parameters.values())[skip_n_params:])
     func.__signature__ = sig
