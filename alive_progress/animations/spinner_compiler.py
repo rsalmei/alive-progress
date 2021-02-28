@@ -269,7 +269,7 @@ def check(spec, verbosity=0):  # noqa
         render_data(spec, verbosity in (2, 5))
     spec_data(spec)  # spec_data here displays calculated frame data, always shown.
 
-    duration = spec.t_compile.duration_human.replace("us", "µs")
+    duration = spec.t_compile.duration_human.replace('us', 'µs')
     print(f'\nSpinner frames compiled in: {GREEN(duration)}')
     print(f'(call {HELP_MSG[verbosity]})')
 
