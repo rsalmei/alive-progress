@@ -159,7 +159,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
             start_monitoring(offset)
 
         bar_handle.pause = pause_monitoring
-        thread = threading.Thread(target=run, args=(config.spinner_player,))
+        thread = threading.Thread(target=run, args=(_create_spinner_player(config),))
         thread.daemon = True
         thread.start()
 
@@ -171,6 +171,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         rate_spec, factor, print_template = '%', 1., 'on {:.1%}: '
 
     bar_handle.text, bar_handle.current = set_text, current
+    bar_repr = _create_bars(config)
     if total or config.manual:  # we can track progress and therefore eta.
         bar_repr = config.bars
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
@@ -235,3 +236,21 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         bar_repr, run.percent = config.bars, 1.
     alive_repr()
     print()
+
+
+def _create_bars(local_config):
+    bar = local_config.bar
+    if bar is None:
+        obj = lambda p: None
+        obj.unknown, obj.end = obj, obj
+        return obj
+    return bar(local_config.length, local_config.unknown)
+
+
+def _create_spinner_player(local_config):
+    spinner = local_config.spinner
+    if spinner is None:
+        from itertools import repeat
+        return repeat('')
+    from ..animations.utils import spinner_player
+    return spinner_player(spinner(local_config.spinner_length))

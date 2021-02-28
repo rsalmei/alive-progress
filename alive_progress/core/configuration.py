@@ -1,10 +1,8 @@
 import os
 from collections import namedtuple
-from itertools import repeat
 from types import FunctionType
 
 from ..animations import bars, spinners
-from ..animations.utils import spinner_player
 from ..styles.internal import BARS, SPINNERS, THEMES
 
 ERROR = object()  # represents a config value not accepted.
@@ -62,23 +60,10 @@ def _bool_input_factory():
     return _input
 
 
-def _create_spinner_player(local_config):
-    spinner = local_config['spinner']
-    if spinner is NO_SPINNER:
-        return repeat('')
-    return spinner_player(spinner(local_config['spinner_length']))
-
 def _tristate_input_factory():
     def _input(x):
         return None if x is None else bool(x)
 
-def _create_bars(local_config):
-    bar = local_config['bar']
-    if bar is NO_BAR:
-        obj = lambda p, end: None
-        obj.unknown = obj
-        return obj
-    return bar(local_config['length'], local_config['unknown'])
     return _input
 
 
@@ -95,12 +80,8 @@ CONFIG_VARS = dict(  # the ones the user can configure.
     receipt_text=_bool_input_factory(),
     # title_effect=_enum_input_factory(),  # TODO someday.
 )
-ADDITIONAL_VARS = dict(  # dynamically generated ones.
-    spinner_player=_create_spinner_player,
-    bars=_create_bars,
-)
 
-Config = namedtuple('Config', tuple(CONFIG_VARS) + tuple(ADDITIONAL_VARS))
+Config = namedtuple('Config', tuple(CONFIG_VARS))
 
 
 def create_config():
@@ -130,8 +111,7 @@ def create_config():
         """Create an immutable copy of the current configuration, with optional customization."""
         local_config = {**global_config, **_parse(theme, options)}
         # noinspection PyArgumentList
-        return Config(**{k: local_config[k] for k in CONFIG_VARS},
-                      **{k: v(local_config) for k, v in ADDITIONAL_VARS.items()})
+        return Config(**{k: local_config[k] for k in CONFIG_VARS})
 
     def _parse(theme, options):
         """Validate and convert some configuration options."""
