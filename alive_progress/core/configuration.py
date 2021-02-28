@@ -7,8 +7,7 @@ from ..animations import bars, spinners
 from ..animations.utils import spinner_player
 from ..styles.internal import BARS, SPINNERS, THEMES
 
-NO_SPINNER = object()  # now it is possible to disable the spinner and the bar at will.
-NO_BAR = object()  # these markers represent the empty config.
+ERROR = object()  # represents a config value not accepted.
 
 
 def _spinner_input_factory(default):
@@ -16,7 +15,7 @@ def _spinner_input_factory(default):
 
 
 def _bar_input_factory():
-    return __style_input_factory(BARS, bars, 'inner_bar_factory', NO_BAR)
+    return __style_input_factory(BARS, bars, 'inner_bar_factory', None)
 
 
 def __style_input_factory(name_lookup, module_lookup, inner_name, default):
@@ -51,6 +50,7 @@ def _int_input_factory(lower, upper):
     def _input(x):
         if lower <= int(x) <= upper:
             return int(x)
+        return ERROR
 
     return _input
 
@@ -68,6 +68,9 @@ def _create_spinner_player(local_config):
         return repeat('')
     return spinner_player(spinner(local_config['spinner_length']))
 
+def _tristate_input_factory():
+    def _input(x):
+        return None if x is None else bool(x)
 
 def _create_bars(local_config):
     bar = local_config['bar']
@@ -76,15 +79,16 @@ def _create_bars(local_config):
         obj.unknown = obj
         return obj
     return bar(local_config['length'], local_config['unknown'])
+    return _input
 
 
 CONFIG_VARS = dict(  # the ones the user can configure.
     length=_int_input_factory(3, 300),
-    spinner=_spinner_input_factory(NO_SPINNER),  # accept empty.
+    spinner=_spinner_input_factory(None),  # accept empty.
     spinner_length=_int_input_factory(0, 100),
     bar=_bar_input_factory(),
-    unknown=_spinner_input_factory(None),  # do not accept empty.
-    force_tty=_bool_input_factory(),
+    unknown=_spinner_input_factory(ERROR),  # do not accept empty.
+    force_tty=_tristate_input_factory(),
     manual=_bool_input_factory(),
     enrich_print=_bool_input_factory(),
     title_length=_int_input_factory(0, 100),
@@ -105,7 +109,7 @@ def create_config():
         set_global(  # this must have all available config vars.
             length=40,
             theme='smooth',  # includes spinner, bar and unknown.
-            force_tty=False,
+            force_tty=None,
             manual=False,
             enrich_print=True,
             title_length=0,
@@ -135,7 +139,7 @@ def create_config():
         def validator(key, value):
             try:
                 result = CONFIG_VARS[key](value)
-                if result is None:
+                if result is ERROR:
                     raise ValueError
                 return result
             except KeyError:

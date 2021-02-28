@@ -149,7 +149,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         return time.perf_counter() - run.init
 
     thread, release_thread = None, threading.Event()
-    if sys.stdout.isatty() or config.force_tty:
+    if sys.stdout.isatty() if config.force_tty is None else config.force_tty:
         @contextmanager
         def pause_monitoring():
             release_thread.clear()
