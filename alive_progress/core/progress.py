@@ -190,6 +190,12 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         return f'({run.rate:.2{rate_spec}}/s)'
 
     end, run.text, run.last_line_len = False, '', 0
+    def elapsed():
+        return f'in {elapsed_text(run.elapsed, False)}'
+
+    def elapsed_end():
+        return f'in {elapsed_text(run.elapsed, True)}'
+
     run.count, run.percent, run.rate, run.init = 0, 0., 0., 0.
 
     if total:
@@ -201,20 +207,28 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
                 run.percent = run.count / total
 
         def monitor():
-            warning = '(!) ' if end and run.count != total else ''
-            return f'{warning}{run.count}/{total} [{run.percent:.0%}]'
+            return f'{run.count}/{total} [{run.percent:.0%}]'
+
+        def monitor_end():
+            warning = '(!) ' if run.count != total else ''
+            return f'{warning}{monitor_original()}'
     else:
         def update_hook():
             pass
 
         if config.manual:
             def monitor():
-                warning = '(!) ' if end and run.percent != 1. else ''
-                return f'{warning}{run.percent:.0%}'
+                return f'{run.percent:.0%}'
+
+            def monitor_end():
+                warning = '(!) ' if run.percent != 1. else ''
+                return f'{warning}{monitor_original()}'
         else:
             def monitor():
                 return f'{run.count}'
 
+            monitor_end = monitor
+    monitor_original = monitor
     title = render_title(title, config.title_length)
     fps = calibrated_fps(calibrate or factor)
     hook_manager = buffered_hook_manager(print_template if config.enrich_print else '', current)
@@ -230,6 +244,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
 
     # prints the nice final receipt.
     end, stats = True, stats_end
+    elapsed, stats, monitor = elapsed_end, stats_end, monitor_end
     if not config.receipt_text:
         run.text = ''
     if bar_repr is config.bars.unknown:
