@@ -1,8 +1,8 @@
 import math
 
-from .utils import bordered, extract_fill_graphemes, spinner_player
-from ..utils.cells import combine_cells, fix_cells, is_wide, mark_graphemes, split_graphemes, \
-    to_cells, VS_15
+from .utils import bordered, extract_fill_graphemes, fix_signature, spinner_player
+from ..utils.cells import VS_15, combine_cells, fix_cells, is_wide, join_cells, mark_graphemes, \
+    split_graphemes, strip_marks, to_cells
 
 
 def bar_factory(chars=None, *, tip=None, background=None, borders=None, errors=None):
@@ -37,33 +37,37 @@ def bar_factory(chars=None, *, tip=None, background=None, borders=None, errors=N
             def fill_style(complete, filling):  # invisible fill.
                 return fix_cells(padding[:complete + bool(filling)])
 
+        def running(fill):
+            return None, (fix_cells(padding[len(fill) + len_tip:]),)  # this is a 1-tuple.
+
+        def ended(fill):
+            border = None if len(fill) + len(underflow) <= length else underflow
+            texts = *(() if border else (underflow,)), blanks
+            return border, texts
+
         @bordered(borders, '||')
-        def standard_bar(percent, end=False):
+        def draw_known(apply_state, percent):
             virtual_fill = round(virtual_length * max(0., min(1., percent)))
             fill = fill_style(*divmod(virtual_fill, num_graphemes))
-
-            if end:
-                border = None if len(fill) + len(underflow) <= length else underflow
-                texts = *(() if border else (underflow,)), blanks
-            else:
-                border = None
-                texts = fix_cells(padding[len(fill) + len_tip:]),  # this is a 1-tuple.
-
+            border, texts = apply_state(fill)
             border = overflow if percent > 1. else None if percent == 1. else border
             return fix_cells(combine_cells(fill, tip, *texts)[len_tip:length + len_tip]), border
+
+        if spinner_factory:
+            @bordered(borders, '||')
+            def draw_unknown(_percent=None):
+                return next(player), None
+
+            player = spinner_player(spinner_factory(length))
+        else:
+            draw_unknown = None
 
         padding = (' ',) * len_tip + background * math.ceil((length + len_tip) / len(background))
         virtual_length, blanks = num_graphemes * (length + len_tip), (' ',) * length
         if chars and is_wide(chars[-1]):
             virtual_length /= 2
 
-        if spinner_factory:
-            @bordered(borders, '||')
-            def unknown_bar(percent=None, end=None):  # noqa
-                return next(player), None
-
-            player, standard_bar.unknown = spinner_player(spinner_factory(length)), unknown_bar
-        return standard_bar
+        return draw_known, running, ended, draw_unknown
 
     if not chars and not tip:
         raise ValueError('tip is mandatory for transparent bars')

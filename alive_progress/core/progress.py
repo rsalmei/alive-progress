@@ -173,7 +173,6 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
     bar_handle.text, bar_handle.current = set_text, current
     bar_repr = _create_bars(config)
     if total or config.manual:  # we can track progress and therefore eta.
-        bar_repr = config.bars
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
         gen_eta.send(None)
 
@@ -181,7 +180,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
             eta = eta_text(gen_eta.send((current(), run.rate)))
             return f'({run.rate:.1{rate_spec}}/s, eta: {eta})'
     else:  # unknown progress.
-        bar_repr = config.bars.unknown
+        bar_repr = bar_repr.unknown
 
         def stats():
             return f'({run.rate:.1f}/s)'
@@ -253,8 +252,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
     elapsed, stats, monitor = elapsed_end, stats_end, monitor_end
     if not config.receipt_text:
         run.text = ''
-    if bar_repr is config.bars.unknown:
-        bar_repr, run.percent = config.bars, 1.
+    bar_repr = bar_repr.end
     alive_repr()
     print()
 
