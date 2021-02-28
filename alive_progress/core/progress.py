@@ -8,7 +8,7 @@ from .calibration import calibrated_fps
 from .configuration import config_handler
 from .hook_manager import buffered_hook_manager
 from .logging_hook import install_logging_hooks, uninstall_logging_hooks
-from .timing import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
+from .timing import elapsed_text, eta_text, gen_simple_exponential_smoothing_eta
 from .utils import render_title
 from ..utils.cells import print_cells, to_cells
 from ..utils.terminal import hide_cursor, show_cursor, terminal_size
@@ -98,11 +98,11 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
             time.sleep(1. / fps(run.rate))
 
     def alive_repr(spin=None):
-        elapsed = time.perf_counter() - run.init
         run.rate = current() / elapsed if elapsed else 0.
+        run.elapsed = time.perf_counter() - run.init
 
-        fragments = (title, bar_repr(run.percent, end), spin, monitor(),
-                     'in', to_elapsed_text(elapsed, end), stats(), run.text)
+        fragments = (title, bar_repr(run.percent), spin, monitor(),
+                     elapsed(), stats(), run.text)
 
         cols, _ = terminal_size()
         with hook_manager.lock:
@@ -189,13 +189,13 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
     def stats_end():
         return f'({run.rate:.2{rate_spec}}/s)'
 
-    end, run.text, run.last_line_len = False, '', 0
     def elapsed():
         return f'in {elapsed_text(run.elapsed, False)}'
 
     def elapsed_end():
         return f'in {elapsed_text(run.elapsed, True)}'
 
+    run.text, run.last_len, run.elapsed = '', 0, 0.
     run.count, run.percent, run.rate, run.init = 0, 0., 0., 0.
 
     if total:
@@ -250,7 +250,6 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
             local_copy.join()
 
     # prints the nice final receipt.
-    end, stats = True, stats_end
     elapsed, stats, monitor = elapsed_end, stats_end, monitor_end
     if not config.receipt_text:
         run.text = ''
