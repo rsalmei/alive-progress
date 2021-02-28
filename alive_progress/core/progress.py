@@ -229,6 +229,13 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
 
             monitor_end = monitor
     monitor_original = monitor
+    if not config.monitor:
+        monitor = monitor_end = __noop
+    if not config.stats:
+        stats = stats_end = __noop
+    if not config.elapsed:
+        elapsed = elapsed_end = __noop
+
     title = render_title(title, config.title_length)
     fps = calibrated_fps(calibrate or factor)
     hook_manager = buffered_hook_manager(print_template if config.enrich_print else '', current)
@@ -269,3 +276,7 @@ def _create_spinner_player(local_config):
         return repeat('')
     from ..animations.utils import spinner_player
     return spinner_player(spinner(local_config.spinner_length))
+
+
+def __noop():
+    pass
