@@ -213,7 +213,7 @@ def spinner_compiler(gen, natural, extra_commands):
 
     assert (max(len(frame) for cycle in spec.data for frame in cycle) ==
             min(len(frame) for cycle in spec.data for frame in cycle)), \
-        render_frames(spec, True) or 'Different cell lengths detected in frame data.'
+        render_data(spec, True) or 'Different cell lengths detected in frame data.'
     return spec
 
 
@@ -267,17 +267,12 @@ def check(spec, verbosity=0):  # noqa
     """
     verbosity = max(0, min(5, verbosity or 0))
     if verbosity in (1, 2, 4, 5):
-        render_frames(spec, verbosity in (2, 5))
+        render_data(spec, verbosity in (2, 5))
+    spec_data(spec)  # spec_data here displays calculated frame data, always shown.
 
-    print(f'\nAll frames compiled in: {GREEN(spec.t_compile.duration_human)}')
-    if verbosity in HELP_MSG:
-        print(f'(call {HELP_MSG[verbosity]})')
-
-    print(f'\n{SECTION("Specs")}')
-    info = lambda field: f'{YELLOW_BOLD(field.split(".")[0])}: {operator.attrgetter(field)(spec)}'
-    print(info('length'), f'({info("natural")})')
-    print(info('cycles'), f'({info("strategy.name")})')
-    print('\n'.join(info(field) for field in ('frames', 'total_frames')))
+    duration = spec.t_compile.duration_human.replace("us", "µs")
+    print(f'\nSpinner frames compiled in: {GREEN(duration)}')
+    print(f'(call {HELP_MSG[verbosity]})')
 
     if verbosity in (3, 4, 5):
         animate(spec)
@@ -297,22 +292,28 @@ HELP_MSG = {
 }
 
 
+def spec_data(spec):
+    print(f'\n{SECTION("Specs")}')
+    info = lambda field: f'{YELLOW_BOLD(field.split(".")[0])}: {operator.attrgetter(field)(spec)}'
+    print(info('length'), f'({info("natural")})')
+    print(info('cycles'), f'({info("strategy.name")})')
+    print('\n'.join(info(field) for field in ('frames', 'total_frames')))
+
+
 def format_codepoints(frame):
     codes = '|'.join((ORANGE if is_wide(g) else BLUE)(
         ' '.join(hex(ord(c)).replace('0x', '') for c in g)) for g in frame)
     return f" -> {RED(sum(len(fragment) for fragment in frame))}:[{codes}]"
 
 
-def render_frames(spec, show_codepoints):
-    print(f'\n{SECTION("Frame data")}')
+def render_data(spec, show_codepoints):
+    print(f'\n{SECTION("Frame data")}', end='')
     whole_index = count(1)
     lf, wf = f'>{1 + len(str(max(spec.frames)))}', f'<{len(str(spec.total_frames))}'
     codepoints = format_codepoints if show_codepoints else lambda _: ''
     for i, cycle in enumerate(spec.data, 1):
         frames = map(lambda fragment: tuple(strip_marks(fragment)), cycle)
-        if i > 1:
-            print()
-        print(f'cycle {i}\n' + '\n'.join(
+        print(f'\ncycle {i}\n' + '\n'.join(
             DIM(li, lf) + f' |{"".join(frame)}| {DIM(wi, wf)}' + codepoints(frame)
             for li, frame, wi in zip(count(1), frames, whole_index)
         ))
