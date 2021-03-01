@@ -8,8 +8,7 @@ from .calibration import calibrated_fps
 from .configuration import config_handler
 from .hook_manager import buffered_hook_manager
 from .logging_hook import install_logging_hooks, uninstall_logging_hooks
-from .utils import render_title
-from ..utils.cells import print_cells, to_cells
+from ..utils.cells import combine_cells, fix_cells, print_cells, to_cells
 from ..utils.terminal import hide_cursor, show_cursor, terminal_cols
 from ..utils.timing import elapsed_text, eta_text, gen_simple_exponential_smoothing_eta
 
@@ -234,7 +233,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
     if not config.elapsed:
         elapsed = elapsed_end = __noop
 
-    title = render_title(title, config.title_length)
+    title = _render_title(title, config.title_length)
     fps = calibrated_fps(calibrate or factor)
     hook_manager = buffered_hook_manager(print_template if config.enrich_print else '', current)
     start_monitoring()
@@ -272,6 +271,23 @@ def _create_spinner_player(local_config):
         return repeat('')
     from ..animations.utils import spinner_player
     return spinner_player(spinner(local_config.spinner_length))
+
+
+def _render_title(title, length):
+    title = to_cells(title)
+    if not length:
+        return title
+
+    len_title = len(title)
+    if len_title <= length:
+        # fixed left align implementation for now, there may be more in the future, like
+        # other alignments, variable with a maximum size, and even scrolling and bouncing.
+        return combine_cells(title, (' ',) * (length - len_title))
+
+    if length == 1:
+        return '…'
+
+    return combine_cells(fix_cells(title[:length - 1]), ('…',))
 
 
 def __noop():
