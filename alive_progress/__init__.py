@@ -7,7 +7,7 @@ from .core.configuration import config_handler
 from .core.progress import alive_bar
 from .styles.exhibit import Show, show_bars, show_spinners, show_themes, showtime
 from .styles.internal import BARS, SPINNERS, THEMES
-from .tools.domain import print_chars
+from .tools.general import print_chars
 
 VERSION = (2, 0, 0)
 
