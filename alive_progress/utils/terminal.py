@@ -13,8 +13,10 @@ if sys.stdout.isatty():
 
     from os import get_terminal_size as terminal_size  # noqa
 else:
-    clear_traces = hide_cursor = show_cursor = lambda: None
+    def __noop():
+        pass
 
 
     def terminal_size():
         return 10000, 10000  # do not truncate if there's no tty.
+    clear_traces = hide_cursor = show_cursor = __noop
