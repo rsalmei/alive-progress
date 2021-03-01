@@ -11,12 +11,18 @@ if sys.stdout.isatty():
     hide_cursor = _send_ansi_escape('?25l')  # hides the cursor: CSI ? 25 l.
     show_cursor = _send_ansi_escape('?25h')  # shows the cursor: CSI ? 25 h.
 
-    from os import get_terminal_size as terminal_size  # noqa
+    from os import get_terminal_size
+
+
+    def terminal_cols():
+        return get_terminal_size()[0]
 else:
     def __noop():
         pass
 
 
-    def terminal_size():
-        return 10000, 10000  # do not truncate if there's no tty.
     clear_traces = hide_cursor = show_cursor = __noop
+
+
+    def terminal_cols():
+        return 10000  # do not truncate if there's no tty.

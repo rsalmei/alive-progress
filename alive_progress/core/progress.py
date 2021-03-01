@@ -10,7 +10,7 @@ from .hook_manager import buffered_hook_manager
 from .logging_hook import install_logging_hooks, uninstall_logging_hooks
 from .utils import render_title
 from ..utils.cells import print_cells, to_cells
-from ..utils.terminal import hide_cursor, show_cursor, terminal_size
+from ..utils.terminal import hide_cursor, show_cursor, terminal_cols
 from ..utils.timing import elapsed_text, eta_text, gen_simple_exponential_smoothing_eta
 
 
@@ -104,7 +104,6 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         fragments = (title, bar_repr(run.percent), spin, monitor(),
                      elapsed(), stats(), run.text)
 
-        cols, _ = terminal_size()
         with hook_manager.lock:
             run.last_line_len = print_cells(fragments, cols, run.last_line_len)
             sys.__stdout__.flush()
