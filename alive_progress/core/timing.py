@@ -1,4 +1,4 @@
-def to_elapsed_text(seconds, precise):
+def elapsed_text(seconds, precise):
     seconds = round(seconds, 1 if precise else 0)
     if seconds < 60.:
         return '{:{}f}s'.format(seconds, .1 if precise else .0)
@@ -11,10 +11,10 @@ def to_elapsed_text(seconds, precise):
     return '{:.0f}:{:02.0f}:{:0{}f}'.format(hours, minutes, seconds, 4.1 if precise else 2.0)
 
 
-def to_eta_text(eta):
+def eta_text(eta):
     if eta is None or eta < 0.:
         return '-'
-    return to_elapsed_text(eta, False)
+    return elapsed_text(eta, False)
 
 
 def simple_eta(logic_total, pos, rate):

@@ -177,7 +177,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         gen_eta.send(None)
 
         def stats():
-            eta = to_eta_text(gen_eta.send((current(), run.rate)))
+            eta = eta_text(gen_eta.send((current(), run.rate)))
             return f'({run.rate:.1{rate_spec}}/s, eta: {eta})'
     else:  # unknown progress.
         bar_repr = config.bars.unknown
