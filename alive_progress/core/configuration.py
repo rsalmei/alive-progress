@@ -2,17 +2,18 @@ import os
 from collections import namedtuple
 from types import FunctionType
 
-from ..animations import bars, spinners
-from ..styles.internal import BARS, SPINNERS, THEMES
-
 ERROR = object()  # represents a config value not accepted.
 
 
 def _spinner_input_factory(default):
+    from ..animations import spinners
+    from ..styles.internal import SPINNERS
     return __style_input_factory(SPINNERS, spinners, 'inner_spinner_factory', default)
 
 
 def _bar_input_factory():
+    from ..animations import bars
+    from ..styles.internal import BARS
     return __style_input_factory(BARS, bars, 'inner_bar_factory', None)
 
 
@@ -67,24 +68,8 @@ def _tristate_input_factory():
     return _input
 
 
-CONFIG_VARS = dict(  # the ones the user can configure.
-    length=_int_input_factory(3, 300),
-    spinner=_spinner_input_factory(None),  # accept empty.
-    spinner_length=_int_input_factory(0, 100),
-    bar=_bar_input_factory(),
-    unknown=_spinner_input_factory(ERROR),  # do not accept empty.
-    force_tty=_tristate_input_factory(),
-    manual=_bool_input_factory(),
-    enrich_print=_bool_input_factory(),
-    title_length=_int_input_factory(0, 100),
-    receipt_text=_bool_input_factory(),
-    monitor=_bool_input_factory(),
-    stats=_bool_input_factory(),
-    elapsed=_bool_input_factory(),
-    # title_effect=_enum_input_factory(),  # TODO someday.
-)
-
-Config = namedtuple('Config', tuple(CONFIG_VARS))
+Config = namedtuple('Config', 'length spinner spinner_length bar unknown force_tty manual'
+                              ' enrich_print title_length receipt_text monitor stats elapsed')
 
 
 def create_config():
@@ -111,20 +96,22 @@ def create_config():
             alive_progress#alive_bar(**options)
 
         """
+        lazy_init()
         global_config.update(_parse(theme, options))
 
     def create_context(theme=None, **options):
         """Create an immutable copy of the current configuration, with optional customization."""
+        lazy_init()
         local_config = {**global_config, **_parse(theme, options)}
         # noinspection PyArgumentList
-        return Config(**{k: local_config[k] for k in CONFIG_VARS})
+        return Config(**{k: local_config[k] for k in Config._fields})
 
     def _parse(theme, options):
         """Validate and convert some configuration options."""
 
         def validator(key, value):
             try:
-                result = CONFIG_VARS[key](value)
+                result = validations[key](value)
                 if result is ERROR:
                     raise ValueError
                 return result
@@ -133,6 +120,7 @@ def create_config():
             except Exception:
                 raise ValueError(f'invalid config value: {key}={value!r}')
 
+        from ..styles.internal import THEMES
         if theme:
             if theme not in THEMES:
                 raise ValueError(f'invalid theme name={theme}')
@@ -141,9 +129,32 @@ def create_config():
             options.update(swap)
         return {k: validator(k, v) for k, v in options.items()}
 
-    global_config = {}
-    reset()
+    def lazy_init():
+        if validations:
+            return
 
+        validations.update(  # the ones the user can configure.
+            length=_int_input_factory(3, 300),
+            spinner=_spinner_input_factory(None),  # accept empty.
+            spinner_length=_int_input_factory(0, 100),
+            bar=_bar_input_factory(),
+            unknown=_spinner_input_factory(ERROR),  # do not accept empty.
+            force_tty=_tristate_input_factory(),
+            manual=_bool_input_factory(),
+            enrich_print=_bool_input_factory(),
+            title_length=_int_input_factory(0, 100),
+            receipt_text=_bool_input_factory(),
+            monitor=_bool_input_factory(),
+            stats=_bool_input_factory(),
+            elapsed=_bool_input_factory(),
+            # title_effect=_enum_input_factory(),  # TODO someday.
+        )
+        assert all(k in validations for k in Config._fields)  # ensures all fields have validations.
+
+        reset()
+        assert all(k in global_config for k in Config._fields)  # ensures all fields have been set.
+
+    global_config, validations = {}, {}
     create_context.set_global, create_context.reset = set_global, reset
     return create_context
 

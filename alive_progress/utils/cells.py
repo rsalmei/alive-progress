@@ -53,8 +53,6 @@ import sys
 import unicodedata
 from itertools import chain, islice, repeat
 
-from grapheme import graphemes
-
 from .terminal import clear_traces
 
 PATTERN_SANITIZE = re.compile(r'[\r\n]')
@@ -145,6 +143,7 @@ def to_cells(text):
 
 
 def split_graphemes(text):
+    from grapheme import graphemes
     return tuple(graphemes(text))
 
 
