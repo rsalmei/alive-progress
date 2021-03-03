@@ -1,3 +1,4 @@
+import logging
 import sys
 import threading
 from collections import defaultdict
@@ -58,17 +59,57 @@ def buffered_hook_manager(header_template, get_pos):
                                flush=partial(flush, stream),
                                isatty=sys.__stdout__.isatty)
 
+    def install():
+        sys.stdout = get_hook_for(sys.stdout)
+        nonlocal before_handlers
+        before_handlers = _install_logging_hooks(get_hook_for)
+
+    def uninstall():
+        sys.stdout = sys.__stdout__
+        _uninstall_logging_hooks(before_handlers)
+
     # internal data.
     buffers = defaultdict(list)
     lock = threading.Lock()
     get_header = (lambda: header_template.format(get_pos())) if header_template else lambda: ''
     base_stdout = sys.stdout  # needed for tests.
+    before_handlers = {}
 
     # external interface.
     hook_manager = SimpleNamespace(
         lock=lock,
         flush_buffers=flush_buffers,
-        get_hook_for=get_hook_for,
+        install=install,
+        uninstall=uninstall,
     )
 
     return hook_manager
+
+
+def _install_logging_hooks(get_hook_for):
+    root = logging.root
+    # modify all stream handlers, including their subclasses.
+    return {handler: _set_stream(handler, get_hook_for(handler.stream))
+            for handler in root.handlers
+            if isinstance(handler, logging.StreamHandler)}
+
+
+def _uninstall_logging_hooks(before_handlers):
+    [_set_stream(handler, original_stream)
+     for handler, original_stream in before_handlers.items()]
+
+
+if sys.version_info >= (3, 7):  # pragma: no cover
+    def _set_stream(handler, stream):
+        return handler.setStream(stream)
+else:  # pragma: no cover
+    def _set_stream(handler, stream):
+        # from python 3.7 implementation.
+        result = handler.stream
+        handler.acquire()
+        try:
+            handler.flush()
+            handler.stream = stream
+        finally:
+            handler.release()
+        return result

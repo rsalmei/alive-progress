@@ -7,7 +7,6 @@ from contextlib import contextmanager
 from .calibration import calibrated_fps
 from .configuration import config_handler
 from .hook_manager import buffered_hook_manager
-from .logging_hook import install_logging_hooks, uninstall_logging_hooks
 from ..utils.cells import combine_cells, fix_cells, print_cells, to_cells
 from ..utils.terminal import hide_cursor, show_cursor, terminal_cols
 from ..utils.timing import elapsed_text, eta_text, gen_simple_exponential_smoothing_eta
@@ -135,15 +134,13 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
 
     def start_monitoring(offset=0.):
         hide_cursor()
-        sys.stdout = hook_manager.get_hook_for(sys.stdout)
-        run.before_handlers = install_logging_hooks(hook_manager)
+        hook_manager.install()
         release_thread.set()
         run.init = time.perf_counter() - offset
 
     def stop_monitoring():
         show_cursor()
-        sys.stdout = sys.__stdout__
-        uninstall_logging_hooks(run.before_handlers)  # noqa
+        hook_manager.uninstall()
         return time.perf_counter() - run.init
 
     thread, release_thread = None, threading.Event()
@@ -235,7 +232,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
 
     title = _render_title(title, config.title_length)
     fps = calibrated_fps(calibrate or factor)
-    hook_manager = buffered_hook_manager(print_template if config.enrich_print else '', current)
+    hook_manager = _hook_manager(print_template if config.enrich_print else '', current)
     start_monitoring()
     try:
         yield bar_handle
