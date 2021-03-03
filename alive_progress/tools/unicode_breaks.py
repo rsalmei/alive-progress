@@ -9,7 +9,7 @@ from ..utils.cells import split_graphemes
 CACHE = '__unicode_cache__'
 
 
-def run_validation(version=None, show_all=False, cache=True):
+def validate_unicode_breaks(version=None, show_all=False, cache=True):
     # validate unicode grapheme clusters detection.
     # this downloads the specs directly from unicode.org and caches it locally.
     # document: https://unicode.org/reports/tr51/
@@ -156,4 +156,4 @@ if __name__ == '__main__':
     parser.add_argument('--no-cache', dest='cache', action='store_false',
                         help='ignores the cache and redownloads the spec')
 
-    run_validation(**parser.parse_args().__dict__)
+    validate_unicode_breaks(**parser.parse_args().__dict__)
