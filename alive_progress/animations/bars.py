@@ -1,8 +1,13 @@
 import math
+import time
+
+from about_time import about_time
 
 from .utils import bordered, extract_fill_graphemes, fix_signature, spinner_player
 from ..utils.cells import VS_15, combine_cells, fix_cells, is_wide, join_cells, mark_graphemes, \
     split_graphemes, strip_marks, to_cells
+from ..utils.colors import BLUE, BLUE_BOLD, CYAN, DIM, GREEN, ORANGE, ORANGE_BOLD, RED, YELLOW_BOLD
+from ..utils.terminal import factory_cursor_up, hide_cursor, show_cursor
 
 
 def bar_factory(chars=None, *, tip=None, background=None, borders=None, errors=None):
@@ -26,6 +31,8 @@ def bar_factory(chars=None, *, tip=None, background=None, borders=None, errors=N
         a styled bar factory
 
     """
+
+    @bar_controller
     def inner_bar_factory(length, spinner_factory=None):
         if chars:
             def fill_style(complete, filling):  # chars fill.
@@ -76,3 +83,144 @@ def bar_factory(chars=None, *, tip=None, background=None, borders=None, errors=N
     underflow, overflow = extract_fill_graphemes(errors, (f'⚠{VS_15}', f'✗{VS_15}'))
     num_graphemes, len_tip = len(chars) or 1, len(tip)
     return inner_bar_factory
+
+
+def bar_controller(inner_bar_factory):
+    def bar_assembler(length, spinner_factory=None):
+        """Assembles this bar into an actual bar renderer.
+
+        Args:
+            length (int): the bar rendition length (excluding the borders)
+            spinner_factory (Optional[spinner_factory]): enable this bar to act in unknown mode
+
+        Returns:
+            a bar renderer
+
+        """
+        with about_time() as t_compile:
+            draw_known, running, ended, draw_unknown = inner_bar_factory(length, spinner_factory)
+
+        def draw(percent):
+            return draw_known(running, percent)
+
+        def draw_end(percent):
+            return draw_known(ended, percent)
+
+        def bar_check(*args, **kwargs):
+            return check(draw, t_compile, *args, **kwargs)
+
+        draw.__dict__.update(
+            end=draw_end, unknown=draw_unknown,
+            check=fix_signature(bar_check, check, 2),
+        )
+
+        if draw_unknown:
+            def draw_unknown_end(_percent=None):
+                return draw_known(ended, 1.)
+
+            draw_unknown.end = draw_unknown_end
+
+        return draw
+
+    def compile_and_check(*args, **kwargs):
+        """Compile this bar factory at some length, and..."""
+        # since a bar does not have a natural length, I have to choose one...
+        bar_assembler(40).check(*args, **kwargs)  # noqa
+
+    bar_assembler.__dict__.update(
+        check=fix_signature(compile_and_check, check, 2),
+    )
+
+    return bar_assembler
+
+
+def check(bar, t_compile, verbosity=0, *, steps=20):  # noqa
+    """Check the data, codepoints, and even the animation of this bar.
+
+    Args:
+        verbosity (int): change the verbosity level
+                         0 for brief data only (default)
+                               /                 \\
+                              /           3 to include animation
+                             /                      \\
+            1 to unfold bar data   ----------   4 to unfold bar data
+                            |                        |
+            2 to reveal codepoints   --------   5 to reveal codepoints
+        steps (int): number of steps to display the bar progress
+
+    """
+    verbosity = max(0, min(5, verbosity or 0))
+    if verbosity in (1, 2, 4, 5):
+        render_data(bar, verbosity in (2, 5), steps)
+    else:
+        spec_data(bar)  # spec_data here displays only brief data, shown only if not full.
+
+    duration = t_compile.duration_human.replace('us', 'µs')
+    print(f'\nBar style compiled in: {GREEN(duration)}')
+    print(f'(call {HELP_MSG[verbosity]})')
+
+    if verbosity in (3, 4, 5):
+        animate(bar)
+
+
+SECTION = ORANGE_BOLD
+CHECK = lambda p: f'{BLUE(f".{check.__name__}(")}{BLUE_BOLD(p)}{BLUE(")")}'
+HELP_MSG = {
+    0: f'{CHECK(1)} to unfold bar data, or {CHECK(3)} to include animation',
+    1: f'{CHECK(2)} to reveal codepoints, or {CHECK(4)} to include animation,'
+       f' or {CHECK(0)} to fold up bar data',
+    2: f'{CHECK(5)} to include animation, or {CHECK(1)} to hide codepoints',
+    3: f'{CHECK(4)} to unfold bar data, or {CHECK(0)} to omit animation',
+    4: f'{CHECK(5)} to reveal codepoints, or {CHECK(1)} to omit animation,'
+       f' or {CHECK(3)} to fold up bar data',
+    5: f'{CHECK(2)} to omit animation, or {CHECK(4)} to hide codepoints',
+}
+
+
+def spec_data(bar):
+    print(f'\n{SECTION("Brief bar data")}')
+    info = lambda field, p, b: f'{YELLOW_BOLD(field, "<11")}: {" ".join(bar_repr(b, p)[1:])}'
+    print('\n'.join(info(n, p, bar) for n, p in (
+        ('starting', 0.), ('in progress', .5), ('completed', 1.), ('overflow', 1.2)
+    )))
+    print(info('underflow', .5, bar.end))
+
+
+def format_codepoints(frame):
+    codes = '|'.join((ORANGE if is_wide(g) else BLUE)(
+        ' '.join(hex(ord(c)).replace('0x', '') for c in g)) for g in frame)
+    return f" -> {RED(sum(len(fragment) for fragment in frame))}:[{codes}]"
+
+
+def render_data(bar, show_codepoints, steps):
+    print(f'\n{SECTION("Full bar data")}', end='')
+    codepoints = format_codepoints if show_codepoints else lambda _: ''
+    for name, b in ('in progress', bar), ('completed', bar.end):
+        print(f'\n{name}')
+        for p in (x / steps for x in range(steps + 2)):
+            frame, joined, perc = bar_repr(b, p)
+            print(joined, perc, codepoints(frame))
+
+
+def bar_repr(bar, p):
+    frame = tuple(strip_marks(bar(p)))
+    return frame, ''.join(frame), DIM(f'{p:6.1%}')
+
+
+def animate(bar):
+    print(f'\n{SECTION("Animation")}')
+    from ..styles.exhibit import exhibit_bar
+    bar_gen = exhibit_bar(bar, 15, 40)
+    hide_cursor()
+    try:
+        cursor_up_1 = factory_cursor_up(1)
+        while True:
+            rendition, percent = next(bar_gen)
+            print(f'\r{join_cells(rendition)}', CYAN(percent, "6.1%"))
+            print(DIM('(press CTRL+C to stop)'), end='')
+            time.sleep(1 / 15)
+            cursor_up_1()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        show_cursor()
