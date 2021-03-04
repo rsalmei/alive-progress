@@ -12,7 +12,6 @@ from ..utils.terminal import hide_cursor, show_cursor, terminal_cols
 from ..utils.timing import elapsed_text, eta_text, gen_simple_exponential_smoothing_eta
 
 
-@contextmanager
 def alive_bar(total=None, title=None, *, calibrate=None, **options):
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, elapsed time, throughput and ETA.
@@ -82,6 +81,17 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
             title_length (int): fixed title length, or 0 for unlimited
 
     """
+    options = {k: v for k, v in options.items() if not k.startswith('_')}
+    return __alive_bar(total, title, calibrate=calibrate, **options)
+
+
+@contextmanager
+def __alive_bar(total=None, title=None, *, calibrate=None,
+                _write=sys.__stdout__.write, _flush=sys.__stdout__.flush,
+                _term_cols=terminal_cols, _hook_manager=buffered_hook_manager, **options):
+    """Actual alive_bar handler, that exposes internal functions for configuration of
+    both normal operation and overhead estimation."""
+
     if total is not None:
         if not isinstance(total, int):
             raise TypeError(f"integer argument expected, got '{type(total).__name__}'.")
@@ -103,8 +113,8 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
                      elapsed(), stats(), run.text)
 
         with hook_manager.lock:
-            run.last_line_len = print_cells(fragments, cols, run.last_line_len)
-            sys.__stdout__.flush()
+            run.last_len = print_cells(fragments, _term_cols(), run.last_len, _write=_write)
+            _flush()
 
     def set_text(message):
         run.text = to_cells(message)
@@ -165,7 +175,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         logic_total, current = 1., lambda: run.percent
         rate_spec, factor, print_template = '%', 1., 'on {:.1%}: '
 
-    bar_handle.text, bar_handle.current = set_text, current
+    bar_handle.text, bar_handle.current, bar_handle._alive_repr = set_text, current, alive_repr
     bar_repr = _create_bars(config)
     if total or config.manual:  # we can track progress and therefore eta.
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
@@ -249,7 +259,8 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
         run.text = ''
     bar_repr = bar_repr.end
     alive_repr()
-    print()
+    _write('\n')
+    _flush()
 
 
 def _create_bars(local_config):
