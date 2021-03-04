@@ -106,8 +106,8 @@ def __alive_bar(total=None, title=None, *, calibrate=None,
             time.sleep(1. / fps(run.rate))
 
     def alive_repr(spin=None):
-        run.rate = current() / elapsed if elapsed else 0.
         run.elapsed = time.perf_counter() - run.init
+        run.rate = current() / run.elapsed
 
         fragments = (title, bar_repr(run.percent), spin, monitor(),
                      elapsed(), stats(), run.text)
