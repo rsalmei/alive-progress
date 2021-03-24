@@ -1,6 +1,7 @@
 from about_time import duration_human
 
-from alive_progress.core.progress import __alive_bar
+from ..core.configuration import config_handler
+from ..core.progress import __alive_bar
 
 
 def overhead(**kwargs):
