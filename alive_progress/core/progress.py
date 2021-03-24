@@ -81,14 +81,14 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
             title_length (int): fixed title length, or 0 for unlimited
 
     """
-    options = {k: v for k, v in options.items() if not k.startswith('_')}
-    return __alive_bar(total, title, calibrate=calibrate, **options)
+    config = config_handler(**options)
+    return __alive_bar(config, total, title, calibrate=calibrate)
 
 
 @contextmanager
-def __alive_bar(total=None, title=None, *, calibrate=None,
+def __alive_bar(config, total=None, title=None, *, calibrate=None,
                 _write=sys.__stdout__.write, _flush=sys.__stdout__.flush,
-                _term_cols=terminal_cols, _hook_manager=buffered_hook_manager, **options):
+                _term_cols=terminal_cols, _hook_manager=buffered_hook_manager):
     """Actual alive_bar handler, that exposes internal functions for configuration of
     both normal operation and overhead estimation."""
 
@@ -97,7 +97,6 @@ def __alive_bar(total=None, title=None, *, calibrate=None,
             raise TypeError(f"integer argument expected, got '{type(total).__name__}'.")
         if total <= 0:
             total = None
-    config = config_handler(**options)
 
     def run(spinner_player):
         while thread:
