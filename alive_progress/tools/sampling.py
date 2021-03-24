@@ -4,12 +4,13 @@ from ..core.configuration import config_handler
 from ..core.progress import __alive_bar
 
 
-def overhead(**kwargs):
+def overhead(total=None, title=None, *, calibrate=None, **options):
     number = 1000  # timeit number of runs inside each repetition.
     repeat = 100  # timeit how many times to repeat the whole test.
 
     import timeit
-    with __alive_bar(**kwargs, force_tty=False, _write=__noop_p, _flush=__noop,
+    config = config_handler(force_tty=False, **options)
+    with __alive_bar(config, total, title, calibrate=calibrate, _write=__noop_p, _flush=__noop,
                      _term_cols=__noop_z, _hook_manager=__hook_manager) as bar:
         # the timing of the print_cells function increases proportionately with the
         # number of columns in the terminal, so I want a baseline here with 0 cols.
