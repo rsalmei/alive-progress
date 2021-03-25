@@ -282,7 +282,7 @@ def _create_spinner_player(local_config):
 
 
 def _render_title(title, length):
-    title = to_cells(title)
+    title = to_cells(str(title or ''))
     if not length:
         return title
 
