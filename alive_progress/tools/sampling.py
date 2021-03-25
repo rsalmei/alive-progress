@@ -5,8 +5,8 @@ from ..core.progress import __alive_bar
 
 
 def overhead(total=None, title=None, *, calibrate=None, **options):
-    number = 1000  # timeit number of runs inside each repetition.
-    repeat = 100  # timeit how many times to repeat the whole test.
+    number = 400  # timeit number of runs inside each repetition.
+    repeat = 300  # timeit how many times to repeat the whole test.
 
     import timeit
     config = config_handler(force_tty=False, **options)
