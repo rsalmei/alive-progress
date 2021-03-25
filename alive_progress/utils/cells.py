@@ -153,3 +153,7 @@ def mark_graphemes(gs):
 
 def strip_marks(chars):
     return (c for c in chars if c)
+
+
+def has_wide(text):
+    return any(is_wide(x) for x in text)
