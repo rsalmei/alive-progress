@@ -201,8 +201,7 @@ def spinner_compiler(gen, natural, extra_commands):
     """
 
     spec = SimpleNamespace(
-        data=tuple(tuple(fix_cells(frame) for frame in cycle) for cycle in gen),
-        natural=natural, strategy=None)
+        data=tuple(tuple(fix_cells(frame) for frame in cycle) for cycle in gen), natural=natural)
     apply_extra_commands(spec, extra_commands)
 
     # generate spec info.
@@ -245,7 +244,8 @@ def spinner_runner_factory(spec, t_compile, extra_commands):
     spinner_runner.__dict__.update(spec.__dict__, check=fix_signature(runner_check, check, 1))
     spec.__dict__.update(t_compile=t_compile, runner=spinner_runner)  # set after the update above.
 
-    apply_extra_commands(spec, extra_commands or ((sequential, (), {}),))
+    sequential(spec)
+    apply_extra_commands(spec, extra_commands)
     cycle_gen = spec.strategy(spec.data)
     return spinner_runner
 
