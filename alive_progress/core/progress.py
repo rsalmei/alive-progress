@@ -63,7 +63,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
 
     Args:
         total (Optional[int]): the total expected count
-        title (Optional[str]): the title, will be printed whenever there's no custom message
+        title (Optional[str]): the title of this bar's computation
         calibrate (int): maximum theoretical throughput to calibrate animation speed
             (cannot be in the global configuration because it depends on the current mode)
         **options: custom configuration options, which override the global configuration:
