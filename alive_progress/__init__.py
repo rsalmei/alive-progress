@@ -1,5 +1,5 @@
 from .core.configuration import config_handler
-from .core.progress import alive_bar
+from .core.progress import alive_bar, alive_it
 
 VERSION = (2, 0, 0)
 
@@ -9,4 +9,4 @@ __version__ = '.'.join(map(str, VERSION))
 __description__ = 'A new kind of Progress Bar, with real-time throughput, ' \
                   'ETA and very cool animations!'
 
-__all__ = ('alive_bar', 'config_handler')
+__all__ = ('alive_bar', 'alive_it', 'config_handler')
