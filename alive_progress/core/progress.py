@@ -12,6 +12,50 @@ from ..utils.terminal import hide_cursor, show_cursor, terminal_cols
 from ..utils.timing import elapsed_text, eta_text, gen_simple_exponential_smoothing_eta
 
 
+def alive_it(it, title=None, *, calibrate=None, **options):
+    """This is the new iterator adapter in 2.0!
+    Now you can just:
+
+    >>> from alive_progress import alive_it
+    ... for item in alive_it(<iterable>):
+    ...     # process item
+
+    And the bar will just work, how easy is that?
+    For an actual example, try:
+
+    >>> from alive_progress import alive_it
+    ... items = [x * 2 for x in range(1000)]
+    ... for item in alive_it(items):
+    ...     time.sleep(.005)
+
+    All `alive_bar` parameters but `total` apply. That will be inferred from the iterable.
+    If it doesn't have length, the bar will enter in unknown mode.
+
+    Just remember it is easier to use, but you cannot use more advanced features, like using
+    the manual mode, setting text messages, retrieving the current progress or incrementing it
+    whenever and by how much you need, or pausing the real-time bar.
+
+    Args:
+        it (Iterator): the input iterator to be processed
+
+    See Also:
+        alive_bar()
+
+    Returns:
+        Generator
+
+    """
+    config = config_handler(**options)
+    if config.manual:
+        raise UserWarning("Manual mode can't be used in iterator adapter.")
+
+    total = len(it) if hasattr(it, '__len__') else None
+    with __alive_bar(config, total, title, calibrate=calibrate) as bar:
+        for item in it:
+            bar()
+            yield item
+
+
 def alive_bar(total=None, title=None, *, calibrate=None, **options):
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, elapsed time, throughput and ETA.
