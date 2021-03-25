@@ -13,19 +13,22 @@ from ..utils.terminal import factory_cursor_up, hide_cursor, show_cursor
 def bar_factory(chars=None, *, tip=None, background=None, borders=None, errors=None):
     """Create a factory of a bar with the given styling parameters.
     Supports unicode grapheme clusters and emoji chars (those that has length one but when on
-    screen occupies two cells). Enjoy! 😜
+    screen occupies two cells).
+
+    Now supports transparent fills! Just send a tip, and leave `chars` as None.
+    Also tips are now considered for the 100%, which means it smoothly enters and exits the
+    frame to get to 100%!! The effect is super cool, use a multi-char tip to see.
 
     Args:
-        chars (Optional[str]): the sequence of increasing glyphs to fill the bar; it can be
-            None for a transparent fill.
-        tip (Optional[str): the tip in front of the bar, which are also considered for the 100%
-            (this means the tip smoothly enters and exits the frame to get to 100%); it can be
-            None, unless chars is also None.
+        chars (Optional[str]): the sequence of increasing glyphs to fill the bar
+            can be None for a transparent fill, unless tip is also None.
+        tip (Optional[str): the tip in front of the bar
+            can be None, unless chars is also None.
         background (Optional[str]): the pattern to be used underneath the bar
         borders (Optional[Union[str, Tuple[str, str]]): the pattern or patterns to be used
-            before and after the bar.
+            before and after the bar
         errors (Optional[Union[str, Tuple[str, str]]): the pattern or patterns to be used
-            when an underflow or overflow occurs.
+            when an underflow or overflow occurs
 
     Returns:
         a styled bar factory

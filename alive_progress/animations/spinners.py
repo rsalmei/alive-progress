@@ -10,7 +10,7 @@ from ..utils.cells import combine_cells, fix_cells, has_wide, mark_graphemes, st
 def frame_spinner_factory(*frames):
     """Create a factory of a spinner that delivers frames in sequence, split by cycles.
     Supports unicode grapheme clusters and emoji chars (those that has length one but when on
-    screen occupies two cells). Enjoy! 😜
+    screen occupies two cells), as well as all other spinners.
 
     Args:
         frames (Union[str, Tuple[str, ...]): the frames to be displayed, split by cycles
@@ -71,7 +71,7 @@ def scrolling_spinner_factory(chars, length=None, block=None, background=None, *
         block (Optional[int]): if defined, split chars in blocks with this size
         background (Optional[str]): the pattern to be used besides or underneath the animations
         right (bool): the scroll direction to animate
-        hide (bool): controls whether the animation goes out of the borders or stays inside
+        hide (bool): controls whether the animation goes through the borders or not
         wrap (bool): makes the animation wrap borders or stop when not hiding.
         overlay (bool): fixes the background in place if overlay, scrolls it otherwise
 
@@ -132,7 +132,7 @@ def bouncing_spinner_factory(chars, length=None, block=None, background=None, *,
         block (Union[int, Tuple[int, int], None]): if defined, split chars in blocks
         background (Optional[str]): the pattern to be used besides or underneath the animations
         right (bool): the scroll direction to start the animation
-        hide (bool): controls whether the animation goes out of the borders or stays inside
+        hide (bool): controls whether the animation goes through the borders or not
         overlay (bool): fixes the background in place if overlay, scrolls it otherwise
 
     Returns:
@@ -155,7 +155,7 @@ def sequential_spinner_factory(*spinner_factories, intermix=True):
     Args:
         spinner_factories (spinner): the spinners to be combined
         intermix (bool): intermixes the cycles if True, generating all possible combinations;
-            runs until depletion each one otherwise.
+            runs each one until depletion otherwise.
 
     Returns:
         a styled spinner factory

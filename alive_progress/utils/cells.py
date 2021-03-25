@@ -117,6 +117,8 @@ def is_wide(g):
     would be to insert a space after these cases, but I can't possibly know if this
     behavior is spread among all terminals, it probably has to do with the Unicode version too,
     so I'm afraid of fixing it.
+    Use the `alive_progress.tools.print_chars` tool, and check the section around `0x1f300`
+    for more examples.
 
     [1]: https://gitlab.com/gnachman/iterm2/-/issues/9185
 
