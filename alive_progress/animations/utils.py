@@ -122,3 +122,9 @@ def fix_signature(func: Callable, source: Callable, skip_n_params: int):
     sig = sig.replace(parameters=tuple(sig.parameters.values())[skip_n_params:])
     func.__signature__ = sig
     return func
+
+
+def round_even(n):
+    """Round a number to the nearest even integer."""
+    r = int(n)
+    return r + 1 if r & 1 else r

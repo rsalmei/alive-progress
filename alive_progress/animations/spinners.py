@@ -2,10 +2,9 @@ import math
 from itertools import chain
 
 from .spinner_compiler import spinner_controller
-from .utils import combinations, overlay_sliding_window, spinner_player, split_options, \
-    spread_weighted, static_sliding_window
-from ..utils.cells import combine_cells, fix_cells, mark_graphemes, strip_marks, \
-    to_cells
+from .utils import combinations, overlay_sliding_window, round_even, spinner_player, \
+    split_options, spread_weighted, static_sliding_window
+from ..utils.cells import combine_cells, fix_cells, has_wide, mark_graphemes, strip_marks, to_cells
 
 
 def frame_spinner_factory(*frames):
@@ -80,15 +79,15 @@ def scrolling_spinner_factory(chars, length=None, block=None, background=None, *
         a styled spinner factory
 
     """
-    chars = to_cells(chars)
     assert not (overlay and has_wide(background)), 'unsupported overlay and grapheme background'
+    chars, rounder = to_cells(chars), round_even if has_wide(chars) else math.ceil
 
     @spinner_controller(natural=length or len(chars))
     def inner_spinner_factory(actual_length=None):
         actual_length = actual_length or inner_spinner_factory.natural
         ratio = actual_length / inner_spinner_factory.natural
 
-        initial, block_size = 0, math.ceil((block or 0) * ratio) or len(chars)
+        initial, block_size = 0, rounder((block or 0) * ratio) or len(chars)
         if hide:
             gap = actual_length
         else:
