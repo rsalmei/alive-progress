@@ -50,6 +50,9 @@ def alive_it(it, title=None, *, calibrate=None, **options):
         raise UserWarning("Manual mode can't be used in iterator adapter.")
 
     total = len(it) if hasattr(it, '__len__') else None
+    it = iter(it)
+    if not total and hasattr(it, '__length_hint__'):
+        total = it.__length_hint__()
     with __alive_bar(config, total, title, calibrate=calibrate) as bar:
         for item in it:
             bar()
