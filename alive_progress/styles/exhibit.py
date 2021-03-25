@@ -31,6 +31,7 @@ def showtime(show=Show.SPINNERS, *, fps=None, length=None, pattern=None):
         Show.BARS: show_bars,
         Show.THEMES: show_themes,
     }
+    assert show in show_funcs, 'Which show do you want? Try Show.SPINNERS for example.'
     show_funcs[show](fps=fps, length=length, pattern=pattern)
 
 
