@@ -81,6 +81,7 @@ def scrolling_spinner_factory(chars, length=None, block=None, background=None, *
 
     """
     chars = to_cells(chars)
+    assert not (overlay and has_wide(background)), 'unsupported overlay and grapheme background'
 
     @spinner_controller(natural=length or len(chars))
     def inner_spinner_factory(actual_length=None):
