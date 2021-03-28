@@ -213,7 +213,7 @@ def bar_repr(bar, p):
 def animate(bar):
     print(f'\n{SECTION("Animation")}')
     from ..styles.exhibit import exhibit_bar
-    bar_gen = exhibit_bar(bar, 15, 40)
+    bar_gen = exhibit_bar(bar, 15)
     hide_cursor()
     try:
         cursor_up_1 = factory_cursor_up(1)

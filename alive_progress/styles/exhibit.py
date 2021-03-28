@@ -187,14 +187,14 @@ def _showtime_gen(fps, gens, info, length):
 def _spinner_gen(name, spinner_factory, max_natural):
     fps, length = yield
     blanks = (' ',) * (max_natural - spinner_factory.natural)
-    spinner_gen = exhibit_spinner(spinner_factory(), fps, length)
-    unknown_gen = exhibit_spinner(spinner_factory(length), fps, length)
+    spinner_gen = exhibit_spinner(spinner_factory())
+    unknown_gen = exhibit_spinner(spinner_factory(length))
     while True:
         yield (combine_cells(blanks, ('|',), next(spinner_gen), ('|',)),  # '{1}|{2}| {0} |{3}|'
                name, combine_cells(('|',), next(unknown_gen), ('|',)))
 
 
-def exhibit_spinner(spinner, _fps, _length):
+def exhibit_spinner(spinner):
     player = spinner_player(spinner)
     while True:
         yield next(player)
@@ -202,12 +202,12 @@ def exhibit_spinner(spinner, _fps, _length):
 
 def _bar_gen(name, bar_factory):
     fps, length = yield
-    bar_gen = exhibit_bar(bar_factory(length), fps, length)
+    bar_gen = exhibit_bar(bar_factory(length), fps)
     while True:
         yield name, next(bar_gen)[0]  # '{0} {1}'
 
 
-def exhibit_bar(bar, fps, length):
+def exhibit_bar(bar, fps):
     total = int(fps * 5)
     while True:
         # standard use cases, increment till completion, underflow and overflow.
@@ -240,10 +240,10 @@ def exhibit_bar(bar, fps, length):
 
 def _theme_gen(name, config, max_natural):
     fps, length = yield
-    bar_std = exhibit_bar(config.bar(length), fps, length)
-    bar_unknown = exhibit_bar(config.bar(length, config.unknown), fps, length)
+    bar_std = exhibit_bar(config.bar(length), fps)
+    bar_unknown = exhibit_bar(config.bar(length, config.unknown), fps)
     blanks = (' ',) * (max_natural - config.spinner.natural)
-    spinner = exhibit_spinner(config.spinner(), fps, length)
+    spinner = exhibit_spinner(config.spinner())
     while True:
         yield (name, next(bar_std)[0], combine_cells(next(spinner), blanks),  # '{0} {1} {2}{3} {4}'
                next(bar_unknown)[0])
