@@ -104,26 +104,38 @@ def replace(spec, old, new):  # noqa
 
 
 @compiler_command
-def pause(spec, n_edges=None, n_middle=None):  # noqa
-    """Make the animation appear to pause on the edges or the middle, or make it slower as
+def pause(spec, n_edges=None, n_center=None, n_other=None):  # noqa
+    """Make the animation appear to pause at the edges or at the middle, or make it slower as
     a whole, or both.
+
+    Use without arguments to get their defaults, which gives a small pause at the edges,
+    very nice for bouncing text with `hide=False`. Please note that the defaults only apply
+    if none of the params are set.
 
     In the future, I'd like to make this a `pace` command, which would receive a sequence
     of ints of any length, and apply it bouncing across the cycle. For example to smoothly
     decelerate it could be (6, 3, 2, 1), which would become (6, 3, 2, 1, 1, ..., 1, 2, 3, 6).
 
     Args:
-        n_edges (Optional[int]): how many times the first and last frames on a cycle repeats
-            default is 6.
-        n_middle (Optional[int]): how many times the middle frames on a cycle repeats
+        n_edges (Optional[int]): how many times the first and last frames of a cycle repeats
+            default is 8.
+        n_center (Optional[int]): how many times the middle frame of a cycle repeats
+            default is 1.
+        n_other (Optional[int]): how many times all the other frames of a cycle repeats
             default is 1.
 
     """
-    n_edges, n_middle = max(1, n_edges or 6), max(1, n_middle or 1)
-    spec.data = tuple(tuple(
-        chain.from_iterable(repeat(frame, n_edges if i in (0, length - 1) else n_middle)
-                            for i, frame in enumerate(cycle)))
-                      for cycle, length in ((cycle, len(cycle)) for cycle in spec.data))
+    n_edges, n_center, n_other = (max(1, x or 1) for x in (n_edges, n_center, n_other))
+    if all(x == 1 for x in (n_edges, n_center, n_other)):
+        n_edges, n_center, n_other = 8, 1, 1
+    repeats = lambda cycle, length: (cycle, {
+        0: n_edges,
+        length - 1: n_edges,
+        round(length / 2): n_center,
+    })
+    spec.data = tuple(tuple(chain.from_iterable(
+        repeat(frame, repeats.get(i) or n_other) for i, frame in enumerate(cycle))
+    ) for cycle, repeats in (repeats(cycle, len(cycle)) for cycle in spec.data))
 
 
 @compiler_command
