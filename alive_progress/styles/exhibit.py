@@ -221,7 +221,7 @@ def exhibit_bar(bar, fps, length):
                 yield bar.end(percent), percent
 
         # advanced use cases, which do not go always forward.
-        factor = random.random() * .5 + 1  # a number between 1.0 and 1.5.
+        factor = random.random() + 1  # a number between 1.0 and 2.0.
         for percent in (1. - x * factor / total for x in range(total)):
             yield bar(percent), percent
         # generates a small giggle, like a real gauge.
@@ -230,8 +230,8 @@ def exhibit_bar(bar, fps, length):
             percent = measure + giggle()
             yield bar(percent), percent
         # gradually comes to a full stop.
-        for t in range(int(fps * 4)):  # smoother stabilization.
-            percent = measure + giggle() * (fps * 4 - t) / (fps * 4)
+        for t in range(int(fps * 5)):  # smoother stabilization.
+            percent = measure + giggle() / 1.04 ** t
             yield bar(percent), percent
         # enjoy the full stop for a while.
         for t in range(int(fps * 2)):
