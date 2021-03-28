@@ -177,7 +177,7 @@ def sequential(spec):
 
 
 @runner_command
-def randomized(spec, cycles=None):  # noqa
+def randomize(spec, cycles=None):  # noqa
     """Configure the runner to play the compiled cycles in random order.
 
     Args:
