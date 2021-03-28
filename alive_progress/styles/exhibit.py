@@ -52,17 +52,20 @@ def show_spinners(*, fps=None, length=None, pattern=None):
     max_name_length = max(len(s) for s in selected) + 2
     gens = [_spinner_gen(f'{k:^{max_name_length}}', s, max_natural) for k, s in selected.items()]
     info = Info(
-        title='Spinners, including their unknown bar renditions.',
-        descr=('A spinner can be configured to run a plethora of effects, including raw frames,'
-               ' scrolling, bouncing, sequential, alongside or delayed!',
-               'They have all their animation frames pre-compiled, so no worries of any runtime'
-               ' overhead!'),
-        tech=('Spinners are advanced generators of a particular type, configured to run those'
-              ' effects in a specific natural length.',
-              'Furthermore, each type provides advanced algorithms to spread their fixed-size'
-              ' contents over any available (or desired) space.',
-              'That\'s why any spinner can also be used as a bar, rendered at its precise length,'
-              ' when the total is not provided.'))
+        title=('Spinners', 'including their unknown bar performances'),
+        descr=('Spinners generate and run fluid animations, with a plethora of special effects,'
+               ' including static frames, scrolling, bouncing, sequential, alongside or delayed!',
+               'Each type supports several customization options that allow some very cool tricks,'
+               ' so be creative 😜'),
+        tech=('Spinners are advanced generators that dynamically output frames to generate some '
+              'effect.',
+              'These frames are gathered into full cycles, where the spinner yields. This enables'
+              ' to mix and match them, without ever breaking animations.',
+              'All spinners compile their full animations only once before displaying, so they are'
+              ' faaaast!',
+              'The spinner compiler brings the super cool `.check()` tool, check it out!',
+              'A spinner have a specific "natural" length, and know how to spread its contents over'
+              ' any desired space.',))
     _showtime_gen(fps, gens, info, length)
 
 
@@ -79,16 +82,15 @@ def show_bars(*, fps=None, length=None, pattern=None):
     max_name_length = max(len(s) for s in selected) + 2
     gens = [_bar_gen(f'{k:>{max_name_length}}', b) for k, b in selected.items()]
     info = Info(
-        title='Bars, in their normal, underflow and overflow states.',
+        title=('Bars', 'playing even their underflow and overflow acts'),
         descr=('A bar can render any percentage with a plethora of effects, including dynamic'
                ' chars, tips, backgrounds, transparent fills, underflows and overflows!',
-               'This exhibit also includes some advanced use cases, which do not go only forward...'
-               ' Just switch the alive_bar to manual mode and be creative ;)'),
-        tech=('Bars are advanced closures, configured to render those effects on-demand, with'
-              ' minimal lag, in a specific length.',
-              'They do not count anything or maintain any state whatsoever. So you can fearlessly'
-              ' create any pattern you want.',
-              'Furthermore, it can render any external spinner inside its own borders.'))
+               'Bars also support some advanced use cases, which do not go only forward...'
+               ' Just use manual mode and be creative 😜'),
+        tech=('Bars are advanced closures that render percentages with some effect, in a specific'
+              ' fixed length.',
+              'Bars are not compiled, but support the super cool `.check()` tool, check it out!',
+              'Furthermore, bars can render any external spinners inside its own borders.'))
     _showtime_gen(fps, gens, info, length)
 
 
@@ -107,12 +109,12 @@ def show_themes(*, fps=None, length=None, pattern=None):
     max_name_length = max(len(s) for s in selected) + 2
     gens = [_theme_gen(f'{k:>{max_name_length}}', c, max_natural) for k, c in themes.items()]
     info = Info(
-        title='Themes, with their configured bar, spinner and unknown bar.',
-        descr=('A theme is an aggregator, it wraps bar and spinner styles that go well together.',),
-        tech=('Since a theme is not actually a configuration variable (its contents are elided'
-              ' into the config), you can\'t create them, just use the bundled ones.',
-              'But you can surely customize them, just send to alive_bar any additional config'
-              ' parameters, including the ones the theme had already set, to override them.'))
+        title=('Themes', 'featuring their bar, spinner and unknown bar companions'),
+        descr=('A theme is an aggregator, it wraps styles that go well together.',),
+        tech=('Themes are syntactic sugar, not actually configuration variables (they are elided'
+              ' upon usage, only their contents go into the config).',
+              'But you can surely customize them, just send any additional config parameters to'
+              ' override anything.'))
     _showtime_gen(fps, gens, info, length)
 
 
@@ -136,10 +138,17 @@ def _showtime_gen(fps, gens, info, length):
         raise UserWarning('This must be run on a tty connected terminal.')
 
     logo = spinner_player(SPINNERS['waves']())
+    title = lambda t, r=False: (
+        scrolling_spinner_factory(t, right=r, wrap=False).pause(n_center=12),)
+    message = lambda m, s=None: (
+        scrolling_spinner_factory(f'{m} 👏 ({s})' if s else m, right=False),)
     info_spinners = sequential_spinner_factory(
-        *(scrolling_spinner_factory(m, right=False) for m in (f'showing: {info.title}',)
-          + ((*info.descr, f'Technical details', *info.tech) if _INFO else ())),
-        scrolling_spinner_factory('Enjoy 🤩'),
+        *(title('Now staging...')
+          + message(*info.title)
+          + sum((message(d) for d in info.descr), ())
+          + title(f'Technical details')
+          + sum((message(d) for d in info.tech), ())
+          + title('Enjoy 🤩', True)),
         intermix=False
     )
 
