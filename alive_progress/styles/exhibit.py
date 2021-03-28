@@ -208,7 +208,7 @@ def _bar_gen(name, bar_factory):
 
 
 def exhibit_bar(bar, fps, length):
-    total = int(length * 1.9)
+    total = int(fps * 5)
     while True:
         # standard use cases, increment till completion, underflow and overflow.
         for s, t in (0, total), (0, int(total * .5)), (int(total * .5), int(total + 1)):
