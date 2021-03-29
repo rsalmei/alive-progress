@@ -6,7 +6,7 @@ from functools import partial
 from itertools import chain, islice, repeat
 from types import SimpleNamespace
 
-from ..utils.terminal import clear_traces
+from ..utils.terminal import clear_line
 
 
 def buffered_hook_manager(header_template, get_pos):
@@ -45,7 +45,7 @@ def buffered_hook_manager(header_template, get_pos):
                 if stream == base_stdout:
                     # this avoids potential flickering, since now the stream can also be
                     # files from logging, and thus not needing to clear the screen...
-                    clear_traces()
+                    clear_line()
                 stream.write(f'{header}{nested.strip()}\n')
                 stream.flush()
                 buffer[:] = []
