@@ -139,7 +139,7 @@ def _showtime_gen(fps, gens, info, length):
 
     logo = spinner_player(SPINNERS['waves']())
     title = lambda t, r=False: (
-        scrolling_spinner_factory(t, right=r, wrap=False).pause(n_center=12),)
+        scrolling_spinner_factory(t, right=r, wrap=False).pause(center=12),)
     message = lambda m, s=None: (
         scrolling_spinner_factory(f'{m} 👏 ({s})' if s else m, right=False),)
     info_spinners = sequential_spinner_factory(

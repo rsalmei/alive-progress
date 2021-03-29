@@ -104,7 +104,7 @@ def replace(spec, old, new):  # noqa
 
 
 @compiler_command
-def pause(spec, n_edges=None, n_center=None, n_other=None):  # noqa
+def pause(spec, edges=None, center=None, other=None):  # noqa
     """Make the animation appear to pause at the edges or at the middle, or make it slower as
     a whole, or both.
 
@@ -117,24 +117,24 @@ def pause(spec, n_edges=None, n_center=None, n_other=None):  # noqa
     decelerate it could be (6, 3, 2, 1), which would become (6, 3, 2, 1, 1, ..., 1, 2, 3, 6).
 
     Args:
-        n_edges (Optional[int]): how many times the first and last frames of a cycle repeats
+        edges (Optional[int]): how many times the first and last frames of a cycle repeats
             default is 8.
-        n_center (Optional[int]): how many times the middle frame of a cycle repeats
+        center (Optional[int]): how many times the middle frame of a cycle repeats
             default is 1.
-        n_other (Optional[int]): how many times all the other frames of a cycle repeats
+        other (Optional[int]): how many times all the other frames of a cycle repeats
             default is 1.
 
     """
-    n_edges, n_center, n_other = (max(1, x or 1) for x in (n_edges, n_center, n_other))
-    if all(x == 1 for x in (n_edges, n_center, n_other)):
-        n_edges, n_center, n_other = 8, 1, 1
+    edges, center, other = (max(1, x or 1) for x in (edges, center, other))
+    if all(x == 1 for x in (edges, center, other)):
+        edges, center, other = 8, 1, 1
     repeats = lambda cycle, length: (cycle, {
-        0: n_edges,
-        length - 1: n_edges,
-        round(length / 2): n_center,
+        0: edges,
+        length - 1: edges,
+        round(length / 2): center,
     })
     spec.data = tuple(tuple(chain.from_iterable(
-        repeat(frame, repeats.get(i) or n_other) for i, frame in enumerate(cycle))
+        repeat(frame, repeats.get(i) or other) for i, frame in enumerate(cycle))
     ) for cycle, repeats in (repeats(cycle, len(cycle)) for cycle in spec.data))
 
 
