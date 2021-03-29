@@ -152,11 +152,12 @@ def _showtime_gen(fps, gens, info, length):
         intermix=False
     )
 
-    # initialize generators, sending fps and length params (list is discarded).
+    # initialize generators, retrieve their line lengths, and create information line.
     fps, length = min(60., max(2., float(fps or 15.))), length or 40
-    [(next(gen), gen.send((fps, length))) for gen in gens]
+    cols = max(x for _, x in ((next(gen), gen.send((fps, length))) for gen in gens))
+    fps_monitor = 'fps: {:.2f}'
+    info_player = spinner_player(info_spinners(max(3, cols - len(fps_monitor.format(fps)) - 1)))
 
-    max_cols, last_max_cols, info_player = -1, -2, None
     start, sleep, frame, line_num = time.perf_counter(), 1. / fps, 0, 0
     start, current = start - sleep, start  # simulates the first frame took exactly "sleep" ms.
     hide_cursor()
@@ -168,20 +169,15 @@ def _showtime_gen(fps, gens, info, length):
             print_cells(title, cols)  # line 1.
             print()
 
-            fps_monitor = f'fps: {frame / (current - start):.2f}'
-            if max_cols != last_max_cols:
-                info_player = spinner_player(info_spinners(max(1, max_cols - len(fps_monitor) - 2)))
-                last_max_cols = max_cols
-            info = fps_monitor, next(info_player)
+            info = fps_monitor.format(frame / (current - start)), next(info_player)
             print_cells(info, cols)  # line 2.
-            print()
 
-            max_cols = print_cells(next(gens[0]), cols)  # line 3.
-            for line_num, gen in enumerate(gens[1:], 4):
+            content = [next(gen) for gen in gens]  # always consume gens, to maintain them in sync.
+            for line_num, fragments in enumerate(content, 3):
                 if line_num > lines:
                     break
                 print()
-                print_cells(next(gen), cols)
+                print_cells(fragments, cols)
 
             frame += 1
             current = time.perf_counter()
@@ -198,6 +194,7 @@ def _spinner_gen(name, spinner_factory, max_natural):
     blanks = (' ',) * (max_natural - spinner_factory.natural)
     spinner_gen = exhibit_spinner(spinner_factory())
     unknown_gen = exhibit_spinner(spinner_factory(length))
+    yield len(blanks) + spinner_factory.natural + len(name) + length + 4 + 2  # borders/spaces.
     while True:
         yield (combine_cells(blanks, ('|',), next(spinner_gen), ('|',)),  # '{1}|{2}| {0} |{3}|'
                name, combine_cells(('|',), next(unknown_gen), ('|',)))
@@ -212,6 +209,7 @@ def exhibit_spinner(spinner):
 def _bar_gen(name, bar_factory):
     fps, length = yield
     bar_gen = exhibit_bar(bar_factory(length), fps)
+    yield len(name) + length + 2 + 1  # borders/spaces.
     while True:
         yield name, next(bar_gen)[0]  # '{0} {1}'
 
@@ -253,6 +251,7 @@ def _theme_gen(name, config, max_natural):
     bar_unknown = exhibit_bar(config.bar(length, config.unknown), fps)
     blanks = (' ',) * (max_natural - config.spinner.natural)
     spinner = exhibit_spinner(config.spinner())
+    yield len(name) + 2 * length + config.spinner.natural + len(blanks) + 4 + 3  # borders/spaces.
     while True:
         yield (name, next(bar_std)[0], combine_cells(next(spinner), blanks),  # '{0} {1} {2}{3} {4}'
                next(bar_unknown)[0])
