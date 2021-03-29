@@ -128,14 +128,14 @@ def pause(spec, edges=None, center=None, other=None):  # noqa
     edges, center, other = (max(1, x or 1) for x in (edges, center, other))
     if all(x == 1 for x in (edges, center, other)):
         edges, center, other = 8, 1, 1
-    repeats = lambda cycle, length: (cycle, {
+    repeats_func = lambda length: {
         0: edges,
         length - 1: edges,
         round(length / 2): center,
-    })
+    }
     spec.data = tuple(tuple(chain.from_iterable(
-        repeat(frame, repeats.get(i) or other) for i, frame in enumerate(cycle))
-    ) for cycle, repeats in (repeats(cycle, len(cycle)) for cycle in spec.data))
+        repeat(frame, repeats.get(i) or other) for i, frame in enumerate(cycle)
+    )) for cycle, repeats in ((cycle, repeats_func(len(cycle))) for cycle in spec.data))
 
 
 @compiler_command
