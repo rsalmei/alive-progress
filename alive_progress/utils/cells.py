@@ -53,7 +53,7 @@ import sys
 import unicodedata
 from itertools import chain, islice, repeat
 
-from .terminal import clear_traces
+from .terminal import clear_end
 
 PATTERN_SANITIZE = re.compile(r'[\r\n]')
 SPACES = repeat(' ')
@@ -75,22 +75,22 @@ def print_cells(fragments, cols, last_line_len=0, _write=sys.__stdout__.write): 
         the number of actually used cols.
 
     """
-    line = tuple(islice(chain.from_iterable(zip(SPACES, filter(None, fragments))), 1, None))
-
-    if last_line_len and sum(len(fragment) for fragment in line) < last_line_len:
-        clear_traces()
-
+    line = islice(chain.from_iterable(zip(SPACES, filter(None, fragments))), 1, None)
     available = cols
     _write('\r')
     for fragment in line:
         length = len(fragment)
         if length > available:
-            if available <= 0:
-                break
-            length, fragment = available, fix_cells(fragment[:available])
+            available, fragment = 0, fix_cells(fragment[:available])
+        else:
+            available -= length
 
         _write(join_cells(fragment))
-        available -= length
+        if not available:
+            break
+    else:
+        if last_line_len and sum(len(fragment) for fragment in line) < last_line_len:
+            clear_end()
 
     return cols - available
 
