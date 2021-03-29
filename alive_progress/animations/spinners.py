@@ -79,6 +79,7 @@ def scrolling_spinner_factory(chars, length=None, block=None, background=None, *
         a styled spinner factory
 
     """
+    assert not (overlay and not background), 'overlay needs a background'
     assert not (overlay and has_wide(background)), 'unsupported overlay and grapheme background'
     chars, rounder = to_cells(chars), round_even if has_wide(chars) else math.ceil
 
