@@ -79,6 +79,7 @@ In general lines, just retrieve the items, enter the `alive_bar` context manager
 - the first argument of the `alive_bar` is the expected total, so it can be anything that returns an integer, like `qs.count()` for querysets, `len(items)` for iterables that support it, or even a static integer;
 - the `bar()` call is what makes the bar go forward -- you usually call it in every iteration after consuming an item, but you can get creative! Remember the bar is counting for you _independently of the iteration process_, only when you call `bar()` (something no other progress bar have), so you can use it to count anything you want! For example, you could call `bar()` only when you find something expected and then know how many of those there were, including the percentage that it represents! Or call it more than once in the same iteration, no problem at all, you choose what you are monitoring! The ETA will not be that useful unfortunately;
 - to retrieve the current `bar()` count/percentage, you can call `bar.current()`.
+- to update `total` during runtime, use the `bar.update_total(nn)` function.
 
 So, you could even use it without any loops, like for example:
 
@@ -371,6 +372,27 @@ And if you want to do even more, exciting stuff lies ahead!
 > You can also set it system-wide in `config_handler`.
 >
 > Do note that this console is heavily instrumented and has more overhead, so the outcome may not be as fluid as you would expect.
+>
+> ---
+</details>
+
+<details>
+<summary><strong><em>You need to update total in runtime?</em></strong></summary>
+
+> ### Dynamic total
+>
+> Imagine a multi-threaded application where one thread collects items in the
+> file system, on which a second thread does work.
+> 
+> In this case, the `total` is still growing while work is already done on the
+> available data.
+>
+> You can use `bar.update_total(new_total)` to cope with that.
+> ```
+> with alive_bar(1) as bar:
+>    bar.update_total(check_current_total())
+>    bar()
+> ```
 >
 > ---
 </details>

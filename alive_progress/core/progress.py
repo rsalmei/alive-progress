@@ -205,16 +205,23 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
         thread.start()
 
     if total or not config.manual:  # we can count items.
-        logic_total, rate_spec, factor, current = total, 'f', 1.e6, lambda: run.count  # noqa
+        run.total, run.logic_total, rate_spec, factor, current = total, total, 'f', 1.e6, lambda: run.count  # noqa
     else:  # there's only a manual percentage.
-        logic_total, rate_spec, factor, current = 1., '%', 1., lambda: run.percent  # noqa
+        run.logic_total, rate_spec, factor, current = 1., '%', 1., lambda: run.percent  # noqa
 
-    bar_handle.text, bar_handle.current = set_text, current
+    def update_total(n):
+        run.total = n
+        run.logic_total = n
+        run.gen_eta = gen_simple_exponential_smoothing_eta(.5, run.logic_total)
+        run.gen_eta.send(None)
+
+    bar_handle.text, bar_handle.current, bar_handle.update_total = set_text, current, update_total
+
     if total or config.manual:  # we can track progress and therefore eta.
         spec = '({{:.1{}}}/s, eta: {{}})'.format(rate_spec)
-        gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
-        gen_eta.send(None)
-        stats = lambda: spec.format(run.rate, to_eta_text(gen_eta.send((current(), run.rate))))
+        run.gen_eta = gen_simple_exponential_smoothing_eta(.5, run.logic_total)
+        run.gen_eta.send(None)
+        stats = lambda: spec.format(run.rate, to_eta_text(run.gen_eta.send((current(), run.rate))))
         bar_repr = config.bar(config.length)
     else:  # unknown progress.
         bar_repr = config.unknown(config.length, config.bar)
@@ -248,13 +255,13 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     if total:
         if config.manual:
             def update_hook():
-                run.count = int(math.ceil(run.percent * total))
+                run.count = int(math.ceil(run.percent * run.total))
         else:
             def update_hook():
-                run.percent = run.count / total
+                run.percent = run.count / run.total
 
         monitor = lambda: '{}{}/{} [{:.0%}]'.format(  # noqa
-            '(!) ' if end and run.count != total else '', run.count, total, run.percent
+            '(!) ' if end and run.count != run.total else '', run.count, run.total, run.percent
         )
     elif config.manual:
         update_hook = lambda: None  # noqa
