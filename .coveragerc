@@ -3,6 +3,7 @@
 branch = True
 omit =
     alive_progress/styles/*
+    alive_progress/tools/*
 
 [report]
 ignore_errors = True

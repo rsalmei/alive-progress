@@ -2,8 +2,8 @@ from unittest import mock
 
 import pytest
 
-from alive_progress.core.timing import gen_simple_exponential_smoothing_eta, to_eta_text, \
-    to_elapsed_text, simple_eta
+from alive_progress.utils.timing import elapsed_text, eta_text, \
+    gen_simple_exponential_smoothing_eta, simple_eta
 
 
 @pytest.mark.parametrize('elapsed, precise, expected', [
@@ -24,7 +24,7 @@ from alive_progress.core.timing import gen_simple_exponential_smoothing_eta, to_
     (4000, True, '1:06:40.0'),
 ])
 def test_to_elapsed_text(elapsed, precise, expected):
-    assert to_elapsed_text(elapsed, precise) == expected
+    assert elapsed_text(elapsed, precise) == expected
 
 
 @pytest.mark.parametrize('eta, expected', [
@@ -35,7 +35,7 @@ def test_to_elapsed_text(elapsed, precise, expected):
     (10., '10s'),
 ])
 def test_to_eta_text(eta, expected):
-    assert to_eta_text(eta) == expected
+    assert eta_text(eta) == expected
 
 
 def test_simple_eta():
@@ -43,7 +43,7 @@ def test_simple_eta():
 
 
 def test_gen_simple_exponential_smoothing_eta():
-    with mock.patch('alive_progress.core.timing.simple_eta') as m_simple_eta:
+    with mock.patch('alive_progress.utils.timing.simple_eta') as m_simple_eta:
         m_simple_eta.side_effect = lambda _1, _2, r: r
 
         data = (  # according to the study of simple_exponential_smoothing in docs directory.
