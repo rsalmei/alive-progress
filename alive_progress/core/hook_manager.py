@@ -51,13 +51,11 @@ def buffered_hook_manager(header_template, get_pos):
                 stream.flush()
                 buffer[:] = []
 
-    def get_hook_for(stream):
-        stream.flush()
-        if stream == sys.stderr:  # this stream also goes to screen, which can mess with stdout.
-            stream = base_stdout
-        # generates multiple hooks, one for each stream.
-        return SimpleNamespace(write=partial(write, stream),
-                               flush=partial(flush, stream),
+    def get_hook_for(handler):
+        if handler.stream:  # supports FileHandlers with delay=true.
+            handler.stream.flush()
+        return SimpleNamespace(write=partial(write, handler.stream),
+                               flush=partial(flush, handler.stream),
                                isatty=sys.__stdout__.isatty)
 
     def install():
