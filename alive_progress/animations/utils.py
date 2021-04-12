@@ -90,16 +90,9 @@ def combinations(nums):
     return reduce(lcm, nums)
 
 
-def split_options(options, expects_tuple=False):
+def split_options(options):
     """Split options that apply to dual elements, either duplicating or splitting."""
-    if not expects_tuple:
-        return options if isinstance(options, tuple) else (options, options)
-
-    if not isinstance(options, tuple):
-        return (options,), (options,)
-    if any(isinstance(elem, tuple) for elem in options):
-        return tuple(elem if isinstance(elem, tuple) else (elem,) for elem in options)
-    return options, options
+    return options if isinstance(options, tuple) else (options, options)
 
 
 def spread_weighted(actual_length, naturals):
