@@ -71,6 +71,7 @@ def buffered_hook_manager(header_template, get_pos):
         sys.stdout, sys.stderr = base
         [_set_stream(handler, original_stream)
          for handler, original_stream in before_handlers.items()]
+        before_handlers.clear()
 
     # internal data.
     buffers = defaultdict(list)
