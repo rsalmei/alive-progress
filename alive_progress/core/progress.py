@@ -344,5 +344,5 @@ def _render_title(title, length):
     return combine_cells(fix_cells(title[:length - 1]), ('…',))
 
 
-def __noop():
+def __noop():  # pragma: no cover
     pass

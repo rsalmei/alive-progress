@@ -109,7 +109,7 @@ def bar_controller(inner_bar_factory):
         def draw_end(percent):
             return draw_known(ended, percent)
 
-        def bar_check(*args, **kwargs):
+        def bar_check(*args, **kwargs):  # pragma: no cover
             return check(draw, t_compile, *args, **kwargs)
 
         draw.__dict__.update(
@@ -125,7 +125,7 @@ def bar_controller(inner_bar_factory):
 
         return draw
 
-    def compile_and_check(*args, **kwargs):
+    def compile_and_check(*args, **kwargs):  # pragma: no cover
         """Compile this bar factory at some length, and..."""
         # since a bar does not have a natural length, I have to choose one...
         bar_assembler(40).check(*args, **kwargs)  # noqa
@@ -137,7 +137,7 @@ def bar_controller(inner_bar_factory):
     return bar_assembler
 
 
-def check(bar, t_compile, verbosity=0, *, steps=20):  # noqa
+def check(bar, t_compile, verbosity=0, *, steps=20):  # noqa  # pragma: no cover
     """Check the data, codepoints, and even the animation of this bar.
 
     Args:
@@ -180,7 +180,7 @@ HELP_MSG = {
 }
 
 
-def spec_data(bar):
+def spec_data(bar):  # pragma: no cover
     print(f'\n{SECTION("Brief bar data")}')
     info = lambda field, p, b: f'{YELLOW_BOLD(field, "<11")}: {" ".join(bar_repr(b, p)[1:])}'
     print('\n'.join(info(n, p, bar) for n, p in (
@@ -189,13 +189,13 @@ def spec_data(bar):
     print(info('underflow', .5, bar.end))
 
 
-def format_codepoints(frame):
+def format_codepoints(frame):  # pragma: no cover
     codes = '|'.join((ORANGE if is_wide(g) else BLUE)(
         ' '.join(hex(ord(c)).replace('0x', '') for c in g)) for g in frame)
     return f" -> {RED(sum(len(fragment) for fragment in frame))}:[{codes}]"
 
 
-def render_data(bar, show_codepoints, steps):
+def render_data(bar, show_codepoints, steps):  # pragma: no cover
     print(f'\n{SECTION("Full bar data")}', end='')
     codepoints = format_codepoints if show_codepoints else lambda _: ''
     for name, b in ('in progress', bar), ('completed', bar.end):
@@ -205,12 +205,12 @@ def render_data(bar, show_codepoints, steps):
             print(joined, perc, codepoints(frame))
 
 
-def bar_repr(bar, p):
+def bar_repr(bar, p):  # pragma: no cover
     frame = tuple(strip_marks(bar(p)))
     return frame, ''.join(frame), DIM(f'{p:6.1%}')
 
 
-def animate(bar):
+def animate(bar):  # pragma: no cover
     print(f'\n{SECTION("Animation")}')
     from ..styles.exhibit import exhibit_bar
     bar_gen = exhibit_bar(bar, 15)

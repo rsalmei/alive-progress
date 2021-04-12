@@ -36,7 +36,7 @@ def spinner_controller(*, natural, skip_compiler=False):
                 spec = spinner_compiler(gen, natural, extra_commands.get(True, ()))
             return spinner_runner_factory(spec, t_compile, extra_commands.get(False, ()))
 
-        def compile_and_check(*args, **kwargs):
+        def compile_and_check(*args, **kwargs):  # pragma: no cover
             """Compile this spinner factory at its natural length, and..."""
             compiler_dispatcher().check(*args, **kwargs)
 
@@ -193,7 +193,7 @@ def randomize(spec, cycles=None):  # noqa
     spec.__dict__.update(strategy=cycle_data, cycles=max(0, cycles or 0) or spec.cycles)
 
 
-def apply_extra_commands(spec, extra_commands):
+def apply_extra_commands(spec, extra_commands):  # pragma: no cover
     for command, args, kwargs in extra_commands:
         command(spec, *args, **kwargs)
 
@@ -250,7 +250,7 @@ def spinner_runner_factory(spec, t_compile, extra_commands):
 
         yield from next(cycle_gen)  # I love generators!
 
-    def runner_check(*args, **kwargs):
+    def runner_check(*args, **kwargs):  # pragma: no cover
         return check(spec, *args, **kwargs)
 
     spinner_runner.__dict__.update(spec.__dict__, check=fix_signature(runner_check, check, 1))
@@ -262,7 +262,7 @@ def spinner_runner_factory(spec, t_compile, extra_commands):
     return spinner_runner
 
 
-def check(spec, verbosity=0):  # noqa
+def check(spec, verbosity=0):  # noqa  # pragma: no cover
     """Check the specs, contents, codepoints, and even the animation of this compiled spinner.
     
     Args:
@@ -303,7 +303,7 @@ HELP_MSG = {
 }
 
 
-def spec_data(spec):
+def spec_data(spec):  # pragma: no cover
     print(f'\n{SECTION("Specs")}')
     info = lambda field: f'{YELLOW_BOLD(field.split(".")[0])}: {operator.attrgetter(field)(spec)}'
     print(info('length'), f'({info("natural")})')
@@ -311,13 +311,13 @@ def spec_data(spec):
     print('\n'.join(info(field) for field in ('frames', 'total_frames')))
 
 
-def format_codepoints(frame):
+def format_codepoints(frame):  # pragma: no cover
     codes = '|'.join((ORANGE if is_wide(g) else BLUE)(
         ' '.join(hex(ord(c)).replace('0x', '') for c in g)) for g in frame)
     return f" -> {RED(sum(len(fragment) for fragment in frame))}:[{codes}]"
 
 
-def render_data(spec, show_codepoints):
+def render_data(spec, show_codepoints):  # pragma: no cover
     print(f'\n{SECTION("Frame data")}', end='')
     whole_index = count(1)
     lf, wf = f'>{1 + len(str(max(spec.frames)))}', f'<{len(str(spec.total_frames))}'
@@ -330,7 +330,7 @@ def render_data(spec, show_codepoints):
         ))
 
 
-def animate(spec):
+def animate(spec):  # pragma: no cover
     print(f'\n{SECTION("Animation")}')
     cf, lf, tf = (f'>{len(str(x))}' for x in (spec.cycles, max(spec.frames), spec.total_frames))
     from itertools import cycle

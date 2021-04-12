@@ -7,14 +7,14 @@ if sys.stdout.isatty():
         return partial(sys.__stdout__.write, f'\x1b[{param}{sequence}')
 
 
-    def terminal_cols():
+    def terminal_cols():  # pragma: no cover
         return _terminal_size()[0]
 else:
     def _send_ansi_escape(_sequence, _param=''):  # pragma: no cover
         pass
 
 
-    def terminal_cols():
+    def terminal_cols():  # pragma: no cover
         return 10000  # do not truncate if there's no tty.
 
 clear_line = _send_ansi_escape('2K\r')  # clears the entire line: CSI n K -> with n=2.
