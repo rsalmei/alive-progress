@@ -44,7 +44,9 @@ def static_sliding_window(sep, gap, contents, length, right, initial):
 
     Note that the implementation is "static" in the sense that the content is pre-
     calculated and maintained static, but actually when the window slides both the
-    separator and content seem to be moved."""
+    separator and content seem to be moved.
+    Also keep in mind that `right` is for the content, not the window.
+    """
 
     def sliding_window():
         pos = initial
@@ -64,18 +66,19 @@ def static_sliding_window(sep, gap, contents, length, right, initial):
     return sliding_window()
 
 
-def overlay_sliding_window(background, gap, contents, length, step, initial):
+def overlay_sliding_window(background, gap, contents, length, right, initial):
     """Implement a sliding window over some content on top of a background.
     It uses internally a static sliding window, but dynamically swaps the separator
     characters for the background ones, thus making it appear immobile, with the
-    contents sliding over it."""
+    contents sliding over it.
+    """
 
     def overlay_window():
         for cells in window:  # pragma: no cover
             yield tuple(b if c == '\0' else c for c, b in zip(cells, background))
 
     background = (background * math.ceil(length / len(background)))[:length]
-    window = static_sliding_window('\0', gap, contents, length, step, initial)
+    window = static_sliding_window('\0', gap, contents, length, right, initial)
     return overlay_window()
 
 
