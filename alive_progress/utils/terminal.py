@@ -10,8 +10,12 @@ if sys.stdout.isatty():
     def terminal_cols():  # pragma: no cover
         return _terminal_size()[0]
 else:
+    def __noop():
+        return 0
+
+
     def _send_ansi_escape(_sequence, _param=''):  # pragma: no cover
-        pass
+        return __noop
 
 
     def terminal_cols():  # pragma: no cover
