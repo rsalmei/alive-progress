@@ -39,9 +39,11 @@ cases = [
     # title('Quantifying mode')  # soon, quantifying mode...
     # ('Calculating auto', 5000, dict(total=..., manual=False)),
     # ('Calculating manual', 5000, dict(total=..., manual=True)),
+
+    Case(title='Display features'),
+    Case('Styles', 5000, dict(total=5000, bar='solid', spinner='loving'))
 ]
-cases += [Case(title='Display features')] \
-         + [Case(name, 5000, config, done=True) for name, config in OVERHEAD_SAMPLING]
+cases += [Case(name.capitalize(), 5000, config, done=True) for name, config in OVERHEAD_SAMPLING]
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
