@@ -89,7 +89,7 @@ def bar_factory(chars=None, *, tip=None, background=None, borders=None, errors=N
 
 
 def bar_controller(inner_bar_factory):
-    def bar_assembler(length, spinner_factory=None):
+    def bar_assembler_factory(length, spinner_factory=None):
         """Assembles this bar into an actual bar renderer.
 
         Args:
@@ -128,13 +128,13 @@ def bar_controller(inner_bar_factory):
     def compile_and_check(*args, **kwargs):  # pragma: no cover
         """Compile this bar factory at some length, and..."""
         # since a bar does not have a natural length, I have to choose one...
-        bar_assembler(40).check(*args, **kwargs)  # noqa
+        bar_assembler_factory(40).check(*args, **kwargs)  # noqa
 
-    bar_assembler.__dict__.update(
+    bar_assembler_factory.__dict__.update(
         check=fix_signature(compile_and_check, check, 2),
     )
 
-    return bar_assembler
+    return bar_assembler_factory
 
 
 def check(bar, t_compile, verbosity=0, *, steps=20):  # noqa  # pragma: no cover

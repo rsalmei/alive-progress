@@ -15,7 +15,7 @@ from ..utils.terminal import factory_cursor_up, hide_cursor, show_cursor
 
 def spinner_controller(*, natural, skip_compiler=False):
     def inner_controller(spinner_inner_factory, op_params=None, extra_commands=None):
-        def compiler_dispatcher(actual_length=None):
+        def spinner_compiler_dispatcher_factory(actual_length=None):
             """Compile this spinner factory into an actual spinner runner.
             The previous parameters were the styling parameters, which defined a style.
             These are called operational parameters, which `alive_progress` binds dynamically
@@ -38,7 +38,7 @@ def spinner_controller(*, natural, skip_compiler=False):
 
         def compile_and_check(*args, **kwargs):  # pragma: no cover
             """Compile this spinner factory at its natural length, and..."""
-            compiler_dispatcher().check(*args, **kwargs)
+            spinner_compiler_dispatcher_factory().check(*args, **kwargs)
 
         def set_operational(**params):
             signature(spinner_inner_factory).bind(1, **params)  # test arguments (one is provided).
@@ -53,13 +53,13 @@ def spinner_controller(*, natural, skip_compiler=False):
 
             return fix_signature(inner_schedule, command, 1)
 
-        compiler_dispatcher.__dict__.update(
+        spinner_compiler_dispatcher_factory.__dict__.update(
             check=fix_signature(compile_and_check, check, 1), op=set_operational,
             **{c.__name__: schedule_command(c) for c in EXTRA_COMMANDS},
         )
         op_params, extra_commands = op_params or {}, extra_commands or {}
-        compiler_dispatcher.natural = natural  # share with the spinner code.
-        return compiler_dispatcher
+        spinner_compiler_dispatcher_factory.natural = natural  # share with the spinner code.
+        return spinner_compiler_dispatcher_factory
 
     return inner_controller
 

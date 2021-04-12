@@ -6,15 +6,16 @@ ERROR = object()  # represents a config value not accepted.
 
 
 def _spinner_input_factory(default):
-    from ..animations import spinners
+    from ..animations import spinner_compiler
     from ..styles.internal import SPINNERS
-    return __style_input_factory(SPINNERS, spinners, 'inner_spinner_factory', default)
+    return __style_input_factory(SPINNERS, spinner_compiler,
+                                 'spinner_compiler_dispatcher_factory', default)
 
 
 def _bar_input_factory():
     from ..animations import bars
     from ..styles.internal import BARS
-    return __style_input_factory(BARS, bars, 'inner_bar_factory', None)
+    return __style_input_factory(BARS, bars, 'bar_assembler_factory', None)
 
 
 def __style_input_factory(name_lookup, module_lookup, inner_name, default):
