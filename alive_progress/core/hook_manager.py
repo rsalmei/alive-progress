@@ -43,7 +43,7 @@ def buffered_hook_manager(header_template, get_pos):
             header = get_header()
             with lock:
                 nested = ''.join(line or ' ' * len(header) for line in buffer)
-                if stream == base_stdout:
+                if stream in base:
                     # this avoids potential flickering, since now the stream can also be
                     # files from logging, and thus not needing to clear the screen...
                     clear_line()
@@ -61,14 +61,14 @@ def buffered_hook_manager(header_template, get_pos):
                                isatty=sys.__stdout__.isatty)
 
     def install():
-        sys.stdout = get_hook_for(sys.stdout)
         root = logging.root
         # modify all stream handlers, including their subclasses.
         before_handlers.update({h: _set_stream(h, get_hook_for(h))  # noqa
                                 for h in root.handlers if isinstance(h, StreamHandler)})
+        sys.stdout, sys.stderr = (get_hook_for(SimpleNamespace(stream=x)) for x in base)
 
     def uninstall():
-        sys.stdout = sys.__stdout__
+        sys.stdout, sys.stderr = base
         [_set_stream(handler, original_stream)
          for handler, original_stream in before_handlers.items()]
 
@@ -76,7 +76,7 @@ def buffered_hook_manager(header_template, get_pos):
     buffers = defaultdict(list)
     lock = threading.Lock()
     get_header = (lambda: header_template.format(get_pos())) if header_template else lambda: ''
-    base_stdout = sys.stdout  # needed for tests.
+    base = sys.stdout, sys.stderr  # needed for tests.
     before_handlers = {}
 
     # external interface.
