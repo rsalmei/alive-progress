@@ -4,8 +4,8 @@ import time
 from about_time import about_time
 
 from .utils import bordered, extract_fill_graphemes, fix_signature, spinner_player
-from ..utils.cells import VS_15, combine_cells, fix_cells, is_wide, join_cells, mark_graphemes, \
-    split_graphemes, strip_marks, to_cells
+from ..utils.cells import VS_15, combine_cells, fix_cells, has_wide, is_wide, join_cells, \
+    mark_graphemes, split_graphemes, strip_marks, to_cells
 from ..utils.colors import BLUE, BLUE_BOLD, CYAN, DIM, GREEN, ORANGE, ORANGE_BOLD, RED, YELLOW_BOLD
 from ..utils.terminal import clear_end, factory_cursor_up, hide_cursor, show_cursor
 
@@ -38,11 +38,20 @@ def bar_factory(chars=None, *, tip=None, background=None, borders=None, errors=N
     @bar_controller
     def inner_bar_factory(length, spinner_factory=None):
         if chars:
-            def fill_style(complete, filling):  # chars fill.
-                fill = (chars[-1],) * complete
-                if filling:
-                    fill = fill + (chars[filling - 1],)
-                return mark_graphemes(fill)  # convert to cells.
+            if is_wide(chars[-1]):  # previous chars can be anything.
+                def fill_style(complete, filling):  # wide chars fill.
+                    odd = bool(complete % 2)
+                    fill = (None,) if odd != bool(filling) else ()  # odd XOR filling.
+                    fill += (chars[-1], None) * int(complete / 2)  # already marked wide chars.
+                    if filling and odd:
+                        fill += mark_graphemes((chars[filling - 1],))
+                    return fill
+            else:  # previous chars cannot be wide.
+                def fill_style(complete, filling):  # narrow chars fill.
+                    fill = (chars[-1],) * complete  # unneeded marks here.
+                    if filling:
+                        fill += (chars[filling - 1],)  # no widies here.
+                    return fill
         else:
             def fill_style(complete, filling):  # invisible fill.
                 return fix_cells(padding[:complete + bool(filling)])
@@ -74,13 +83,12 @@ def bar_factory(chars=None, *, tip=None, background=None, borders=None, errors=N
 
         padding = (' ',) * len_tip + background * math.ceil((length + len_tip) / len(background))
         virtual_length, blanks = num_graphemes * (length + len_tip), (' ',) * length
-        if chars and is_wide(chars[-1]):
-            virtual_length /= 2
-
         return draw_known, running, ended, draw_unknown
 
-    if not chars and not tip:
-        raise ValueError('tip is mandatory for transparent bars')
+    assert chars or tip, 'tip is mandatory for transparent bars'
+    assert not (chars and not is_wide(chars[-1]) and has_wide(chars)), \
+        'cannot use grapheme with a narrow last char'
+
     chars = split_graphemes(chars or '')  # the only one not yet marked.
     tip, background = (to_cells(x) for x in (tip, background or ' '))
     underflow, overflow = extract_fill_graphemes(errors, (f'⚠{VS_15}', f'✗{VS_15}'))
