@@ -4,6 +4,7 @@ import threading
 from collections import defaultdict
 from functools import partial
 from itertools import chain, islice, repeat
+from logging import StreamHandler
 from types import SimpleNamespace
 
 from ..utils.terminal import clear_line
@@ -61,12 +62,15 @@ def buffered_hook_manager(header_template, get_pos):
 
     def install():
         sys.stdout = get_hook_for(sys.stdout)
-        nonlocal before_handlers
-        before_handlers = _install_logging_hooks(get_hook_for)
+        root = logging.root
+        # modify all stream handlers, including their subclasses.
+        before_handlers.update({h: _set_stream(h, get_hook_for(h))  # noqa
+                                for h in root.handlers if isinstance(h, StreamHandler)})
 
     def uninstall():
         sys.stdout = sys.__stdout__
-        _uninstall_logging_hooks(before_handlers)
+        [_set_stream(handler, original_stream)
+         for handler, original_stream in before_handlers.items()]
 
     # internal data.
     buffers = defaultdict(list)
@@ -84,19 +88,6 @@ def buffered_hook_manager(header_template, get_pos):
     )
 
     return hook_manager
-
-
-def _install_logging_hooks(get_hook_for):
-    root = logging.root
-    # modify all stream handlers, including their subclasses.
-    return {handler: _set_stream(handler, get_hook_for(handler.stream))
-            for handler in root.handlers
-            if isinstance(handler, logging.StreamHandler)}
-
-
-def _uninstall_logging_hooks(before_handlers):
-    [_set_stream(handler, original_stream)
-     for handler, original_stream in before_handlers.items()]
 
 
 if sys.version_info >= (3, 7):  # pragma: no cover
