@@ -13,7 +13,7 @@ def overhead(total=None, title=None, *, calibrate=None, **options):
     with __alive_bar(config, total, title, calibrate=calibrate, _write=__noop_p, _flush=__noop,
                      _term_cols=__noop_z, _hook_manager=__hook_manager) as bar:
         # the timing of the print_cells function increases proportionately with the
-        # number of columns in the terminal, so I want a baseline here with 0 cols.
+        # number of columns in the terminal, so I want a baseline here with `_term_cols=0`.
         res = timeit.repeat('_alive_repr()', repeat=repeat, number=number, globals=bar.__dict__)
 
     return duration_human(min(res) / number).replace('us', 'µs')
