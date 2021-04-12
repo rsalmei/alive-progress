@@ -30,7 +30,7 @@ def __style_input_factory(name_lookup, module_lookup, inner_name, default):
 def __name_lookup_factory(name_lookup):
     def _input(x):
         if isinstance(x, str):
-            return name_lookup.get(x)
+            return name_lookup.get(x) or ERROR
 
     return _input
 
@@ -42,13 +42,14 @@ def __func_lookup_factory(module_lookup, inner_name):
             if x.__code__.co_name == inner_name \
                     and os.path.splitext(x.__code__.co_filename)[0] == func_file:
                 return x
+            return ERROR
 
     return _input
 
 
 def _int_input_factory(lower, upper):
     def _input(x):
-        if lower <= int(x) <= upper:
+        if isinstance(x, int) and lower <= x <= upper:
             return int(x)
         return ERROR
 
