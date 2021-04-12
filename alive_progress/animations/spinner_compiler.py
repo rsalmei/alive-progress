@@ -10,7 +10,7 @@ from about_time import about_time
 from .utils import fix_signature
 from ..utils.cells import fix_cells, is_wide, join_cells, strip_marks, to_cells
 from ..utils.colors import BLUE, BLUE_BOLD, CYAN, DIM, GREEN, ORANGE, ORANGE_BOLD, RED, YELLOW_BOLD
-from ..utils.terminal import factory_cursor_up, hide_cursor, show_cursor
+from ..utils.terminal import clear_end, factory_cursor_up, hide_cursor, show_cursor
 
 
 def spinner_controller(*, natural, skip_compiler=False):
@@ -344,6 +344,7 @@ def animate(spec):  # pragma: no cover
                 n = next(frames)
                 print(f'\r{CYAN(c, cf)}:{CYAN(i, lf)} -->{join_cells(f)}<-- {CYAN(n, tf)} ')
                 print(DIM('(press CTRL+C to stop)'), end='')
+                clear_end()
                 time.sleep(1 / 15)
                 cursor_up_1()
     except KeyboardInterrupt:

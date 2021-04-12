@@ -7,7 +7,7 @@ from .utils import bordered, extract_fill_graphemes, fix_signature, spinner_play
 from ..utils.cells import VS_15, combine_cells, fix_cells, is_wide, join_cells, mark_graphemes, \
     split_graphemes, strip_marks, to_cells
 from ..utils.colors import BLUE, BLUE_BOLD, CYAN, DIM, GREEN, ORANGE, ORANGE_BOLD, RED, YELLOW_BOLD
-from ..utils.terminal import factory_cursor_up, hide_cursor, show_cursor
+from ..utils.terminal import clear_end, factory_cursor_up, hide_cursor, show_cursor
 
 
 def bar_factory(chars=None, *, tip=None, background=None, borders=None, errors=None):
@@ -221,6 +221,7 @@ def animate(bar):  # pragma: no cover
             rendition, percent = next(bar_gen)
             print(f'\r{join_cells(rendition)}', CYAN(percent, "6.1%"))
             print(DIM('(press CTRL+C to stop)'), end='')
+            clear_end()
             time.sleep(1 / 15)
             cursor_up_1()
     except KeyboardInterrupt:
