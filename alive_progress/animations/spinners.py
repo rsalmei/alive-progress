@@ -27,9 +27,9 @@ def frame_spinner_factory(*frames):
         >>> frame_spinner_factory(('|', '/', '_'))
 
         To define two cycles:
-        >>> frame_spinner_factory(('super',), ('cool',))  # only one frame.
-        >>> frame_spinner_factory(('ooo', '-'), ('vvv', '^'))  # two frames.
-        >>> frame_spinner_factory('|/_', '▁▄█')  # three frames, same as below.
+        >>> frame_spinner_factory(('super',), ('cool',))  # one frame each.
+        >>> frame_spinner_factory(('ooo', '-'), ('vvv', '^'))  # two frames each.
+        >>> frame_spinner_factory('|/_', '▁▄█')  # three frames each, same as below.
         >>> frame_spinner_factory(('|', '/', '_'), ('▁', '▄', '█'))
 
         Mix and match at will:
@@ -80,7 +80,7 @@ def scrolling_spinner_factory(chars, length=None, block=None, background=None, *
 
     """
     assert not (overlay and not background), 'overlay needs a background'
-    assert not (overlay and has_wide(background)), 'unsupported overlay and grapheme background'
+    assert not (overlay and has_wide(background)), 'unsupported overlay with grapheme background'
     chars, rounder = to_cells(chars), round_even if has_wide(chars) else math.ceil
 
     @spinner_controller(natural=length or len(chars))
