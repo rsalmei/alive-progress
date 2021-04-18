@@ -55,8 +55,8 @@ def alive_it(it, title=None, *, calibrate=None, **options):
         total = it.__length_hint__()
     with __alive_bar(config, total, title, calibrate=calibrate) as bar:
         for item in it:
-            bar()
             yield item
+            bar()
 
 
 def alive_bar(total=None, title=None, *, calibrate=None, **options):
