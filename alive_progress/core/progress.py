@@ -21,22 +21,25 @@ def alive_it(it, title=None, *, calibrate=None, **options):
     ...     # process item
 
     And the bar will just work, how easy is that?
-    For an actual example, try:
+    For an actual example, you can try:
 
     >>> from alive_progress import alive_it
     ... items = [x * 2 for x in range(1000)]
     ... for item in alive_it(items):
     ...     time.sleep(.005)
 
-    All `alive_bar` parameters but `total` apply. That will be inferred from the iterable.
-    If it doesn't have length, the bar will enter in unknown mode.
+    All `alive_bar` parameters apply but `total`. It will be inferred from the iterable.
+    If that doesn't have length, the bar will enter in unknown mode.
 
-    Just remember it is easier to use, but you cannot use more advanced features, like using
+    Just remember: although it is easier to use, you loose some more advanced features, like
     the manual mode, setting text messages, retrieving the current progress or incrementing it
-    whenever and by how much you need, or pausing the real-time bar.
+    whenever and by how much you need, or of course pausing the bar in real-time.
 
     Args:
         it (Iterator): the input iterator to be processed
+        title: same as alive_bar
+        calibrate: same as alive_bar
+        options: same as alive_bar
 
     See Also:
         alive_bar()
