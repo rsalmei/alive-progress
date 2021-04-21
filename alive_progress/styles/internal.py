@@ -1,9 +1,10 @@
 import sys
 from collections import OrderedDict
 
-from ..animations.bars import standard_bar_factory
-from ..animations.spinners import bouncing_spinner_factory, compound_spinner_factory, \
-    delayed_spinner_factory, frame_spinner_factory, scrolling_spinner_factory
+from ..animations.bars import bar_factory
+from ..animations.spinners import alongside_spinner_factory, bouncing_spinner_factory, \
+    delayed_spinner_factory, frame_spinner_factory, scrolling_spinner_factory, \
+    sequential_spinner_factory
 
 
 def _wrap_ordered(context, desired):
@@ -19,125 +20,127 @@ def _wrap_ordered(context, desired):
 
 def __create_spinners():
     classic = frame_spinner_factory(r'-\|/')
-    stars = scrolling_spinner_factory('*', 4, 1, hiding=False)
+    stars = scrolling_spinner_factory('*', 4, 1, hide=False)
     twirl = frame_spinner_factory('←↖↑↗→↘↓↙')
     twirls = delayed_spinner_factory(twirl, 3)
-    horizontal = frame_spinner_factory('▏▎▍▌▋▊▉█▉▊▋▌▍▎▏')
-    vertical = frame_spinner_factory('▁▂▃▄▅▆▇█▇▆▅▄▃▂')
+    horizontal = frame_spinner_factory('▏▎▍▌▋▊▉█').reshape(1).bounce().reshape(7)
+    vertical = frame_spinner_factory('▁▂▃▄▅▆▇█').reshape(1).bounce().reshape(7)
     waves = delayed_spinner_factory(vertical, 3, 2)
     waves2 = delayed_spinner_factory(vertical, 3, 5)
     waves3 = delayed_spinner_factory(vertical, 3, 7)
     dots = frame_spinner_factory('⠁⠈⠐⠠⢀⡀⠄⠂')
-    dots2 = frame_spinner_factory('⣾⣷⣯⣟⡿⢿⣻⣽')
     dots_waves = delayed_spinner_factory(dots, 5)
     dots_waves2 = delayed_spinner_factory(dots, 5, 2)
-    ball = scrolling_spinner_factory('●', 3, 0, background='∙')
-    balls = scrolling_spinner_factory('●', 3, 1, background='∙')
-    ball_belt = bouncing_spinner_factory('●', 8, 0, background='< >', hiding=False)
-    balls_belt = bouncing_spinner_factory('●', 8, 1, background=r'/~\_', hiding=False)
-    wiggle = bouncing_spinner_factory('.', 3, 3)
-    wiggle2 = bouncing_spinner_factory('=', 4, 3)
-    triangles = bouncing_spinner_factory(('▶', '◀'), 6, 2, hiding=False)
-    brackets = bouncing_spinner_factory(('>', '<'), 8, 3, hiding=False)
-    balloons = bouncing_spinner_factory(('∙●⦿', '○'), 10, 5, hiding=False)
 
-    notes = bouncing_spinner_factory(('♩♪', '♫♬'), 10, 4)
-    notes2 = bouncing_spinner_factory(('♩♪', '♫♬'), 10, 2, hiding=False)
-    notes3 = delayed_spinner_factory(scrolling_spinner_factory('♩♪♫♬'), 3)
+    _balloon = bouncing_spinner_factory('🎈', 12, background='⠁⠈⠐⠠⢀⡀⠄⠂', overlay=True)
+    pennywise = sequential_spinner_factory(  # do not use block mode, so that they doesn't grow.
+        _balloon,
+        _balloon,  # makes the balloon twice as common.
+        bouncing_spinner_factory('🤡', background='⠁⠈⠐⠠⢀⡀⠄⠂', overlay=True),
+        intermix=False
+    ).randomize()
+
+    ball_belt = bouncing_spinner_factory('●', 8, 0, '< >', hide=False)
+    balls_belt = bouncing_spinner_factory('●', 8, 1, r'/~\_', hide=False)
+    triangles = bouncing_spinner_factory(('▶', '◀'), 6, 2, hide=False)
+    brackets = bouncing_spinner_factory(('>', '<'), 8, 3, hide=False)
+    bubbles = bouncing_spinner_factory(('∙●⦿', '○'), 10, 5, hide=False)
+    flowers = bouncing_spinner_factory('💐🌷🌸🌹🌺🌻🌼', 12, (2, 4)).pause(center=6).randomize()
+    elements = bouncing_spinner_factory(('🔥💨', '🌊⚡️'), 6, 2)
+    loving = bouncing_spinner_factory(('😍🥰', '⭐️🤩'), 8, (2, 3), '. ', hide=False, overlay=True)
+
+    notes = bouncing_spinner_factory(('♩♪', '♫♬'), 8, 2, hide=False).pause(other=2)
+    notes2 = delayed_spinner_factory(scrolling_spinner_factory('♩♪♫♬'), 3)
 
     arrow = scrolling_spinner_factory('>>----->', 15)
     arrows = bouncing_spinner_factory(('→', '←'), 6, 3)
-    arrows2 = scrolling_spinner_factory('→➜➞➣➤➩➪➮', 5, 2, hiding=False)
+    arrows2 = scrolling_spinner_factory('→➜➞➣➤➩➪➮', 5, 2, hide=False)
     _arrows_left = scrolling_spinner_factory('.˱·˂°❮', 6, 3, right=False)
     _arrows_right = scrolling_spinner_factory('.˲·˃°❯', 6, 3, right=True)
-    arrows_in = compound_spinner_factory(_arrows_right, _arrows_left)
-    arrows_out = compound_spinner_factory(_arrows_left, _arrows_right)
+    arrows_in = alongside_spinner_factory(_arrows_right, _arrows_left)
+    arrows_out = alongside_spinner_factory(_arrows_left, _arrows_right)
 
     _core = frame_spinner_factory('∙○⦿●')
-    radioactive = compound_spinner_factory(_arrows_left, _core, _arrows_right)
+    radioactive = alongside_spinner_factory(_arrows_left, _core, _arrows_right)
 
     boat = bouncing_spinner_factory((r'*|___/', r'\___|*'), 12, background='_.--.',
-                                    hiding=False, overlay=True)
-    fish = scrolling_spinner_factory("><((('>", 15, hiding=False)
-    fish2 = bouncing_spinner_factory(("><('>", "<')><"), 12, hiding=False)
+                                    hide=False, overlay=True)
+    fish = scrolling_spinner_factory("><((('>", 15, hide=False)
+    fish2 = bouncing_spinner_factory(("><('>", "<')><"), 12, hide=False)
     _fish_trail = scrolling_spinner_factory('¸.·´¯`·.·´¯`·.¸¸.·´¯`·.><(((º>', 15)
     _small_fishes = bouncing_spinner_factory(('><>     ><>', '<><  <><    <><'), 15)
-    fishes = compound_spinner_factory(_small_fishes, _fish_trail, alongside=False)
+    fishes = sequential_spinner_factory(_small_fishes, _fish_trail)
     crab = bouncing_spinner_factory((r'Y (••) Y', r'Y (  ) Y'), 15, background='.,.,,..,.,',
-                                    hiding=False, overlay=True)  # hey it's Ferris #rustacean!
+                                    hide=False, overlay=True)  # hey it's Ferris #rustacean!
 
     _look = bouncing_spinner_factory(('Look!', "It's moving!"))
     _alive = bouncing_spinner_factory(("It's alive!", "IT'S ALIVE!!"))
-    frank = compound_spinner_factory(_look, _alive, alongside=False)
+    frank = sequential_spinner_factory(_look, _alive, intermix=False)
 
     wait = scrolling_spinner_factory('please wait...', right=False)
-    wait2 = bouncing_spinner_factory(('please', 'wait'), 15, hiding=False)
+    wait2 = bouncing_spinner_factory(('please', 'wait'), 15, hide=False).pause()
     wait3 = bouncing_spinner_factory(('processing',
                                       'well, this is taking longer than anticipated, hold on'), 15)
-    pulse = frame_spinner_factory(
-        r'•–––––––––––––',
-        r'–•––––––––––––',
-        r'––•–––––––––––',
-        r'–––•––––––––––',
-        r'––––•–––––––––',
-        r'–––––√––––––––',
-        r'–––––√\–––––––',
-        r'–––––√\/––––––',
-        r'–––––√\/•–––––',
-        r'–––––√\/–•––––',
-        r'––––––\/––•–––',
-        r'–––––––/–––•––',
-        r'––––––––––––•–',
-        r'–––––––––––––•',
-    )
+    pulse = frame_spinner_factory((
+        r'•––––––––––––', r'•––––––––––––', r'•––––––––––––', r'•––––––––-–––',
+        r'–•–––––––––––', r'–•–––––––––––', r'–•–––––––––––', r'–•–––––––––––',
+        r'––•––––––––––', r'––√––––––––––', r'––•––––––––––', r'––•––––––––––',
+        r'–––•–––––––––', r'––√•–––––––––', r'–––•–––––––––', r'–––•–––––––––',
+        r'––––•––––––––', r'––√-•––––––––', r'––––√––––––––', r'––––•––––––––',
+        r'–––––•–––––––', r'––√--•–––––––', r'––––√\–––––––', r'–––––•–––––––',
+        r'––––––•––––––', r'––√--–•––––––', r'––––√\/––––––', r'––––––•––––––',
+        r'–––––––•–––––', r'–––--––•–––––', r'––––√\/•–––––', r'–––––––√–––––',
+        r'––––––––•––––', r'––––-–––•––––', r'––––√\/–•––––', r'–––––––√\––––',
+        r'–––––––––•–––', r'–––––––––•–––', r'–––––\/––•–––', r'–––––––√\•–––',
+        r'––––––––––•––', r'––––––––––•––', r'––––––/–––•––', r'–––––––√\-•––',
+        r'–––––––––––•–', r'–––––––––––•–', r'–––––––––––•–', r'–––––––√\-–•–',
+        r'––––––––––––•', r'––––––––––––•', r'––––––––––––•', r'––––––––\-––•',
+    )).reshape(4).transpose().randomize()
 
     return _wrap_ordered(
         locals(),
-        'classic stars twirl twirls horizontal vertical waves waves2 waves3 dots dots2'
-        ' dots_waves dots_waves2 ball balls ball_belt balls_belt wiggle wiggle2 arrow arrows'
-        ' arrows2 arrows_in arrows_out triangles brackets balloons notes notes2 notes3 radioactive'
-        ' boat fish fish2 fishes crab frank wait wait2 wait3 pulse'
+        'classic stars twirl twirls horizontal vertical waves waves2 waves3 dots dots_waves'
+        ' dots_waves2 pennywise ball_belt balls_belt triangles brackets bubbles flowers elements'
+        ' loving notes notes2 arrow arrows arrows2 arrows_in arrows_out radioactive boat fish fish2'
+        ' fishes crab frank wait wait2 wait3 pulse'
     )
 
 
-SPINNERS = __create_spinners()
-
-
 def __create_bars():
-    smooth = standard_bar_factory('▏▎▍▌▋▊▉█')
-    classic = standard_bar_factory('=', '>', borders='[]', errors='!x')
-    classic2 = standard_bar_factory('#', background='.', borders='[]', errors='!x')
-    brackets = standard_bar_factory('>')
-    blocks = standard_bar_factory('▏▎▍▌▋▊▉')
-    bubbles = standard_bar_factory('∙○⦿●', borders='<>')
-    hollow = standard_bar_factory('❒', '▷', borders='<>')
-    solid = standard_bar_factory('■', '►', borders='<>')
-    circles = standard_bar_factory('●', background='○', borders='<>')
-    squares = standard_bar_factory('■', background='❒', borders='<>')
-    checks = standard_bar_factory('✓')
-    filling = standard_bar_factory('▁▂▃▄▅▆▇█')
-    notes = standard_bar_factory('♩♪♫', borders='𝄞𝄢', errors='♭♯')
-    ruler = standard_bar_factory('', '┃', background='∙∙∙∙•')
-    ruler2 = standard_bar_factory('', '┃', background='∙∙∙∙+')
-    underwater = standard_bar_factory('', '>=≗)o', background='_)_)._∙__⠈__)○____∙○___)__⠈(_(__')
+    smooth = bar_factory('▏▎▍▌▋▊▉█')
+    classic = bar_factory('=', tip='>', borders='[]', errors='!x')
+    classic2 = bar_factory('#', background='.', borders='[]', errors='!x')
+    brackets = bar_factory('>')
+    blocks = bar_factory('▏▎▍▌▋▊▉')
+    bubbles = bar_factory('∙○⦿●', borders='<>')
+    hollow = bar_factory('❒', tip='▷', borders='<>')
+    solid = bar_factory('■', tip='►', borders='<>')
+    circles = bar_factory('●', background='○', borders='<>')
+    squares = bar_factory('■', background='❒', borders='<>')
+    checks = bar_factory('✓')
+    halloween = bar_factory('🎃', background='   👻   💀', errors=('😱', '🗡🗡🗡🗡'))
+    filling = bar_factory('▁▂▃▄▅▆▇█')
+    notes = bar_factory('♩♪♫♬', errors='♭♯')
+    ruler = bar_factory(tip='┃', background='∙∙∙∙.')
+    ruler2 = bar_factory(tip='┃', background='∙∙∙∙+')
+    scuba = bar_factory(tip='>=≗)o', background='_)_)._∙__⠈__)○____∙○___)__⠈(_(__')
 
     return _wrap_ordered(
         locals(),
         'smooth classic classic2 brackets blocks bubbles hollow solid circles squares checks'
-        ' filling notes ruler ruler2 underwater'
+        ' halloween filling notes ruler ruler2 scuba'
     )
-
-
-BARS = __create_bars()
 
 
 def __create_themes():
     smooth = dict(bar='smooth', spinner='waves', unknown='triangles')
     classic = dict(bar='classic', spinner='classic', unknown='brackets')
-    scuba = dict(bar='underwater', spinner='fish2', unknown='fishes')  # I love scuba-diving.
-    musical = dict(bar='notes', spinner='notes2', unknown='notes3')
+    scuba = dict(bar='scuba', spinner='fish2', unknown='fishes')  # I love scuba-diving.
+    musical = dict(bar='notes', spinner='notes', unknown='notes2')
 
     return _wrap_ordered(locals(), 'smooth classic scuba musical')
 
 
+SPINNERS = __create_spinners()
+BARS = __create_bars()
 THEMES = __create_themes()

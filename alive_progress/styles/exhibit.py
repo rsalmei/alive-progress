@@ -143,7 +143,7 @@ def _showtime_gen(fps, gens, info, length):
     message = lambda m, s=None: (
         scrolling_spinner_factory(f'{m} 👏 ({s})' if s else m, right=False),)
     info_spinners = sequential_spinner_factory(
-        *(title('Now staging...')
+        *(title('Now on stage...')
           + message(*info.title)
           + sum((message(d) for d in info.descr), ())
           + title(f'Technical details')
