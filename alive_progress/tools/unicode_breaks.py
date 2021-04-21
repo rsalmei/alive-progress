@@ -1,32 +1,32 @@
-import argparse
 import os.path
 import urllib.request
 from itertools import zip_longest
 
-from ..utils.colors import GREEN, ORANGE, RED
+from ..tools.utils import parser
 from ..utils.cells import split_graphemes
+from ..utils.colors import GREEN, ORANGE, RED
 
 CACHE = '__unicode_cache__'
 
 
-def validate_unicode_breaks(version=None, show_all=False, cache=True):
+def validate_unicode_breaks(uver=None, show_all=False, cache=True):
     # validate unicode grapheme clusters detection.
     # this downloads the specs directly from unicode.org and caches it locally.
     # document: https://unicode.org/reports/tr51/
 
     latest = f'{CACHE}/latest'
-    if not version and cache and os.path.exists(latest):
+    if not uver and cache and os.path.exists(latest):
         with open(latest) as f:
-            version = f.read()
-        print('using version "latest" as:', version)
-    file = f'{CACHE}/emoji-test_{version}.txt'
+            uver = f.read()
+        print('using version "latest" as:', uver)
 
+    file = f'{CACHE}/emoji-test_{uver}.txt'
     if cache and os.path.exists(file):
         print('loading cached:', file)
         with open(file) as f:
             data = f.read()
     else:
-        url = f'https://www.unicode.org/Public/emoji/{version or "latest"}/emoji-test.txt'
+        url = f'https://www.unicode.org/Public/emoji/{uver or "latest"}/emoji-test.txt'
         print('downloading:', url)
 
         try:
@@ -36,13 +36,13 @@ def validate_unicode_breaks(version=None, show_all=False, cache=True):
             return
 
         os.makedirs(os.path.dirname(file), exist_ok=True)
-        if not version:
+        if not uver:
             new_url = req.geturl()
-            version = new_url.split('/')[5]
-            print('saving version "latest" as:', version)
+            uver = new_url.split('/')[5]
+            print('saving version "latest" as:', uver)
             with open(latest, 'w') as f:
-                f.write(version)
-            file = f'{CACHE}/emoji-test_{version}.txt'
+                f.write(uver)
+            file = f'{CACHE}/emoji-test_{uver}.txt'
 
         print('saving:', file)
         data = req.read().decode('utf8')
@@ -132,6 +132,7 @@ def find_groups(data, max_diff):
     0x1F938, 0x1F939, 0x1F93D, 0x1F93E, 0x1F977, 0x1F9B5, 0x1F9B6, 0x1F9B8, 0x1F9B9, 0x1F9BB,
     0x1F9CD, 0x1F9CE, 0x1F9CF, 0x1F9D1, 0x1F9D2, 0x1F9D3, 0x1F9D4, 0x1F9D5, 0x1F9D6, 0x1F9D7,
     0x1F9D8, 0x1F9D9, 0x1F9DA, 0x1F9DB, 0x1F9DC, 0x1F9DD
+
     """
     it = iter(sorted(data))
     last_item = next(it)
@@ -148,12 +149,14 @@ def find_groups(data, max_diff):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='Test the grapheme break implementation against some unicode version.')
-    parser.add_argument('version', type=float, nargs='?', help='the unicode version to be used')
+    parser = parser('Tests the grapheme break implementation against some unicode version.')
+    parser.add_argument('uver', type=float, nargs='?', help='the unicode version to be used')
     parser.add_argument('--all', dest='show_all', action='store_true',
                         help='shows the correct cases, in addition to the wrong ones')
     parser.add_argument('--no-cache', dest='cache', action='store_false',
                         help='ignores the cache and redownloads the spec')
 
-    validate_unicode_breaks(**parser.parse_args().__dict__)
+    try:
+        validate_unicode_breaks(**parser.parse_args().__dict__)
+    except KeyboardInterrupt:
+        pass
