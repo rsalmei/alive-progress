@@ -108,4 +108,4 @@ venv.bak/
 .vscode/
 
 # validate unicode graphemes clusters
-__unicode_cache__/
+.unicode_cache/
