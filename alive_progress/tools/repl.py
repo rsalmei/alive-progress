@@ -1,3 +1,7 @@
+"""
+Tools intended to be used inside a Python REPL, like ipython or python itself.
+"""
+
 
 def print_chars(line_length=32, max_char=0x20000):
     """Print all chars in the terminal, to help you find that cool one to put in your

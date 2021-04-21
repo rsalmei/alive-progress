@@ -2,9 +2,9 @@ import logging
 import time
 from typing import NamedTuple
 
+from .utils import toolkit
 from .. import alive_bar
 from ..tools.sampling import OVERHEAD_SAMPLING
-from ..tools.utils import parser
 from ..utils.colors import BOLD, ORANGE_IT
 
 
@@ -18,7 +18,7 @@ class Case(NamedTuple):
 
 
 def title(text):
-    print(f'\n=== {BOLD.color_code}{ORANGE_IT(text)} ===')
+    print(f'=== {BOLD.color_code}{ORANGE_IT(text)} ===')
 
 
 cases = [
@@ -51,8 +51,10 @@ def demo(sleep=None):
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
 
-    for case in cases:
+    title(cases[0].title)
+    for case in cases[1:]:
         if case.title:
+            print()
             title(case.title)
             continue
         manual, total = (case.config.get(x) for x in ('manual', 'total'))
@@ -75,14 +77,10 @@ def demo(sleep=None):
                         logger.info('and even logging hook!!!')  # tests hook manager.
             if case.done:
                 bar.text('Ok, done!')
-    print()
 
 
 if __name__ == '__main__':
-    parser = parser('Demonstrates alive-progress, showcasing several common scenarios.')
+    parser, run = toolkit('Demonstrates alive-progress, showcasing several common scenarios.')
     parser.add_argument('sleep', type=float, nargs='?', help='the sleep time (default=.0005)')
 
-    try:
-        demo(**parser.parse_args().__dict__)
-    except KeyboardInterrupt:
-        pass
+    run(demo)

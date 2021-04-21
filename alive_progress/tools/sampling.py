@@ -1,5 +1,6 @@
 from about_time import duration_human
 
+from .utils import toolkit
 from ..core.configuration import config_handler
 from ..core.progress import __alive_bar
 
@@ -40,13 +41,6 @@ OVERHEAD_SAMPLING = [
 
 
 def overhead_sampling():
-    try:
-        __overhead_sampling()
-    except KeyboardInterrupt:
-        pass
-
-
-def __overhead_sampling():
     print('warmup', end='', flush=True)
     for _ in range(5):
         print('.', end='', flush=True)
@@ -91,3 +85,9 @@ def __hook_manager(_=None, __=None):
     # __hook_manager.lock = threading.Lock()
     __hook_manager.lock = __lock()
     return __hook_manager
+
+
+if __name__ == '__main__':
+    parser, run = toolkit('Estimates the alive_progress overhead per cycle on your system.')
+
+    run(overhead_sampling)

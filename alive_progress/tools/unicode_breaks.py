@@ -2,7 +2,7 @@ import os.path
 import urllib.request
 from itertools import zip_longest
 
-from ..tools.utils import parser
+from .utils import toolkit
 from ..utils.cells import split_graphemes
 from ..utils.colors import GREEN, ORANGE, RED
 
@@ -149,14 +149,11 @@ def find_groups(data, max_diff):
 
 
 if __name__ == '__main__':
-    parser = parser('Tests the grapheme break implementation against some unicode version.')
+    parser, run = toolkit('Tests the grapheme break implementation against some unicode version.')
     parser.add_argument('uver', type=float, nargs='?', help='the unicode version to be used')
     parser.add_argument('--all', dest='show_all', action='store_true',
                         help='shows the correct cases, in addition to the wrong ones')
     parser.add_argument('--no-cache', dest='cache', action='store_false',
-                        help='ignores the cache and redownloads the spec')
+                        help='ignores the cache and re-downloads the spec')
 
-    try:
-        validate_unicode_breaks(**parser.parse_args().__dict__)
-    except KeyboardInterrupt:
-        pass
+    run(validate_unicode_breaks)
