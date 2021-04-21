@@ -6,7 +6,7 @@ from ..tools.utils import parser
 from ..utils.cells import split_graphemes
 from ..utils.colors import GREEN, ORANGE, RED
 
-CACHE = '__unicode_cache__'
+CACHE = '.unicode_cache'
 
 
 def validate_unicode_breaks(uver=None, show_all=False, cache=True):
