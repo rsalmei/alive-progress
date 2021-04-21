@@ -2,9 +2,10 @@ import logging
 import time
 from typing import NamedTuple
 
-from alive_progress import alive_bar
-from alive_progress.tools.sampling import OVERHEAD_SAMPLING
-from alive_progress.utils.colors import BOLD, ORANGE_IT
+from .. import alive_bar
+from ..tools.sampling import OVERHEAD_SAMPLING
+from ..tools.utils import parser
+from ..utils.colors import BOLD, ORANGE_IT
 
 
 class Case(NamedTuple):
@@ -45,31 +46,43 @@ cases = [
 ]
 cases += [Case(name.capitalize(), 5000, config, done=True) for name, config in OVERHEAD_SAMPLING]
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
-for case in cases:
-    if case.title:
-        title(case.title)
-        continue
-    manual, total = (case.config.get(x) for x in ('manual', 'total'))
-    with alive_bar(title_length=16, title=case.name, **case.config) as bar:
-        # bar.text('Quantifying...')
-        # time.sleep(0)
-        bar.text('Processing...')
-        time.sleep(0)
-        # bar.reset(total)
-        for i in range(1, case.count + 1):
-            time.sleep(.0005)
-            if manual:
-                bar((float(i) / (total or case.count)))
-            else:
-                bar()
-            if case.hooks:
-                if i and i == 2000:
-                    print('nice hassle-free print hook!')  # tests hook manager.
-                if i and i == 4000:
-                    logger.info('and even logging hook!!!')  # tests hook manager.
-        if case.done:
-            bar.text('Ok, done!')
-print()
+def demo(sleep=None):
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    for case in cases:
+        if case.title:
+            title(case.title)
+            continue
+        manual, total = (case.config.get(x) for x in ('manual', 'total'))
+        with alive_bar(title_length=16, title=case.name, **case.config) as bar:
+            # bar.text('Quantifying...')
+            # time.sleep(0)
+            bar.text('Processing...')
+            time.sleep(0)
+            # bar.reset(total)
+            for i in range(1, case.count + 1):
+                time.sleep(sleep or .0005)
+                if manual:
+                    bar((float(i) / (total or case.count)))
+                else:
+                    bar()
+                if case.hooks:
+                    if i and i == 2000:
+                        print('nice hassle-free print hook!')  # tests hook manager.
+                    if i and i == 4000:
+                        logger.info('and even logging hook!!!')  # tests hook manager.
+            if case.done:
+                bar.text('Ok, done!')
+    print()
+
+
+if __name__ == '__main__':
+    parser = parser('Demonstrates alive-progress, showcasing several common scenarios.')
+    parser.add_argument('sleep', type=float, nargs='?', help='the sleep time (default=.0005)')
+
+    try:
+        demo(**parser.parse_args().__dict__)
+    except KeyboardInterrupt:
+        pass
