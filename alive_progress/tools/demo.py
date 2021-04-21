@@ -24,13 +24,13 @@ cases = [
     Case(title='Automatic mode'),
     Case('Normal auto', 5000, dict(total=5000)),
     Case('Underflow auto', 4000, dict(total=6000)),
-    Case('Overflow auto', 4000, dict(total=4000)),
+    Case('Overflow auto', 6000, dict(total=4000)),
     Case('Unknown auto', 5000, dict(total=0)),
 
     Case(title='Manual mode'),
     Case('Normal manual', 5000, dict(total=5000, manual=True)),
     Case('Underflow manual', 4000, dict(total=6000, manual=True)),
-    Case('Overflow manual', 4000, dict(total=4000, manual=True)),
+    Case('Overflow manual', 6000, dict(total=4000, manual=True)),
     Case('Unknown manual', 5000, dict(total=0, manual=True)),
 
     Case(title='Logging hooks'),
@@ -52,6 +52,7 @@ for case in cases:
     if case.title:
         title(case.title)
         continue
+    manual, total = (case.config.get(x) for x in ('manual', 'total'))
     with alive_bar(title_length=16, title=case.name, **case.config) as bar:
         # bar.text('Quantifying...')
         # time.sleep(0)
@@ -59,9 +60,9 @@ for case in cases:
         time.sleep(0)
         # bar.reset(total)
         for i in range(1, case.count + 1):
-            time.sleep(.0003)
-            if case.config.get('manual'):
-                bar((float(i) / case.count))
+            time.sleep(.0005)
+            if manual:
+                bar((float(i) / (total or case.count)))
             else:
                 bar()
             if case.hooks:
