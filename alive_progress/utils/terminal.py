@@ -26,3 +26,4 @@ clear_end = _send_ansi_escape('K')  # clears line from cursor: CSI K.
 hide_cursor = _send_ansi_escape('?25l')  # hides the cursor: CSI ? 25 l.
 show_cursor = _send_ansi_escape('?25h')  # shows the cursor: CSI ? 25 h.
 factory_cursor_up = partial(_send_ansi_escape, 'A')  # sends cursor up: CSI {x}A.
+cursor_up_1 = factory_cursor_up(1)

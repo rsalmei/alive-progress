@@ -10,7 +10,7 @@ from about_time import about_time
 from .utils import fix_signature
 from ..utils.cells import fix_cells, is_wide, join_cells, strip_marks, to_cells
 from ..utils.colors import BLUE, BLUE_BOLD, CYAN, DIM, GREEN, ORANGE, ORANGE_BOLD, RED, YELLOW_BOLD
-from ..utils.terminal import clear_end, factory_cursor_up, hide_cursor, show_cursor
+from ..utils.terminal import clear_end, cursor_up_1, hide_cursor, show_cursor
 
 
 def spinner_controller(*, natural, skip_compiler=False):
@@ -337,7 +337,6 @@ def animate(spec):  # pragma: no cover
     cycles, frames = cycle(range(1, spec.cycles + 1)), cycle(range(1, spec.total_frames + 1))
     hide_cursor()
     try:
-        cursor_up_1 = factory_cursor_up(1)
         while True:
             c = next(cycles)
             for i, f in enumerate(spec.runner(), 1):
