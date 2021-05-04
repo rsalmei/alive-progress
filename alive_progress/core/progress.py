@@ -149,10 +149,11 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
             total = None
 
     def run(spinner_player):
-        while thread:
-            release_thread.wait()
-            alive_repr(next(spinner_player))
-            time.sleep(1. / fps(run.rate))
+        with cond_refresh:
+            while thread:
+                event_renderer.wait()
+                alive_repr(next(spinner_player))
+                cond_refresh.wait(1. / fps(run.rate))
 
     def alive_repr(spin=None):
         run.elapsed = time.perf_counter() - run.init
@@ -161,7 +162,7 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
         fragments = (title, bar_repr(run.percent), spin, monitor(),
                      elapsed(), stats(), run.text)
 
-        with hook_manager.lock:
+        with cond_refresh:
             run.last_len = print_cells(fragments, _term_cols(), run.last_len, _write=_write)
             _flush()
 
@@ -194,7 +195,7 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
     def start_monitoring(offset=0.):
         hide_cursor()
         hook_manager.install()
-        release_thread.set()
+        event_renderer.set()
         run.init = time.perf_counter() - offset
 
     def stop_monitoring():
@@ -202,11 +203,11 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
         hook_manager.uninstall()
         return time.perf_counter() - run.init
 
-    thread, release_thread = None, threading.Event()
+    thread, event_renderer, cond_refresh = None, threading.Event(), threading.Condition()
     if sys.stdout.isatty() if config.force_tty is None else config.force_tty:
         @contextmanager
         def pause_monitoring():
-            release_thread.clear()
+            event_renderer.clear()
             offset = stop_monitoring()
             alive_repr()
             yield
@@ -219,10 +220,10 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
 
     if total or not config.manual:  # we can count items.
         logic_total, current = total, lambda: run.count
-        rate_spec, factor, print_template = 'f', 1.e6, 'on {:d}: '
+        rate_spec, factor, header = 'f', 1.e6, 'on {:d}: '
     else:  # there's only a manual percentage.
         logic_total, current = 1., lambda: run.percent
-        rate_spec, factor, print_template = '%', 1., 'on {:.1%}: '
+        rate_spec, factor, header = '%', 1., 'on {:.1%}: '
 
     bar_handle.text, bar_handle.current, bar_handle._alive_repr = set_text, current, alive_repr
     bar_repr = _create_bars(config)
@@ -291,7 +292,7 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
 
     title = _render_title(title, config.title_length)
     fps = calibrated_fps(calibrate or factor)
-    hook_manager = _hook_manager(print_template if config.enrich_print else '', current)
+    hook_manager = _hook_manager(header if config.enrich_print else '', current, cond_refresh)
     start_monitoring()
     try:
         yield bar_handle

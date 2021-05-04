@@ -1,6 +1,5 @@
 import logging
 import sys
-import threading
 from collections import defaultdict
 from functools import partial
 from itertools import chain, islice, repeat
@@ -10,13 +9,14 @@ from types import SimpleNamespace
 from ..utils.terminal import clear_line
 
 
-def buffered_hook_manager(header_template, get_pos):
+def buffered_hook_manager(header_template, get_pos, cond_refresh):
     """Create and maintain a buffered hook manager, used for instrumenting print
     statements and logging.
 
     Args:
         header_template (): the template for enriching output
         get_pos (Callable[..., Any]): the container to retrieve the current position
+        cond_refresh: Condition object to force a refresh when printing
 
     Returns:
         a closure with several functions
@@ -41,7 +41,7 @@ def buffered_hook_manager(header_template, get_pos):
             buffer.extend(islice(gen, 1, None))
         else:
             header = get_header()
-            with lock:
+            with cond_refresh:
                 nested = ''.join(line or ' ' * len(header) for line in buffer)
                 if stream in base:
                     # this avoids potential flickering, since now the stream can also be
@@ -49,6 +49,7 @@ def buffered_hook_manager(header_template, get_pos):
                     clear_line()
                 stream.write(f'{header}{nested.strip()}\n')
                 stream.flush()
+                cond_refresh.notify()
                 buffer[:] = []
 
     def get_hook_for(handler):
@@ -73,14 +74,12 @@ def buffered_hook_manager(header_template, get_pos):
 
     # internal data.
     buffers = defaultdict(list)
-    lock = threading.Lock()
     get_header = (lambda: header_template.format(get_pos())) if header_template else lambda: ''
     base = sys.stdout, sys.stderr  # needed for tests.
     before_handlers = {}
 
     # external interface.
     hook_manager = SimpleNamespace(
-        lock=lock,
         flush_buffers=flush_buffers,
         install=install,
         uninstall=uninstall,
