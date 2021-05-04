@@ -137,7 +137,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
 
 @contextmanager
 def __alive_bar(config, total=None, title=None, *, calibrate=None,
-                _write=sys.__stdout__.write, _flush=sys.__stdout__.flush,
+                _write=sys.__stdout__.write, _flush=sys.__stdout__.flush, _cond=threading.Condition,
                 _term_cols=terminal_cols, _hook_manager=buffered_hook_manager):
     """Actual alive_bar handler, that exposes internal functions for configuration of
     both normal operation and overhead estimation."""
@@ -203,7 +203,7 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
         hook_manager.uninstall()
         return time.perf_counter() - run.init
 
-    thread, event_renderer, cond_refresh = None, threading.Event(), threading.Condition()
+    thread, event_renderer, cond_refresh = None, threading.Event(), _cond()
     if sys.stdout.isatty() if config.force_tty is None else config.force_tty:
         @contextmanager
         def pause_monitoring():

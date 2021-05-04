@@ -12,7 +12,7 @@ def overhead(total=None, title=None, *, calibrate=None, **options):
     import timeit
     config = config_handler(force_tty=False, **options)
     with __alive_bar(config, total, title, calibrate=calibrate, _write=__noop_p, _flush=__noop,
-                     _term_cols=__noop_z, _hook_manager=__hook_manager) as bar:
+                     _cond=__lock, _term_cols=__noop_z, _hook_manager=__hook_manager) as bar:
         # the timing of the print_cells function increases proportionately with the
         # number of columns in the terminal, so I want a baseline here with `_term_cols=0`.
         res = timeit.repeat('_alive_repr()', repeat=repeat, number=number, globals=bar.__dict__)
@@ -76,14 +76,10 @@ class __lock:
         pass
 
 
-def __hook_manager(_=None, __=None):
+def __hook_manager(_=None, __=None, ___=None):
     __hook_manager.flush_buffers = __noop
     __hook_manager.install = __noop
     __hook_manager.uninstall = __noop
-    # weirdly, a real Lock is faster than an empty context manager!!
-    # import threading
-    # __hook_manager.lock = threading.Lock()
-    __hook_manager.lock = __lock()
     return __hook_manager
 
 
