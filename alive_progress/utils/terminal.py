@@ -1,6 +1,6 @@
+import os
 import sys
 from functools import partial
-from os import get_terminal_size as _terminal_size
 
 if sys.stdout.isatty():
     def _send_ansi_escape(sequence, param=''):  # pragma: no cover
@@ -8,7 +8,7 @@ if sys.stdout.isatty():
 
 
     def terminal_cols():  # pragma: no cover
-        return _terminal_size()[0]
+        return os.get_terminal_size()[0]
 else:
     def __noop():
         return 0
