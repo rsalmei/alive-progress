@@ -19,7 +19,7 @@ else:
 
 
     def terminal_cols():  # pragma: no cover
-        return 10000  # do not truncate if there's no tty.
+        return sys.maxsize  # do not truncate if there's no tty.
 
 clear_line = _send_ansi_escape('2K\r')  # clears the entire line: CSI n K -> with n=2.
 clear_end = _send_ansi_escape('K')  # clears line from cursor: CSI K.
