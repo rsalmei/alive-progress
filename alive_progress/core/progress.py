@@ -12,56 +12,6 @@ from ..utils.terminal import hide_cursor, show_cursor, terminal_cols
 from ..utils.timing import elapsed_text, eta_text, gen_simple_exponential_smoothing_eta
 
 
-def alive_it(it, title=None, *, calibrate=None, **options):
-    """This is the new iterator adapter in 2.0!
-    Now you can just:
-
-    >>> from alive_progress import alive_it
-    ... for item in alive_it(<iterable>):
-    ...     # process item
-
-    And the bar will just work, how easy is that?
-    For an actual example, you can try:
-
-    >>> from alive_progress import alive_it
-    ... items = [x * 2 for x in range(1000)]
-    ... for item in alive_it(items):
-    ...     time.sleep(.005)
-
-    All `alive_bar` parameters apply but `total`. It will be inferred from the iterable.
-    If that doesn't have length, the bar will enter in unknown mode.
-
-    Just remember: although it is easier to use, you loose some more advanced features, like
-    the manual mode, setting text messages, retrieving the current progress or incrementing it
-    whenever and by how much you need, or of course pausing the bar in real-time.
-
-    Args:
-        it (Iterator): the input iterator to be processed
-        title: same as alive_bar
-        calibrate: same as alive_bar
-        options: same as alive_bar
-
-    See Also:
-        alive_bar()
-
-    Returns:
-        Generator
-
-    """
-    config = config_handler(**options)
-    if config.manual:
-        raise UserWarning("Manual mode can't be used in iterator adapter.")
-
-    total = len(it) if hasattr(it, '__len__') else None
-    it = iter(it)
-    if not total and hasattr(it, '__length_hint__'):
-        total = it.__length_hint__()
-    with __alive_bar(config, total, title, calibrate=calibrate) as bar:
-        for item in it:
-            yield item
-            bar()
-
-
 def alive_bar(total=None, title=None, *, calibrate=None, **options):
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, elapsed time, throughput and ETA.
@@ -350,3 +300,79 @@ def _render_title(title, length):
 
 def __noop():  # pragma: no cover
     pass
+
+
+def alive_it(it, total=None, title=None, *, calibrate=None, **options):
+    """New iterator adapter in 2.0, which makes it simpler to monitor any processing.
+
+    Simply wrap your iterable with this, and process your items normally!
+    >>> from alive_progress import alive_it
+    ... for item in alive_it(<iterable>):
+    ...     # process item
+
+    All `alive_bar` parameters apply as usual, except `total` (which is smarter: if not supplied
+    it will be inferred from the iterable using len or length_hint), and `manual` (which can't
+    be used in this mode at all).
+    If you do want unknown mode even when inferring the total is possible, send `total=0`.
+
+    And the bar will just work, it's that simple!
+    For an actual example, you can try:
+
+    >>> from alive_progress import alive_it
+    ... import time
+    ... items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ... for item in alive_it(items):
+    ...     time.sleep(.5)
+
+    If you want to use other alive_bar's more advanced features, like for instance setting
+    situational text messages, you can assign this to a variable!
+
+    >>> from alive_progress import alive_it
+    ... bar = alive_it(<iterable>):
+    ... for item in bar:
+    ...     bar.text(f'Wow, it works! Item: {item}')
+    ...     # process item
+
+    or incrementing it
+    whenever and by how much you need, or of course pausing the bar in real-time.
+
+    Args:
+        it (iterable): the input iterable to be processed
+        total, title, calibrate, options: same as alive_bar
+
+    See Also:
+        alive_bar
+
+    Returns:
+        Generator
+
+    """
+    config = config_handler(**options)
+    if config.manual:
+        raise UserWarning("Manual mode can't be used in iterator adapter.")
+
+    if total is None and hasattr(it, '__len__'):
+        total = len(it)
+    it = iter(it)
+    if total is None and hasattr(it, '__length_hint__'):
+        total = it.__length_hint__()
+    return __AliveBarIteratorAdapter(it, __alive_bar(config, total, title, calibrate=calibrate))
+
+
+class __AliveBarIteratorAdapter:
+    def __init__(self, it, inner_bar):
+        self._data = it, inner_bar
+
+    def __iter__(self):
+        if not hasattr(self, '_data'):  # this iterator has already exhausted.
+            return
+
+        it, inner_bar = self._data
+        with inner_bar as bar:
+            self.__dict__ = bar.__dict__  # makes this adapter work as the real bar.
+            for item in it:
+                yield item
+                bar()
+
+    def __call__(self, *args, **kwargs):
+        raise UserWarning('The bar position is controlled automatically with `alive_it`.')
