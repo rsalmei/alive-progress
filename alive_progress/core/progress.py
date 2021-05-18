@@ -88,7 +88,7 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
 @contextmanager
 def __alive_bar(config, total=None, title=None, *, calibrate=None,
                 _write=sys.__stdout__.write, _flush=sys.__stdout__.flush, _cond=threading.Condition,
-                _term_cols=terminal_cols, _hook_manager=buffered_hook_manager):
+                _term_cols=terminal_cols, _hook_manager=buffered_hook_manager, _sampler=None):
     """Actual alive_bar handler, that exposes internal functions for configuration of
     both normal operation and overhead estimation."""
 
@@ -115,6 +115,9 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
         with cond_refresh:
             run.last_len = print_cells(fragments, _term_cols(), run.last_len, _write=_write)
             _flush()
+
+    if _sampler is not None:  # used for sampling estimation.
+        _sampler._alive_repr = alive_repr
 
     def set_text(message):
         run.text = to_cells(message)
@@ -157,6 +160,8 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
     if sys.stdout.isatty() if config.force_tty is None else config.force_tty:
         @contextmanager
         def pause_monitoring():
+            if not thread:
+                raise UserWarning('this bar is not running anymore.')
             event_renderer.clear()
             offset = stop_monitoring()
             alive_repr()
@@ -174,9 +179,8 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
     else:  # there's only a manual percentage.
         logic_total, current = 1., lambda: run.percent
         rate_spec, factor, header = '%', 1., 'on {:.1%}: '
+    bar_handle.text, bar_handle.current, bar_repr = set_text, current, _create_bars(config)
 
-    bar_handle.text, bar_handle.current, bar_handle._alive_repr = set_text, current, alive_repr
-    bar_repr = _create_bars(config)
     if total or config.manual:  # we can track progress and therefore eta.
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
         gen_eta.send(None)
@@ -252,12 +256,13 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
         if thread:  # lets the internal thread terminate gracefully.
             local_copy, thread = thread, None
             local_copy.join()
+            del bar_handle.pause  # avoid pause being called again.
+        del bar_handle.text  # no problem being called, but no reason too.
 
     # prints the nice final receipt.
-    elapsed, stats, monitor = elapsed_end, stats_end, monitor_end
+    elapsed, stats, monitor, bar_repr = elapsed_end, stats_end, monitor_end, bar_repr.end
     if not config.receipt_text:
         run.text = ''
-    bar_repr = bar_repr.end
     alive_repr()
     _write('\n')
     _flush()

@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 from about_time import duration_human
 
 from .utils import toolkit
@@ -10,12 +12,14 @@ def overhead(total=None, title=None, *, calibrate=None, **options):
     repeat = 300  # timeit how many times to repeat the whole test.
 
     import timeit
-    config = config_handler(force_tty=False, **options)
+    config, sampler = config_handler(force_tty=False, **options), SimpleNamespace()
     with __alive_bar(config, total, title, calibrate=calibrate, _write=__noop_p, _flush=__noop,
-                     _cond=__lock, _term_cols=__noop_z, _hook_manager=__hook_manager) as bar:
+                     _cond=__lock, _term_cols=__noop_z, _hook_manager=__hook_manager,
+                     _sampler=sampler) as bar:
+        sampler.__dict__.update(bar.__dict__)
         # the timing of the print_cells function increases proportionately with the
         # number of columns in the terminal, so I want a baseline here with `_term_cols=0`.
-        res = timeit.repeat('_alive_repr()', repeat=repeat, number=number, globals=bar.__dict__)
+        res = timeit.repeat('_alive_repr()', repeat=repeat, number=number, globals=sampler.__dict__)
 
     return duration_human(min(res) / number).replace('us', 'µs')
 
