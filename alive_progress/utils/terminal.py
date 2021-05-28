@@ -3,23 +3,34 @@ import sys
 from functools import partial
 
 if sys.stdout.isatty():
-    def _send_ansi_escape(sequence, param=''):  # pragma: no cover
-        return partial(sys.__stdout__.write, f'\x1b[{param}{sequence}')
+    def _send(sequence):  # pragma: no cover
+        def inner():
+            sys.__stdout__.write(sequence)
+
+        return inner
 
 
     def terminal_cols():  # pragma: no cover
         return os.get_terminal_size()[0]
+
+
 else:
-    def __noop():
-        return 0
+    def _send(_sequence):  # pragma: no cover
+        def __noop():
+            return 0
 
-
-    def _send_ansi_escape(_sequence, _param=''):  # pragma: no cover
         return __noop
 
 
     def terminal_cols():  # pragma: no cover
         return sys.maxsize  # do not truncate if there's no tty.
+
+
+
+
+def _send_ansi_escape(sequence, param=''):  # pragma: no cover
+    return _send(f'\x1b[{param}{sequence}')
+
 
 clear_line = _send_ansi_escape('2K\r')  # clears the entire line: CSI n K -> with n=2.
 clear_end = _send_ansi_escape('K')  # clears line from cursor: CSI K.
