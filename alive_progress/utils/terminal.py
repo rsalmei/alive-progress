@@ -14,6 +14,7 @@ if sys.stdout.isatty():
         return os.get_terminal_size()[0]
 
 
+    carriage_return = '\r'
 else:
     def _send(_sequence):  # pragma: no cover
         def __noop():
@@ -26,6 +27,7 @@ else:
         return sys.maxsize  # do not truncate if there's no tty.
 
 
+    carriage_return = ''
 
 
 def _send_ansi_escape(sequence, param=''):  # pragma: no cover

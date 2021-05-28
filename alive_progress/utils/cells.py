@@ -53,7 +53,7 @@ import sys
 import unicodedata
 from itertools import chain, islice, repeat
 
-from .terminal import clear_end
+from .terminal import carriage_return, clear_end
 
 PATTERN_SANITIZE = re.compile(r'[\r\n]')
 SPACES = repeat(' ')
@@ -77,7 +77,7 @@ def print_cells(fragments, cols, last_line_len=0, _write=sys.__stdout__.write): 
     """
     line = islice(chain.from_iterable(zip(SPACES, filter(None, fragments))), 1, None)
     available = cols
-    _write('\r')
+    _write(carriage_return)  # should be noop in both non-interactive tty and sampling.
     for fragment in line:
         length = len(fragment)
         if length > available:
