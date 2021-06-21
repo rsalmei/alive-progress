@@ -166,8 +166,10 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
             offset = stop_monitoring()
             alive_repr()
             _write('\n')
-            yield
-            start_monitoring(offset)
+            try:
+                yield
+            finally:
+                start_monitoring(offset)
 
         bar.pause = pause_monitoring
         thread = threading.Thread(target=run, args=(_create_spinner_player(config),))
