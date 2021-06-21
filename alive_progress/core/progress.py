@@ -148,27 +148,27 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
     def start_monitoring(offset=0.):
         hide_cursor()
         hook_manager.install()
-        event_renderer.set()
+        bar._handle, bar.text = bar_handle, set_text
         run.init = time.perf_counter() - offset
+        event_renderer.set()
 
     def stop_monitoring():
         show_cursor()
         hook_manager.uninstall()
+        bar._handle, bar.text = __noop, __noop
         return time.perf_counter() - run.init
 
-    thread, event_renderer, cond_refresh = None, threading.Event(), _cond()
+    bar, thread, event_renderer, cond_refresh = __AliveBarHandle(), None, threading.Event(), _cond()
     if sys.stdout.isatty() if config.force_tty is None else config.force_tty:
         @contextmanager
         def pause_monitoring():
-            if not thread:
-                raise UserWarning('this bar is not running anymore.')
             event_renderer.clear()
             offset = stop_monitoring()
             alive_repr()
             yield
             start_monitoring(offset)
 
-        bar_handle.pause = pause_monitoring
+        bar.pause = pause_monitoring
         thread = threading.Thread(target=run, args=(_create_spinner_player(config),))
         thread.daemon = True
         thread.start()
@@ -179,7 +179,7 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
     else:  # there's only a manual percentage.
         logic_total, current = 1., lambda: run.percent
         rate_spec, factor, header = '%', 1., 'on {:.1%}: '
-    bar_handle.text, bar_handle.current, bar_repr = set_text, current, _create_bars(config)
+    bar.current, bar_repr = current, _create_bars(config)
 
     if total or config.manual:  # we can track progress and therefore eta.
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
@@ -249,15 +249,13 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
     hook_manager = _hook_manager(header if config.enrich_print else '', current, cond_refresh)
     start_monitoring()
     try:
-        yield bar_handle
+        yield bar
     finally:
-        hook_manager.flush_buffers()
         stop_monitoring()
         if thread:  # lets the internal thread terminate gracefully.
             local_copy, thread = thread, None
             local_copy.join()
-            del bar_handle.pause  # avoid pause being called again.
-        del bar_handle.text  # no problem being called, but no reason too.
+            del bar.pause  # avoid pause being called again.
 
     # prints the nice final receipt.
     elapsed, stats, monitor, bar_repr = elapsed_end, stats_end, monitor_end, bar_repr.end
@@ -266,6 +264,13 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
     alive_repr()
     _write('\n')
     _flush()
+
+
+class __AliveBarHandle:
+    # this enables to exchange the __call__ implementation.
+    def __call__(self, *args, **kwargs):
+        # noinspection PyUnresolvedReferences
+        self._handle(*args, **kwargs)
 
 
 def _create_bars(local_config):
@@ -303,7 +308,7 @@ def _render_title(title, length):
     return combine_cells(fix_cells(title[:length - 1]), ('…',))
 
 
-def __noop():  # pragma: no cover
+def __noop(*_args, **_kwargs):  # pragma: no cover
     pass
 
 
