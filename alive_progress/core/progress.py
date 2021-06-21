@@ -165,6 +165,7 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
             event_renderer.clear()
             offset = stop_monitoring()
             alive_repr()
+            _write('\n')
             yield
             start_monitoring(offset)
 
