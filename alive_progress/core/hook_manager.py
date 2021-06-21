@@ -67,7 +67,10 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh):
         sys.stdout, sys.stderr = (get_hook_for(SimpleNamespace(stream=x)) for x in base)
 
     def uninstall():
+        flush_buffers()
+        buffers.clear()
         sys.stdout, sys.stderr = base
+
         [_set_stream(handler, original_stream)
          for handler, original_stream in before_handlers.items()]
         before_handlers.clear()
