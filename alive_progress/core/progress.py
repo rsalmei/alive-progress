@@ -313,7 +313,7 @@ def __noop(*_args, **_kwargs):  # pragma: no cover
     pass
 
 
-def alive_it(it, total=None, title=None, *, calibrate=None, **options):
+def alive_it(it, total=None, title=None, *, calibrate=None, **options):  # noqa
     """New iterator adapter in 2.0, which makes it simpler to monitor any processing.
 
     Simply wrap your iterable with this, and process your items normally!
