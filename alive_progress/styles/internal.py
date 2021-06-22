@@ -113,22 +113,22 @@ def __create_bars():
     brackets = bar_factory('>')
     blocks = bar_factory('▏▎▍▌▋▊▉')
     bubbles = bar_factory('∙○⦿●', borders='<>')
-    hollow = bar_factory('❒', tip='▷', borders='<>')
-    solid = bar_factory('■', tip='►', borders='<>')
+    solid = bar_factory('∙□☐■', borders='<>')
     circles = bar_factory('●', background='○', borders='<>')
-    squares = bar_factory('■', background='❒', borders='<>')
+    squares = bar_factory('■', background='□', borders='<>')
     checks = bar_factory('✓')
     halloween = bar_factory('🎃', background='   👻   💀', errors=('😱', '🗡🗡🗡🗡'))
     filling = bar_factory('▁▂▃▄▅▆▇█')
     notes = bar_factory('♩♪♫♬', errors='♭♯')
     ruler = bar_factory(tip='┃', background='∙∙∙∙.')
     ruler2 = bar_factory(tip='┃', background='∙∙∙∙+')
+    fish = bar_factory(tip="><('>", background='¸.·´¯`·.·´¯`·.¸¸.·´¯`·.')
     scuba = bar_factory(tip='>=≗)o', background='_)_)._∙__⠈__)○____∙○___)__⠈(_(__')
 
     return _wrap_ordered(
         locals(),
-        'smooth classic classic2 brackets blocks bubbles hollow solid circles squares checks'
-        ' halloween filling notes ruler ruler2 scuba'
+        'smooth classic classic2 brackets blocks bubbles solid circles squares checks halloween'
+        ' filling notes ruler ruler2 fish scuba'
     )
 
 
