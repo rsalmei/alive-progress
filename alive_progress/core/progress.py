@@ -123,26 +123,14 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
         run.text = to_cells(message)
 
     if config.manual:
-        def bar_handle(percent, *, relative=False):
-            """Bar handle for manual (bounded and unbounded) modes.
-            Default is absolute positioning.
-            """
+        def bar_handle(percent):  # for manual progress modes.
             hook_manager.flush_buffers()
-            percent = float(percent)
-            if relative:
-                percent += run.percent
-            run.percent = max(0., percent)
+            run.percent = max(0., float(percent))
             update_hook()
     else:
-        def bar_handle(count=1, *, relative=True):
-            """Bar handle for definite and unknown modes.
-            Default is relative positioning.
-            """
+        def bar_handle(count=1):  # for counting progress modes.
             hook_manager.flush_buffers()
-            count = int(count)
-            if relative:
-                count += run.count
-            run.count = max(0, count)
+            run.count += max(0, int(count))
             update_hook()
 
     def start_monitoring(offset=0.):
