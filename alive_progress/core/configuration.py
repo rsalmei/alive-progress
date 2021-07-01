@@ -77,26 +77,26 @@ def _text_input_factory():
     return _input
 
 
-Config = namedtuple('Config', 'length spinner spinner_length bar unknown force_tty manual title'
-                              ' enrich_print title_length receipt_text monitor stats elapsed')
+Config = namedtuple('Config', 'title length spinner bar unknown force_tty manual enrich_print '
+                              ' receipt_text monitor stats elapsed title_length spinner_length')
 
 
 def create_config():
     def reset():
         """Resets global configuration to the default one."""
         set_global(  # this must have all available config vars.
+            title=None,
             length=40,
             theme='smooth',  # includes spinner, bar and unknown.
             force_tty=None,
             manual=False,
-            title=None,
             enrich_print=True,
-            title_length=0,
-            spinner_length=0,
             receipt_text=False,
             monitor=True,
             stats=True,
             elapsed=True,
+            title_length=0,
+            spinner_length=0,
         )
 
     def set_global(theme=None, **options):
@@ -144,20 +144,20 @@ def create_config():
             return
 
         validations.update(  # the ones the user can configure.
+            title=_text_input_factory(),
             length=_int_input_factory(3, 300),
             spinner=_spinner_input_factory(None),  # accept empty.
-            spinner_length=_int_input_factory(0, 100),
             bar=_bar_input_factory(),
             unknown=_spinner_input_factory(ERROR),  # do not accept empty.
             force_tty=_tristate_input_factory(),
             manual=_bool_input_factory(),
-            title=_text_input_factory(),
             enrich_print=_bool_input_factory(),
-            title_length=_int_input_factory(0, 100),
             receipt_text=_bool_input_factory(),
             monitor=_bool_input_factory(),
             stats=_bool_input_factory(),
             elapsed=_bool_input_factory(),
+            title_length=_int_input_factory(0, 100),
+            spinner_length=_int_input_factory(0, 100),
             # title_effect=_enum_input_factory(),  # TODO someday.
         )
         assert all(k in validations for k in Config._fields)  # ensures all fields have validations.
