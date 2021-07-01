@@ -303,43 +303,38 @@ def __noop(*_args, **_kwargs):  # pragma: no cover
     pass
 
 
-def alive_it(it, total=None, title=None, *, calibrate=None, **options):  # noqa
+def alive_it(it, total=None, title=None, *, calibrate=None, **options):
     """New iterator adapter in 2.0, which makes it simpler to monitor any processing.
 
-    Simply wrap your iterable with this, and process your items normally!
-    >>> from alive_progress import alive_it
-    ... for item in alive_it(<iterable>):
-    ...     # process item
-
-    All `alive_bar` parameters apply as usual, except `total` (which is smarter: if not supplied
-    it will be inferred from the iterable using len or length_hint), and `manual` (which can't
-    be used in this mode at all).
-    If you do want unknown mode even when inferring the total is possible, send `total=0`.
-
-    And the bar will just work, it's that simple!
-    For an actual example, you can try:
-
+    Simply wrap your iterable with `alive_it`, and process your items normally!
     >>> from alive_progress import alive_it
     ... import time
     ... items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     ... for item in alive_it(items):
-    ...     time.sleep(.5)
+    ...     time.sleep(.5)  # process item.
+
+    And the bar will just work, it's that simple!
+
+    All `alive_bar` parameters apply as usual, except `total` (which is smarter: if not supplied
+    it will be inferred from the iterable using len or length_hint), and `manual` (which can't
+    be used in this mode at all).
+    To force unknown mode, even when the total would be available, send `total=0`.
 
     If you want to use other alive_bar's more advanced features, like for instance setting
-    situational text messages, you can assign this to a variable!
+    situational text messages, you can assign it to a variable!
 
     >>> from alive_progress import alive_it
-    ... bar = alive_it(<iterable>):
+    ... bar = alive_it(items):
     ... for item in bar:
     ...     bar.text(f'Wow, it works! Item: {item}')
-    ...     # process item
-
-    or incrementing it
-    whenever and by how much you need, or of course pausing the bar in real-time.
+    ...     # process item.
 
     Args:
         it (iterable): the input iterable to be processed
-        total, title, calibrate, options: same as alive_bar
+        total: same as alive_bar
+        title: same as alive_bar
+        calibrate: same as alive_bar
+        options: same as alive_bar
 
     See Also:
         alive_bar
