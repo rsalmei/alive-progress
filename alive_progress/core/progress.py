@@ -63,22 +63,28 @@ def alive_bar(total=None, *, calibrate=None, **options):
 
     Args:
         total (Optional[int]): the total expected count
-        calibrate (int): maximum theoretical throughput to calibrate animation speed
-            (cannot be in the global configuration because it depends on the current mode)
+        calibrate (float): maximum theoretical throughput to calibrate animation speed
         **options: custom configuration options, which override the global configuration:
-            title (Optional[str]): the title of this bar's computation
-            length (int): number of characters to render the animated progress bar
-            spinner (Union[str, object]): the spinner to be used in all renditions
-                it's a predefined name in `show_spinners()`, or a custom spinner
-            bar (Union[str, object]): bar to be used in definite and both manual modes
-                it's a predefined name in `show_bars()`, or a custom bar
-            unknown (Union[str, object]): bar to be used in unknown mode (whole bar is a spinner)
-                it's a predefined name in `show_spinners()`, or a custom spinner
-            theme (str): theme name in alive_progress.THEMES
-            force_tty (bool): runs animations even without a tty (pycharm terminal for example)
-            manual (bool): set to manually control percentage
-            enrich_print (bool): includes the bar position in print() and logging messages
-            title_length (int): fixed title length, or 0 for unlimited
+            title (Optional[str]): an optional, always visible bar title
+            length (int): the number of characters to render the animated progress bar
+            spinner (Union[None, str, object]): the spinner style to be rendered next to the bar
+                accepts a predefined spinner name, a custom spinner factory, or None
+            bar (Union[None, str, object]): the bar style to be rendered in known modes
+                accepts a predefined bar name, a custom bar factory, or None
+            unknown (Union[str, object]): the bar style to be rendered in the unknown mode
+                accepts a predefined spinner name, or a custom spinner factory (cannot be None)
+            theme (str): a set of matching spinner, bar and unknown
+                accepts a predefined theme name
+            force_tty (Optional[bool]): forces animations to be on, off, or according to the tty
+            manual (bool): set to manually control the bar position
+            enrich_print (bool): enriches print() and logging messages with the bar position
+            receipt_text (bool): set to repeat the last text message in the final receipt
+            monitor (bool): set to display the monitor widget `123/100 [123%]`
+            stats (bool): set to display the stats widget `(123.4/s eta: 12s)`
+            elapsed (bool): set to display the elapsed time widget `in 12s`
+            title_length (int): fixes the title lengths, or 0 for unlimited
+                title will be truncated if longer, and a cool ellipsis "…" will appear at the end
+            spinner_length (int): forces the spinner length, or `0` for its natural one
 
     """
     config = config_handler(**options)
