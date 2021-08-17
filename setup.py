@@ -9,7 +9,7 @@ import alive_progress
 
 
 def get_readme():
-    with open('README.md') as readme_file:
+    with open('README.md', encoding='utf-8') as readme_file:
         return readme_file.read()
 
 
