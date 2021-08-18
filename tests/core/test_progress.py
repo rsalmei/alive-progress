@@ -1,3 +1,5 @@
+from unittest import mock
+
 import pytest
 
 from alive_progress.core.progress import _render_title
@@ -24,4 +26,5 @@ from alive_progress.utils.cells import join_cells
     (16, 'cool bar title😺😺', 'cool bar title …'),
 ])
 def test_render_title(length, text, expected):
-    assert join_cells(_render_title(text, length)) == expected
+    local_config = mock.Mock(title=text, title_length=length)
+    assert join_cells(_render_title(local_config)) == expected

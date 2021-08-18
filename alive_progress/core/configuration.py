@@ -70,7 +70,14 @@ def _tristate_input_factory():
     return _input
 
 
-Config = namedtuple('Config', 'length spinner spinner_length bar unknown force_tty manual'
+def _text_input_factory():
+    def _input(x):
+        return None if x is None else str(x)
+
+    return _input
+
+
+Config = namedtuple('Config', 'length spinner spinner_length bar unknown force_tty manual title'
                               ' enrich_print title_length receipt_text monitor stats elapsed')
 
 
@@ -82,6 +89,7 @@ def create_config():
             theme='smooth',  # includes spinner, bar and unknown.
             force_tty=None,
             manual=False,
+            title=None,
             enrich_print=True,
             title_length=0,
             spinner_length=0,
@@ -143,6 +151,7 @@ def create_config():
             unknown=_spinner_input_factory(ERROR),  # do not accept empty.
             force_tty=_tristate_input_factory(),
             manual=_bool_input_factory(),
+            title=_text_input_factory(),
             enrich_print=_bool_input_factory(),
             title_length=_int_input_factory(0, 100),
             receipt_text=_bool_input_factory(),

@@ -12,7 +12,7 @@ from ..utils.terminal import hide_cursor, show_cursor, terminal_cols
 from ..utils.timing import elapsed_text, eta_text, gen_simple_exponential_smoothing_eta
 
 
-def alive_bar(total=None, title=None, *, calibrate=None, **options):
+def alive_bar(total=None, *, calibrate=None, **options):
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, elapsed time, throughput and ETA.
     When the operation finishes, a receipt is displayed with statistics.
@@ -63,10 +63,10 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
 
     Args:
         total (Optional[int]): the total expected count
-        title (Optional[str]): the title of this bar's computation
         calibrate (int): maximum theoretical throughput to calibrate animation speed
             (cannot be in the global configuration because it depends on the current mode)
         **options: custom configuration options, which override the global configuration:
+            title (Optional[str]): the title of this bar's computation
             length (int): number of characters to render the animated progress bar
             spinner (Union[str, object]): the spinner to be used in all renditions
                 it's a predefined name in `show_spinners()`, or a custom spinner
@@ -82,11 +82,11 @@ def alive_bar(total=None, title=None, *, calibrate=None, **options):
 
     """
     config = config_handler(**options)
-    return __alive_bar(config, total, title, calibrate=calibrate)
+    return __alive_bar(config, total, calibrate=calibrate)
 
 
 @contextmanager
-def __alive_bar(config, total=None, title=None, *, calibrate=None,
+def __alive_bar(config, total=None, *, calibrate=None,
                 _write=sys.__stdout__.write, _flush=sys.__stdout__.flush, _cond=threading.Condition,
                 _term_cols=terminal_cols, _hook_manager=buffered_hook_manager, _sampler=None):
     """Actual alive_bar handler, that exposes internal functions for configuration of
@@ -235,7 +235,7 @@ def __alive_bar(config, total=None, title=None, *, calibrate=None,
     if not config.elapsed:
         elapsed = elapsed_end = __noop
 
-    title = _render_title(title, config.title_length)
+    title = _render_title(config)
     fps = calibrated_fps(calibrate or factor)
     hook_manager = _hook_manager(header if config.enrich_print else '', current, cond_refresh)
     start_monitoring()
@@ -282,8 +282,8 @@ def _create_spinner_player(local_config):
     return spinner_player(spinner(local_config.spinner_length))
 
 
-def _render_title(title, length):
-    title = to_cells(str(title or ''))
+def _render_title(local_config):
+    title, length = to_cells(str(local_config.title or '')), local_config.title_length
     if not length:
         return title
 
@@ -303,7 +303,7 @@ def __noop(*_args, **_kwargs):  # pragma: no cover
     pass
 
 
-def alive_it(it, total=None, title=None, *, calibrate=None, **options):
+def alive_it(it, total=None, *, calibrate=None, **options):
     """New iterator adapter in 2.0, which makes it simpler to monitor any processing.
 
     Simply wrap your iterable with `alive_it`, and process your items normally!
@@ -332,7 +332,6 @@ def alive_it(it, total=None, title=None, *, calibrate=None, **options):
     Args:
         it (iterable): the input iterable to be processed
         total: same as alive_bar
-        title: same as alive_bar
         calibrate: same as alive_bar
         options: same as alive_bar
 
@@ -352,7 +351,7 @@ def alive_it(it, total=None, title=None, *, calibrate=None, **options):
     it = iter(it)
     if total is None and hasattr(it, '__length_hint__'):
         total = it.__length_hint__()
-    return __AliveBarIteratorAdapter(it, __alive_bar(config, total, title, calibrate=calibrate))
+    return __AliveBarIteratorAdapter(it, __alive_bar(config, total, calibrate=calibrate))
 
 
 class __AliveBarIteratorAdapter:
