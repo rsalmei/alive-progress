@@ -1,25 +1,18 @@
 # Changelog
 
-## 2.0.0 - Apr 29, 2021
+## 2.0.0 - Aug 25, 2021
 This is a major breakthrough in `alive-progress`!
-- now there's complete support for Emojis and exotic Unicode chars in general, which required MAJOR refactoring throughout the project, giving rise to a new **Cells Architecture** => now all internal components generate streams of codepoints instead of chars, which are rendered in "screen cells"; that enables to render complete grapheme clusters which semantically display as one char, and using one or two cells on screen (wide chars), pretty advanced stuff 🤓
-- this architecture is system-wide, so it is supported in bar title, bar text, in all spinners (including front chars, borders and backgrounds) and in bars (including front chars, tip, borders, backgrounds and errors!)
-- new super cool spinner compiler, which generates complete animations ahead-of-time! and spinner runner, which seamlessly play these artifacts with no overhead! 🚀
-- this compiler even includes advanced extra commands to help generate animations, like reshape, replace and transpose, or even modify their runner like randomizing the animation cycles!
-- super powerful and polished `.check()` tools in both spinners and bars! they compile and display custom spinners and bars, including complete frame data, internal codepoints and even their animations!
-- bars engine revamp, with invisible fills, advanced support for multi-char tips, which gradually enter and leave the bar, borders, tips and errors of any length, and underflow error that can leap to border if it can't fit!
-- spinners engine revamp, with standardized factory signatures, improved performance and new features: smoother bouncing spinners (additional frame at the edges), optimized scrolling of text messages (they go slower and pause for a moment at the edges), new animation modes in alongside and sequential spinners, nicer effect in alongside spinners, which use weighted spreading over the available space, smoother animation in scrolling spinners when the input is longer than the available space
-- new builtin spinners, bars and themes that highlight the new animation features
-- showtime now displays themes! and it is dynamic => it does not scroll the screen when it can't fit either vertically or horizontally, and can filter patterns!
-- `bar()` handle now supports absolute and relative positioning in all modes
-- improved logging for files, which gets enriched as the print hook
-- several new configuration options for customizing appearance, for instance you can disable any `alive-progress` components, even the whole graphic bar if you'd like!
-- includes a new quick mode `alive_it`, that iterates and calls `bar()` for you!
-- uses `time.perf_counter()` high resolution clock
-- when not connected to a tty, it won't generate any ansi escape sequences to the terminal
-- improved `print_chars()` utility
-- new tool to validate unicode grapheme cluster breaks
-- new tool to estimate overhead, with a sampling of plenty of configuration options
+- now there's complete support for Emojis 🤩 and exotic Unicode chars in general, which required MAJOR refactoring deep within the project, giving rise to what I called **Cells Architecture** => now all internal components use and generate streams of cells instead of chars, and correctly interprets grapheme clusters — it has enabled to render complex multi-chars symbols as if they were one, thus making them work on any spinners, bars, texts, borders, backgrounds, everything!!! there's even support for wide chars, which are represented with any number of chars, including one, but take two spaces on screen!! pretty advanced stuff 🤓
+- new super cool spinner compiler and runner, which generates complete animations ahead-of-time, and play these ready-to-go animations seamlessly, with no overhead at all! 🚀
+- the spinner compiler also includes advanced extra commands to generate and modify animations, like reshape, replace, transpose, or randomize the animation cycles!
+- new powerful and polished `.check()` tools, that compile and beautifully render all frames from all animation cycles of spinners and bars! they can even include complete frame data, internal codepoints and even their animations! 👏
+- bars engine revamp, with invisible fills, advanced support for multi-char tips (which gradually enter and leave the bar), borders, tips and errors of any length, and underflow errors that can leap into the border if they can't fit!
+- spinners engine revamp, with standardized factory signatures, improved performance, new types and new features: smoother bouncing spinners (with an additional frame at the edges), optimized scrolling of text messages (which go slower and pause for a moment at the edges), new alongside and sequential spinners, nicer effect in alongside spinners (which use weighted spreading over the available space), smoother animation in scrolling spinners (when the input is longer than the available space)
+- new builtin spinners, bars and themes, which makes use of the new animation features
+- new showtime that displays themes and is dynamic => it does not scroll the screen when it can't fit either vertically or horizontally, and can even filter for patterns!
+- improved support for logging into files, which gets enriched as the print hook is!
+- several new configuration options for customizing appearance, including support for disabling any `alive-progress` widgets!
+- includes a new iterator adapter `alive_it`, that accepts an iterable and calls `bar()` for you!
 - requires python 3.6+ (and officially supports python 3.9 and 3.10)
 
 
