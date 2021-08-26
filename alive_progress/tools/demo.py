@@ -23,7 +23,7 @@ def title(text):
 
 
 cases = [
-    Case(title='Counter modes'),
+    Case(title='Definite/unknown modes'),
     Case('Normal+total', 1000, dict(total=1000)),
     Case('Underflow+total', 800, dict(total=1200)),
     Case('Overflow+total', 1200, dict(total=800)),
