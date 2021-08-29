@@ -1,33 +1,57 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import os
 from collections import namedtuple
-from copy import deepcopy
 from types import FunctionType
 
-from ..animations import bars, spinners
-from ..styles.internal import BARS, SPINNERS, THEMES
+ERROR = object()  # represents a config value not accepted.
 
 
-def _style_input_factory(name_lookup, func_lookup, name_index=None):
+def _spinner_input_factory(default):
+    from ..animations import spinner_compiler
+    from ..styles.internal import SPINNERS
+    return __style_input_factory(SPINNERS, spinner_compiler,
+                                 'spinner_compiler_dispatcher_factory', default)
+
+
+def _bar_input_factory():
+    from ..animations import bars
+    from ..styles.internal import BARS
+    return __style_input_factory(BARS, bars, 'bar_assembler_factory', None)
+
+
+def __style_input_factory(name_lookup, module_lookup, inner_name, default):
+    def _input(x):
+        return name_lookup(x) or func_lookup(x) or default
+
+    name_lookup = __name_lookup_factory(name_lookup)
+    func_lookup = __func_lookup_factory(module_lookup, inner_name)
+    return _input
+
+
+def __name_lookup_factory(name_lookup):
+    def _input(x):
+        if isinstance(x, str):
+            return name_lookup.get(x) or ERROR
+
+    return _input
+
+
+def __func_lookup_factory(module_lookup, inner_name):
     def _input(x):
         if isinstance(x, FunctionType):
-            if x.__code__.co_name == 'inner_factory' \
+            func_file, _ = os.path.splitext(module_lookup.__file__)
+            if x.__code__.co_name == inner_name \
                     and os.path.splitext(x.__code__.co_filename)[0] == func_file:
                 return x
-        elif x in name_lookup:
-            return getter(name_lookup[x])
+            return ERROR
 
-    func_file, _ = os.path.splitext(func_lookup.__file__)
-    getter = (lambda x: x) if name_index is None else lambda x: x[name_index]
     return _input
 
 
 def _int_input_factory(lower, upper):
     def _input(x):
-        if lower <= int(x) <= upper:
+        if isinstance(x, int) and lower <= x <= upper:
             return int(x)
+        return ERROR
 
     return _input
 
@@ -39,32 +63,40 @@ def _bool_input_factory():
     return _input
 
 
-# noinspection PyTypeChecker
-CONFIG_VARS = dict(
-    length=_int_input_factory(3, 300),
-    spinner=_style_input_factory(SPINNERS, spinners, 0),
-    bar=_style_input_factory(BARS, bars),
-    unknown=_style_input_factory(SPINNERS, bars, 1),
-    force_tty=_bool_input_factory(),
-    manual=_bool_input_factory(),
-    enrich_print=_bool_input_factory(),
-    title_length=_int_input_factory(0, 100),
-)
+def _tristate_input_factory():
+    def _input(x):
+        return None if x is None else bool(x)
 
-Config = namedtuple('Config', tuple(CONFIG_VARS.keys()))
-Config.__new__.__defaults__ = (None,) * len(CONFIG_VARS)
+    return _input
+
+
+def _text_input_factory():
+    def _input(x):
+        return None if x is None else str(x)
+
+    return _input
+
+
+Config = namedtuple('Config', 'title length spinner bar unknown force_tty manual enrich_print '
+                              ' receipt_text monitor stats elapsed title_length spinner_length')
 
 
 def create_config():
     def reset():
         """Resets global configuration to the default one."""
         set_global(  # this must have all available config vars.
+            title=None,
             length=40,
             theme='smooth',  # includes spinner, bar and unknown.
-            force_tty=False,
+            force_tty=None,
             manual=False,
             enrich_print=True,
+            receipt_text=False,
+            monitor=True,
+            stats=True,
+            elapsed=True,
             title_length=0,
+            spinner_length=0,
         )
 
     def set_global(theme=None, **options):
@@ -74,42 +106,67 @@ def create_config():
             alive_progress#alive_bar(**options)
 
         """
+        lazy_init()
         global_config.update(_parse(theme, options))
 
     def create_context(theme=None, **options):
         """Create an immutable copy of the current configuration, with optional customization."""
-        local_config = deepcopy(global_config)
-        local_config.update(_parse(theme, options))
+        lazy_init()
+        local_config = {**global_config, **_parse(theme, options)}
         # noinspection PyArgumentList
-        return Config(**local_config)
+        return Config(**{k: local_config[k] for k in Config._fields})
 
     def _parse(theme, options):
         """Validate and convert some configuration options."""
 
         def validator(key, value):
             try:
-                result = CONFIG_VARS[key](value)
-                if result is None:
+                result = validations[key](value)
+                if result is ERROR:
                     raise ValueError
                 return result
             except KeyError:
-                raise ValueError('invalid config name: {}'.format(key))
+                raise ValueError(f'invalid config name: {key}')
             except Exception:
-                raise ValueError('invalid config value: {}={}'.format(key, repr(value)))
+                raise ValueError(f'invalid config value: {key}={value!r}')
 
+        from ..styles.internal import THEMES
         if theme:
             if theme not in THEMES:
-                raise ValueError('invalid theme name={}'.format(repr(theme)))
+                raise ValueError(f'invalid theme name={theme}')
             swap = options
-            options = deepcopy(THEMES[theme])
+            options = dict(THEMES[theme])
             options.update(swap)
         return {k: validator(k, v) for k, v in options.items()}
 
-    global_config = {}
-    reset()
+    def lazy_init():
+        if validations:
+            return
 
-    create_context.set_global = set_global
-    create_context.reset = reset
+        validations.update(  # the ones the user can configure.
+            title=_text_input_factory(),
+            length=_int_input_factory(3, 300),
+            spinner=_spinner_input_factory(None),  # accept empty.
+            bar=_bar_input_factory(),
+            unknown=_spinner_input_factory(ERROR),  # do not accept empty.
+            force_tty=_tristate_input_factory(),
+            manual=_bool_input_factory(),
+            enrich_print=_bool_input_factory(),
+            receipt_text=_bool_input_factory(),
+            monitor=_bool_input_factory(),
+            stats=_bool_input_factory(),
+            elapsed=_bool_input_factory(),
+            title_length=_int_input_factory(0, 100),
+            spinner_length=_int_input_factory(0, 100),
+            # title_effect=_enum_input_factory(),  # TODO someday.
+        )
+        assert all(k in validations for k in Config._fields)  # ensures all fields have validations.
+
+        reset()
+        assert all(k in global_config for k in Config._fields)  # ensures all fields have been set.
+
+    global_config, validations = {}, {}
+    create_context.set_global, create_context.reset = set_global, reset
     return create_context
 
 

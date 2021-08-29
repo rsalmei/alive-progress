@@ -1,24 +1,18 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import math
 import sys
 import threading
 import time
-import warnings
 from contextlib import contextmanager
-from itertools import chain, islice, repeat
 
+from .calibration import calibrated_fps
 from .configuration import config_handler
-from .logging_hook import install_logging_hook, uninstall_logging_hook
-from .timing import gen_simple_exponential_smoothing_eta, to_elapsed_text, to_eta_text
-from .utils import clear_traces, hide_cursor, render_title, sanitize_text_marking_wide_chars, \
-    show_cursor, get_terminal_size
-from ..animations.utils import spinner_player
+from .hook_manager import buffered_hook_manager
+from ..utils.cells import combine_cells, fix_cells, print_cells, to_cells
+from ..utils.terminal import hide_cursor, show_cursor, terminal_cols
+from ..utils.timing import elapsed_text, eta_text, gen_simple_exponential_smoothing_eta
 
 
-@contextmanager
-def alive_bar(total=None, title=None, calibrate=None, **options):
+def alive_bar(total=None, *, calibrate=None, **options):
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, elapsed time, throughput and ETA.
     When the operation finishes, a receipt is displayed with statistics.
@@ -69,214 +63,317 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
 
     Args:
         total (Optional[int]): the total expected count
-        title (Optional[str]): the title, will be printed whenever there's no custom message
-        calibrate (int): maximum theoretical throughput to calibrate animation speed
-            (cannot be in the global configuration because it depends on the current mode)
+        calibrate (float): maximum theoretical throughput to calibrate animation speed
         **options: custom configuration options, which override the global configuration:
-            length (int): number of characters to render the animated progress bar
-            spinner (Union[str, object]): the spinner to be used in all renditions
-                it's a predefined name in `show_spinners()`, or a custom spinner
-            bar (Union[str, object]): bar to be used in definite and both manual modes
-                it's a predefined name in `show_bars()`, or a custom bar
-            unknown (Union[str, object]): bar to be used in unknown mode (whole bar is a spinner)
-                it's a predefined name in `show_spinners()`, or a custom spinner
-            theme (str): theme name in alive_progress.THEMES
-            force_tty (bool): runs animations even without a tty (pycharm terminal for example)
-            manual (bool): set to manually control percentage
-            enrich_print (bool): includes the bar position in print() and logging messages
-            title_length (int): fixed title length, or 0 for unlimited
+            title (Optional[str]): an optional, always visible bar title
+            length (int): the number of characters to render the animated progress bar
+            spinner (Union[None, str, object]): the spinner style to be rendered next to the bar
+                accepts a predefined spinner name, a custom spinner factory, or None
+            bar (Union[None, str, object]): the bar style to be rendered in known modes
+                accepts a predefined bar name, a custom bar factory, or None
+            unknown (Union[str, object]): the bar style to be rendered in the unknown mode
+                accepts a predefined spinner name, or a custom spinner factory (cannot be None)
+            theme (str): a set of matching spinner, bar and unknown
+                accepts a predefined theme name
+            force_tty (Optional[bool]): forces animations to be on, off, or according to the tty
+            manual (bool): set to manually control the bar position
+            enrich_print (bool): enriches print() and logging messages with the bar position
+            receipt_text (bool): set to repeat the last text message in the final receipt
+            monitor (bool): set to display the monitor widget `123/100 [123%]`
+            stats (bool): set to display the stats widget `(123.4/s eta: 12s)`
+            elapsed (bool): set to display the elapsed time widget `in 12s`
+            title_length (int): fixes the title lengths, or 0 for unlimited
+                title will be truncated if longer, and a cool ellipsis "…" will appear at the end
+            spinner_length (int): forces the spinner length, or `0` for its natural one
 
     """
+    config = config_handler(**options)
+    return __alive_bar(config, total, calibrate=calibrate)
+
+
+@contextmanager
+def __alive_bar(config, total=None, *, calibrate=None,
+                _write=sys.__stdout__.write, _flush=sys.__stdout__.flush, _cond=threading.Condition,
+                _term_cols=terminal_cols, _hook_manager=buffered_hook_manager, _sampler=None):
+    """Actual alive_bar handler, that exposes internal functions for configuration of
+    both normal operation and overhead estimation."""
+
     if total is not None:
         if not isinstance(total, int):
-            raise TypeError("integer argument expected, got '{}'.".format(type(total).__name__))
+            raise TypeError(f"integer argument expected, got '{type(total).__name__}'.")
         if total <= 0:
             total = None
-    config = config_handler(**options)
 
-    def run(spinner):
-        player = spinner_player(spinner)
-        while thread:
-            release_thread.wait()
-            alive_repr(next(player))
-            time.sleep(1. / fps())
+    def run(spinner_player):
+        with cond_refresh:
+            while thread:
+                event_renderer.wait()
+                alive_repr(next(spinner_player))
+                cond_refresh.wait(1. / fps(run.rate))
 
-    def alive_repr(spin=''):
-        elapsed = time.time() - run.init
-        run.rate = current() / elapsed if elapsed else 0.
+    def alive_repr(spin=None):
+        run.elapsed = time.perf_counter() - run.init
+        run.rate = current() / run.elapsed
 
-        line = ' '.join(filter(None, (
-            title, bar_repr(run.percent, end), spin, monitor(), 'in',
-            to_elapsed_text(elapsed, end), stats(), run.text)))
+        fragments = (title, bar_repr(run.percent), spin, monitor(),
+                     elapsed(), stats(), run.text)
 
-        line_len, (cols, _) = len(line), get_terminal_size()
-        with print_lock:
-            if line_len < run.last_line_len:
-                clear_traces()
-            sys.__stdout__.write(line[:cols] + (spin and '\r' or '\n'))
-            sys.__stdout__.flush()
+        with cond_refresh:
+            run.last_len = print_cells(fragments, _term_cols(), run.last_len, _write=_write)
+            _flush()
 
-        run.last_line_len = line_len
-
-    def flush_buffer():
-        if print_buffer:
-            print()
+    if _sampler is not None:  # used for sampling estimation.
+        _sampler._alive_repr = alive_repr
 
     def set_text(message):
-        run.text = sanitize_text_marking_wide_chars(message)
+        run.text = to_cells(message)
 
     if config.manual:
-        # FIXME update bar signatures and remove deprecated in v2.
-        def bar_handle(perc=None, text=None):
-            """Bar handle for manual (bounded and unbounded) modes.
-            Only absolute positioning.
-            """
-            if perc is not None:
-                flush_buffer()
-                run.percent = max(0., float(perc))  # ignores negative numbers.
-            else:
-                warnings.warn(DeprecationWarning('percent will be mandatory in manual bar(),'
-                                                 ' please update your code.'), stacklevel=2)
+        def bar_handle(percent):  # for manual progress modes.
+            hook_manager.flush_buffers()
+            run.percent = max(0., float(percent))
             update_hook()
-            if text is not None:
-                warnings.warn(DeprecationWarning("use bar.text('') instead of bar(text=''),"
-                                                 ' please update your code.'), stacklevel=2)
-                set_text(text)
     else:
-        def bar_handle(text=None, incr=1):
-            """Bar handle for definite and unknown modes.
-            Only relative positioning.
-            """
-            flush_buffer()
-            # FIXME it was accepting 0 before, so a user could be using that to change text only
-            run.count += max(0, int(incr))  # ignores negative numbers.
+        def bar_handle(count=1):  # for counting progress modes.
+            hook_manager.flush_buffers()
+            run.count += max(0, int(count))
             update_hook()
-            if text is not None:
-                warnings.warn(DeprecationWarning("use bar.text('') instead of bar(text=''),"
-                                                 ' please update your code.'), stacklevel=2)
-                set_text(text)
-
-    def print_hook(part):
-        if part != '\n':
-            # this will generate a sequence of lines interspersed with None, which will later
-            # be rendered as the indent filler to align additional lines under the same header.
-            gen = chain.from_iterable(zip(repeat(None), part.splitlines(True)))
-            print_buffer.extend(islice(gen, 1, None))
-        else:
-            header = header_template.format(run.count)
-            nested = ''.join(line or ' ' * len(header) for line in print_buffer)
-            with print_lock:
-                clear_traces()
-                sys.__stdout__.write('{}{}\n'.format(header, nested))
-            print_buffer[:] = []
-
-    print_buffer, print_lock = [], threading.Lock()
-    header_template = 'on {}: ' if config.enrich_print else ''
-    print_hook.write = print_hook
-    print_hook.flush = lambda: None
-    print_hook.isatty = sys.__stdout__.isatty
 
     def start_monitoring(offset=0.):
         hide_cursor()
-        sys.stdout = print_hook
-        run.before_handlers = install_logging_hook()
-        release_thread.set()
-        run.init = time.time() - offset
+        hook_manager.install()
+        bar._handle, bar.text = bar_handle, set_text
+        run.init = time.perf_counter() - offset
+        event_renderer.set()
 
     def stop_monitoring():
         show_cursor()
-        sys.stdout = sys.__stdout__
-        uninstall_logging_hook(run.before_handlers)  # noqa
-        return time.time() - run.init
+        hook_manager.uninstall()
+        bar._handle, bar.text = __noop, __noop
+        return time.perf_counter() - run.init
 
-    thread, release_thread = None, threading.Event()
-    if sys.stdout.isatty() or config.force_tty:
+    bar, thread, event_renderer, cond_refresh = __AliveBarHandle(), None, threading.Event(), _cond()
+    if sys.stdout.isatty() if config.force_tty is None else config.force_tty:
         @contextmanager
         def pause_monitoring():
-            release_thread.clear()
+            event_renderer.clear()
             offset = stop_monitoring()
             alive_repr()
-            yield
-            start_monitoring(offset)
+            _write('\n')
+            try:
+                yield
+            finally:
+                start_monitoring(offset)
 
-        bar_handle.pause = pause_monitoring
-        thread = threading.Thread(target=run, args=(config.spinner(),))
+        bar.pause = pause_monitoring
+        thread = threading.Thread(target=run, args=(_create_spinner_player(config),))
         thread.daemon = True
         thread.start()
 
     if total or not config.manual:  # we can count items.
-        logic_total, rate_spec, factor, current = total, 'f', 1.e6, lambda: run.count  # noqa
+        logic_total, current = total, lambda: run.count
+        rate_spec, factor, header = 'f', 1.e6, 'on {:d}: '
     else:  # there's only a manual percentage.
-        logic_total, rate_spec, factor, current = 1., '%', 1., lambda: run.percent  # noqa
+        logic_total, current = 1., lambda: run.percent
+        rate_spec, factor, header = '%', 1., 'on {:.1%}: '
+    bar.current, bar_repr = current, _create_bars(config)
 
-    bar_handle.text, bar_handle.current = set_text, current
     if total or config.manual:  # we can track progress and therefore eta.
-        spec = '({{:.1{}}}/s, eta: {{}})'.format(rate_spec)
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
         gen_eta.send(None)
-        stats = lambda: spec.format(run.rate, to_eta_text(gen_eta.send((current(), run.rate))))
-        bar_repr = config.bar(config.length)
+
+        def stats():
+            eta = eta_text(gen_eta.send((current(), run.rate)))
+            return f'({run.rate:.1{rate_spec}}/s, eta: {eta})'
     else:  # unknown progress.
-        bar_repr = config.unknown(config.length, config.bar)
-        stats = lambda: '({:.1f}/s)'.format(run.rate)  # noqa
-    stats_end = lambda: '({:.2{}}/s)'.format(run.rate, rate_spec)  # noqa
+        bar_repr = bar_repr.unknown
 
-    # calibration of the dynamic fps engine.
-    # I've started with the equation y = log10(x + m) * k + n, where:
-    #   y is the desired fps, m and n are horizontal and vertical translation,
-    #   k is a calibration factor, computed from some user input c (see readme for details).
-    # considering minfps and maxfps as given constants, I came to:
-    #   fps = log10(x + 1) * k + minfps, which must be equal to maxfps for x = c,
-    # so the factor k = (maxfps - minfps) / log10(c + 1), and
-    #   fps = log10(x + 1) * (maxfps - minfps) / log10(c + 1) + minfps
-    # neat! ;)
-    min_fps, max_fps = 2., 60.
-    calibrate = max(0., calibrate or factor)
-    adjust_log_curve = 100. / min(calibrate, 100.)  # adjust curve for small numbers
-    factor = (max_fps - min_fps) / math.log10((calibrate * adjust_log_curve) + 1.)
+        def stats():
+            return f'({run.rate:.1f}/s)'
 
-    def fps():
-        if run.rate <= 0:
-            return 10.  # bootstrap speed
-        if run.rate < calibrate:
-            return math.log10((run.rate * adjust_log_curve) + 1.) * factor + min_fps
-        return max_fps
+    def stats_end():
+        return f'({run.rate:.2{rate_spec}}/s)'
 
-    end, run.text, run.last_line_len = False, '', 0
+    def elapsed():
+        return f'in {elapsed_text(run.elapsed, False)}'
+
+    def elapsed_end():
+        return f'in {elapsed_text(run.elapsed, True)}'
+
+    run.text, run.last_len, run.elapsed = '', 0, 0.
     run.count, run.percent, run.rate, run.init = 0, 0., 0., 0.
 
     if total:
         if config.manual:
             def update_hook():
-                run.count = int(math.ceil(run.percent * total))
+                run.count = math.ceil(run.percent * total)
         else:
             def update_hook():
                 run.percent = run.count / total
 
-        monitor = lambda: '{}{}/{} [{:.0%}]'.format(  # noqa
-            '(!) ' if end and run.count != total else '', run.count, total, run.percent
-        )
-    elif config.manual:
-        update_hook = lambda: None  # noqa
-        monitor = lambda: '{}{:.0%}'.format(  # noqa
-            '(!) ' if end and run.percent != 1. else '', run.percent
-        )
-    else:
-        run.percent = 1.
-        update_hook = lambda: None  # noqa
-        monitor = lambda: '{}'.format(run.count)  # noqa
+        def monitor():
+            return f'{run.count}/{total} [{run.percent:.0%}]'
 
-    title = render_title(title, config.title_length)
+        def monitor_end():
+            warning = '(!) ' if run.count != total else ''
+            return f'{warning}{monitor_original()}'
+    else:
+        def update_hook():
+            pass
+
+        if config.manual:
+            def monitor():
+                return f'{run.percent:.0%}'
+
+            def monitor_end():
+                warning = '(!) ' if run.percent != 1. else ''
+                return f'{warning}{monitor_original()}'
+        else:
+            def monitor():
+                return f'{run.count}'
+
+            monitor_end = monitor
+    monitor_original = monitor
+    if not config.monitor:
+        monitor = monitor_end = __noop
+    if not config.stats:
+        stats = stats_end = __noop
+    if not config.elapsed:
+        elapsed = elapsed_end = __noop
+
+    title = _render_title(config)
+    fps = calibrated_fps(calibrate or factor)
+    hook_manager = _hook_manager(header if config.enrich_print else '', current, cond_refresh)
     start_monitoring()
     try:
-        yield bar_handle
+        yield bar
     finally:
-        flush_buffer()
         stop_monitoring()
-        if thread:
-            local_copy = thread
-            thread = None  # lets the internal thread terminate gracefully.
+        if thread:  # lets the internal thread terminate gracefully.
+            local_copy, thread = thread, None
             local_copy.join()
+            del bar.pause  # avoid pause being called again.
 
-        end, run.text, stats = True, '', stats_end
-        alive_repr()
+    # prints the nice final receipt.
+    elapsed, stats, monitor, bar_repr = elapsed_end, stats_end, monitor_end, bar_repr.end
+    if not config.receipt_text:
+        run.text = ''
+    alive_repr()
+    _write('\n')
+    _flush()
+
+
+class __AliveBarHandle:
+    # this enables to exchange the __call__ implementation.
+    def __call__(self, *args, **kwargs):
+        # noinspection PyUnresolvedReferences
+        self._handle(*args, **kwargs)
+
+
+def _create_bars(local_config):
+    bar = local_config.bar
+    if bar is None:
+        obj = lambda p: None
+        obj.unknown, obj.end = obj, obj
+        return obj
+    return bar(local_config.length, local_config.unknown)
+
+
+def _create_spinner_player(local_config):
+    spinner = local_config.spinner
+    if spinner is None:
+        from itertools import repeat
+        return repeat('')
+    from ..animations.utils import spinner_player
+    return spinner_player(spinner(local_config.spinner_length))
+
+
+def _render_title(local_config):
+    title, length = to_cells(str(local_config.title or '')), local_config.title_length
+    if not length:
+        return title
+
+    len_title = len(title)
+    if len_title <= length:
+        # fixed left align implementation for now, there may be more in the future, like
+        # other alignments, variable with a maximum size, and even scrolling and bouncing.
+        return combine_cells(title, (' ',) * (length - len_title))
+
+    if length == 1:
+        return '…'
+
+    return combine_cells(fix_cells(title[:length - 1]), ('…',))
+
+
+def __noop(*_args, **_kwargs):  # pragma: no cover
+    pass
+
+
+def alive_it(it, total=None, *, calibrate=None, **options):
+    """New iterator adapter in 2.0, which makes it simpler to monitor any processing.
+
+    Simply wrap your iterable with `alive_it`, and process your items normally!
+    >>> from alive_progress import alive_it
+    ... import time
+    ... items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ... for item in alive_it(items):
+    ...     time.sleep(.5)  # process item.
+
+    And the bar will just work, it's that simple!
+
+    All `alive_bar` parameters apply as usual, except `total` (which is smarter: if not supplied
+    it will be inferred from the iterable using len or length_hint), and `manual` (which can't
+    be used in this mode at all).
+    To force unknown mode, even when the total would be available, send `total=0`.
+
+    If you want to use other alive_bar's more advanced features, like for instance setting
+    situational text messages, you can assign it to a variable!
+
+    >>> from alive_progress import alive_it
+    ... bar = alive_it(items):
+    ... for item in bar:
+    ...     bar.text(f'Wow, it works! Item: {item}')
+    ...     # process item.
+
+    Args:
+        it (iterable): the input iterable to be processed
+        total: same as alive_bar
+        calibrate: same as alive_bar
+        options: same as alive_bar
+
+    See Also:
+        alive_bar
+
+    Returns:
+        Generator
+
+    """
+    config = config_handler(**options)
+    if config.manual:
+        raise UserWarning("Manual mode can't be used in iterator adapter.")
+
+    if total is None and hasattr(it, '__len__'):
+        total = len(it)
+    it = iter(it)
+    if total is None and hasattr(it, '__length_hint__'):
+        total = it.__length_hint__()
+    return __AliveBarIteratorAdapter(it, __alive_bar(config, total, calibrate=calibrate))
+
+
+class __AliveBarIteratorAdapter:
+    def __init__(self, it, inner_bar):
+        self._data = it, inner_bar
+
+    def __iter__(self):
+        if not hasattr(self, '_data'):  # this iterator has already exhausted.
+            return
+
+        it, inner_bar = self._data
+        with inner_bar as bar:
+            self.__dict__ = bar.__dict__  # makes this adapter work as the real bar.
+            for item in it:
+                yield item
+                bar()
+
+    def __call__(self, *args, **kwargs):
+        raise UserWarning('The bar position is controlled automatically with `alive_it`.')
