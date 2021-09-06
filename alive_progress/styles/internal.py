@@ -45,6 +45,8 @@ def __create_spinners():
     triangles = bouncing_spinner_factory(('▶', '◀'), 6, 2, hide=False)
     brackets = bouncing_spinner_factory(('>', '<'), 8, 3, hide=False)
     bubbles = bouncing_spinner_factory(('∙●⦿', '○'), 10, 5, hide=False)
+    circles = bouncing_spinner_factory('●', 8, background='○', hide=False)
+    squares = bouncing_spinner_factory('■', 8, background='□', hide=False)
     flowers = bouncing_spinner_factory('💐🌷🌸🌹🌺🌻🌼', 12, (2, 4)).pause(center=6).randomize()
     elements = bouncing_spinner_factory(('🔥💨', '🌊⚡️'), 6, 2)
     loving = bouncing_spinner_factory(('😍🥰', '⭐️🤩'), 8, (2, 3), '. ', hide=False, overlay=True)
@@ -100,9 +102,9 @@ def __create_spinners():
     return _wrap_ordered(
         locals(),
         'classic stars twirl twirls horizontal vertical waves waves2 waves3 dots dots_waves'
-        ' dots_waves2 pennywise ball_belt balls_belt triangles brackets bubbles flowers elements'
-        ' loving notes notes2 arrow arrows arrows2 arrows_in arrows_out radioactive boat fish fish2'
-        ' fishes crab frank wait wait2 wait3 pulse'
+        ' dots_waves2 pennywise ball_belt balls_belt triangles brackets bubbles circles squares'
+        ' flowers  elements loving notes notes2 arrow arrows arrows2 arrows_in arrows_out '
+        ' radioactive boat  fish fish2 fishes crab frank wait wait2 wait3 pulse'
     )
 
 
