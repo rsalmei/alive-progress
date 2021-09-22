@@ -1,3 +1,4 @@
+[<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
 [<img align="right" alt="Donate with PayPal button" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate?business=6SWSHEB5ZNS5N&no_recurring=0&item_name=I%27m+the+author+of+alive-progress%2C+clearly+and+about-time.+Thank+you+for+appreciating+my+work%21&currency_code=USD)
 
 ![alive-progress logo](img/alive-logo.gif)
@@ -51,7 +52,7 @@ This is a major breakthrough in `alive-progress`!
 - includes a new iterator adapter `alive_it`, that accepts an iterable and calls `bar()` for you!
 - requires python 3.6+ (and officially supports python 3.9 and 3.10)
 
-> Since this is a major version change, backward compatibility may be lacking. If something does not work at first, just check the new imports and functions' signatures, and you should be good to go. All previous features are still here! 👍
+> Since this is a major version change, direct backward compatibility is not guaranteed. If something does not work at first, just check the new imports and functions' signatures, and you should be good to go. All previous features should still work here! 👍
 
 This README was completely rewritten, so please take a full look to find great new details!!
 
@@ -226,10 +227,21 @@ When it isn't, some compromises have to be made:
 | unknown  | ✅ (user tick) | ❌            | ✅            | ❌          | ❌ |
 | manual   | ❌             | ✅ (user set) | ⚠️ (simpler)  | ⚠️ (rough)  | ✅ |
 
-> It's actually quite simple, you do not need to think about which mode you should use!
-> 
-> Just always send the `total` if you have it, and use `manual` if you need it!
-> <br>It will just work the best it can! 👏 \o/
+It's actually quite simple, you do not need to think about which mode you should use:
+<br>Just always send the `total` if you have it, and use `manual` if you need it!
+<br>It will just work the best it can! 👏 \o/
+
+
+---
+Maintaining an open source project is hard and time-consuming.
+<br>I put much ❤️ and effort into this, continually.
+
+If you've appreciated my work and would like me to continue improving it, please back me up with a donation!
+<br>I'd appreciate any encouragement 😊
+[<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
+[<img align="right" alt="Donate with PayPal button" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate?business=6SWSHEB5ZNS5N&no_recurring=0&item_name=I%27m+the+author+of+alive-progress%2C+clearly+and+about-time.+Thank+you+for+appreciating+my+work%21&currency_code=USD)
+
+---
 
 
 ## Customize it
@@ -343,7 +355,7 @@ It's almost like they were... _alive_! ==> Yes, that's where this project's name
 
 ---
 
-#### (📌 new in 2.0) A **Compiler**, really?
+#### (📌 new in 2.0) A Spinner Compiler, really?
 
 Now these generators of cycles and frames are fully consumed ahead of time by the **Spinner Compiler**! This is a very cool new processor that I made inside the _Cell Architecture_ effort, to make all these animations work even in the presence of wide chars or complex grapheme clusters! It was very hard to make these clusters smoothly and gradually enter and exit frames without breaking everything, because several chars can in fact represent only one visible symbol!! So they cannot ever be split, they have to enter and exit the scene always all at once or the grapheme won't show (an Emoji for instance)!! Enter the **Spinner Compiler**......
 
@@ -399,178 +411,171 @@ You can even mix and match wide chars and normal chars! Just like spinners do!
 
 > Use and abuse the check tools!! They have more modes, there's even real time animations!
 > 
-> Create the widest and coolest animations you can, and send them to me!
+> Create the wildest and coolest animations you can, and send them to me!
 > <br>I'm thinking about creating some kind of `contrib` package, with user contributed spinners and bars!
 
 
----
 Wow, if you read everything till here, you should now have a sound knowledge about using `alive-progress`! 👏
 <br>And if you want to know even more, exciting stuff lies ahead!
 
-If you've appreciated my work and would like me to continue improving it,
-<br>please back me up with a donation! I'll surely appreciate the encouragement!
-<br>Thank you! 😊
-[<img align="left" alt="Donate with PayPal button" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate?business=6SWSHEB5ZNS5N&no_recurring=0&item_name=I%27m+the+author+of+alive-progress%2C+clearly+and+about-time.+Thank+you+for+appreciating+my+work%21&currency_code=USD)
+---
+Maintaining an open source project is hard and time-consuming.
+<br>I put much ❤️ and effort into this, continually.
+
+If you've appreciated my work and would like me to continue improving it, please back me up with a donation!
+<br>I'd appreciate any encouragement 😊
+[<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
+[<img align="right" alt="Donate with PayPal button" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate?business=6SWSHEB5ZNS5N&no_recurring=0&item_name=I%27m+the+author+of+alive-progress%2C+clearly+and+about-time.+Thank+you+for+appreciating+my+work%21&currency_code=USD)
 
 ---
 
 
 ## Advanced
 
-<details>
-<summary>So, you need to monitor a fixed operation, without any loop?</summary>
+### Static loop-less use
 
-> It'll work for sure! Here is an example, although a naive approach:
->
-> ```python
-> with alive_bar(4) as bar:
->     corpus = read_file(file)
->     bar()  # file was read, tokenizing
->     tokens = tokenize(corpus)
->     bar()  # tokens generated, processing
->     data = process(tokens)
->     bar()  # process finished, sending response
->     resp = send(data)
->     bar()  # we're done! four bar calls with `total=4`
-> ```
->
-> It's naive because it considers all steps are equal, but actually each one may take a very different time to complete. Think a `read_file` and a `tokenize` steps being extremely fast, making the percentage skyrocket to 50%, then stopping for a long time in the `process` step. You get the point, it can ruin the user experience and create a very misleading ETA.
-> 
-> What you need to do is distribute the steps accordingly! Since you told `alive_bar` there were four steps, when the first one completed it understood 1/4 or 25% of the whole processing was complete, which as we've seen may not be the case. Thus, you need to measure how long your steps do take, and use the **manual mode** to increase the bar percentage by different amounts at each step!
->
-> You can use my other open source project [about-time](https://github.com/rsalmei/about-time) to easily measure these durations! Just try to simulate with some representative inputs, to get better results. Something like:
->
-> ```python
-> from about_time import about_time
->
-> with about_time() as t_total:          # this about_time will measure the whole time of the block.
->     with about_time() as t1            # the other four will get the relative timings within the whole.
->         corpus = read_file(file)       # `about_time` supports several calling conventions, including one-liners.
->     with about_time() as t2            # see its documentation for more details.
->         tokens = tokenize(corpus)
->     with about_time() as t3
->         data = process(tokens)
->     with about_time() as t4
->         resp = send(data)
->
-> print(f'percentage1 = {t1.duration / t_total.duration}')
-> print(f'percentage2 = {t2.duration / t_total.duration}')
-> print(f'percentage3 = {t3.duration / t_total.duration}')
-> print(f'percentage4 = {t4.duration / t_total.duration}')
-> ```
->
-> There you go! Now you know the relative timings of all the steps, and can use them to improve your original code! Just get the cumulative timings and put within a manual mode `alive_bar`!
-> 
-> For example, if the timings you found were 10%, 30%, 20% and 40%, you'd use 0.1, 0.4, 0.6 and 1. (the last one should always be 1.):
->
-> ```python
-> with alive_bar(4, manual=True) as bar:
->     corpus = read_big_file()
->     bar(0.1)                           # 10%
->     tokens = tokenize(corpus)
->     bar(0.4)                           # 30% + 10% from previous steps
->     data = process(tokens)
->     bar(0.6)                           # 20% + 40% from previous steps
->     resp = send(data)
->     bar(1.)                            # always 1. in the last step
-> ```
-> 
-> That's it! Your user experience and ETA should be greatly improved now.
-> ---
-</details>
+So, you need to monitor a fixed operation, without any loops?
+<br>It'll work for sure! Here is an example (although a naive approach, we'll do better):
 
-<details>
-<summary>You want to calibrate the engine?</summary>
+```python
+with alive_bar(4) as bar:
+    corpus = read_file(file)
+    bar()  # file was read, tokenizing
+    tokens = tokenize(corpus)
+    bar()  # tokens generated, processing
+    data = process(tokens)
+    bar()  # process finished, sending response
+    resp = send(data)
+    bar()  # we're done! four bar calls with `total=4`
+```
 
-> ### FPS Calibration
->
-> The `alive-progress` bars have a cool visual feedback of the current throughput, so you can instantly **see** how fast your processing is, as the spinner runs faster or slower with it.
-> For this to happen, I've put together and implemented a few fps curves to empirically find which one gave the best feel of speed:
->
-> <p align="center"><img alt="alive-progress fps curves" src="img/alive-bar_fps.png" width="80%" height="80%"></p>
-> <p align="center">(interactive version [here](https://www.desmos.com/calculator/ema05elsux))</p>
->
-> The graph shows the logarithmic (red), parabolic (blue) and linear (green) curves, these are the ones I started with. It was not an easy task, I've made hundreds of tests, and never found one that really inspired that feel of speed I was looking for. The best one was the logarithmic one, but it reacted poorly with small numbers.
-> I know I could make it work with a few twists for those small numbers, so I experimented a lot and adjusted the logarithmic curve (dotted orange) until I finally found the behavior I expected. It is the one that seemed to provide the best all around perceived speed changes throughout the whole spectrum from units to billions.
-> That is the curve I've settled with, and it's the one used in all modes and conditions. In the future and if someone would find it useful, that curve could be configurable.
->
-> Well, the default `alive-progress` calibration is **1,000,000** in bounded modes, i.e., it takes 1 million iterations per second for the bar to refresh itself at 60 frames per second. In the manual unbounded mode it is **1.0** (100%). Both enable a vast operating range and generally work really well.
->
-> For example, take a look at the effect these very different calibrations have, running the very same code at the very same speed! Notice the feel the spinner passes to the user, is this processing going slow or going fast? And remember that isn't only the spinner refreshing but the whole line, complete with the bar rendition and all widgets, so everything gets smoother or sluggish:
->
-> ![alive-progress calibration](img/alive-calibration.gif)
->
-> > So, if your processing hardly gets to 20 items per second and you think `alive-progress` is rendering sluggish, you could increase that sense of speed by calibrating it to let's say `40`, and it will be running waaaay faster... Actually it is better to leave some headroom and calibrate it to something between 50% and 100% more, and then tweak it from there to find the one you like the most! :)
->
-> ---
-</details>
+It's naive because it considers all steps are equal, but actually each one may take a very different time to complete. Think a `read_file` and a `tokenize` steps being extremely fast, making the percentage skyrocket to 50%, then stopping for a long time in the `process` step. You get the point, it can ruin the user experience and create a very misleading ETA.
 
-<details>
-<summary>Oh you want to stop it altogether!</summary>
+What you need to do is distribute the steps accordingly! Since you told `alive_bar` there were four steps, when the first one completed it understood 1/4 or 25% of the whole processing was complete, which as we've seen may not be the case. Thus, you need to measure how long your steps do take, and use the **manual mode** to increase the bar percentage by different amounts at each step!
 
-> ### The Pause Mechanism
->
-> Why would you want to pause it, I hear? To get to manually act on some items at will, I say!
-> <br>Suppose you need to reconcile payment transactions (been there, done that). You need to iterate over thousands of them, detect somehow the faulty ones, and fix them. This fix is not simple nor deterministic, you need to study each one to understand what to do. They could be missing a recipient, or have the wrong amount, or not be synced with the server, etc, it's hard to even imagine all possibilities. Typically you would have to let the detection process run until completion, appending to a list each inconsistency found, and waiting potentially a long time until you can actually start fixing them. You could of course mitigate that by processing in chunks or printing them and acting in another shell, but those have their own shortcomings.
-> <br>Now there's a better way, pause the actual detection for a moment! Then you have to wait only until the next fault is found, and act in near real time!
->
-> To use the pause mechanism you must be inside a function, to enable the code to `yield` the items you want to interact with. You should already be using one in your code, but in the ipython shell for example, just wrap the `alive_bar` context inside one. Then you just need to enter the `bar.pause()` context!! Something like `with bar.pause(): yield transaction`.
->
-> ```python
-> def reconcile_transactions():
->     qs = Transaction.objects.filter()  # django example, or in sqlalchemy: session.query(Transaction).filter()
->     with alive_bar(qs.count()) as bar:
->         for transaction in qs:
->             if not validate(transaction):
->                 with bar.pause(): yield transaction
->             bar()
-> ```
->
-> That's it! Then you can use it in any code or even ipython! Just call the reconcile function to instantiate the generator and assign it to `gen` for example, and whenever you want another transaction to fix, call `next(gen, None)`! The progress bar will pop in as usual, but as soon as an inconsistency is found, the bar pauses itself and you get the prompt back with a transaction! It's almost magic! 😃
->
-> ```text
-> In [11]: gen = reconcile_transactions()
->
-> In [12]: next(gen, None)
-> |█████████████████████                   | 105/200 [52%] in 5s (18.8/s, eta: 4s)
-> Out[12]: Transaction<#123>
-> ```
->
-> You can then use `_12` ipython's shortcut to get the transaction, if you don't like that just assign it with `trn = next(gen, None)`, and you're set up as well to fix that `trn` at once!
-> <br>When you're done, revive the detection process with the same `next` as before... The bar reappears **exactly like it had stopped** and continues on the next item like nothing happened!! Nice huh :)
->
-> ```text
-> In [21]: next(gen, None)
-> |█████████████████████                   | ▁▃▅ 106/200 [52%] in 5s (18.8/s, eta: 4s)
-> ```
->
-> ---
-</details>
+You can use my other open source project [about-time](https://github.com/rsalmei/about-time) to easily measure these durations! Just try to simulate with some representative inputs, to get better results. Something like:
 
-<details>
-<summary>Those astonishing animations refuse to display?</summary>
+```python
+from about_time import about_time
 
-> ### Forcing animations on non-interactive consoles
->
-> There are ttys that do not report themselves as "interactive", which are valid for example in shell pipelines "|" or headless consoles. But there are some that do that for no good reason, like Pycharm's python console for instance.
-> The important thing is, if a console is not interactive, `alive_bar` disables all the animations and refreshes, as that could break some output, and prints only the final receipt.
-> So if you are in a safe environment like Pycharm's and would like to see `alive_bar` in all its glory, I've included a `force_tty` argument!
->
-> ```python
-> with alive_bar(1000, force_tty=True) as bar:
->     for i in range(1000):
->         time.sleep(.01)
->         bar()
-> ```
->
-> You can also set it system-wide in `config_handler`, then you won't need to pass it anymore.
->
-> Do note that Pycharm's console is heavily instrumented and thus has more overhead, so the outcome may not be as fluid as you would expect. To see `alive_bar` animations perfectly, always prefer a full-fledged terminal.
-> 
-> > (📌 new) Now `force_tty` also supports `False`, which will disable animations even on interactive displays.
->
-> ---
-</details>
+with about_time() as t_total:          # this about_time will measure the whole time of the block.
+    with about_time() as t1            # the other four will get the relative timings within the whole.
+        corpus = read_file(file)       # `about_time` supports several calling conventions, including one-liners.
+    with about_time() as t2            # see its documentation for more details.
+        tokens = tokenize(corpus)
+    with about_time() as t3
+        data = process(tokens)
+    with about_time() as t4
+        resp = send(data)
+
+print(f'percentage1 = {t1.duration / t_total.duration}')
+print(f'percentage2 = {t2.duration / t_total.duration}')
+print(f'percentage3 = {t3.duration / t_total.duration}')
+print(f'percentage4 = {t4.duration / t_total.duration}')
+```
+
+There you go! Now you know the relative timings of all the steps, and can use them to improve your original code! Just get the cumulative timings and put within a manual mode `alive_bar`!
+
+For example, if the timings you found were 10%, 30%, 20% and 40%, you'd use 0.1, 0.4, 0.6 and 1. (the last one should always be 1.):
+
+```python
+with alive_bar(4, manual=True) as bar:
+    corpus = read_big_file()
+    bar(0.1)                           # 10%
+    tokens = tokenize(corpus)
+    bar(0.4)                           # 30% + 10% from previous steps
+    data = process(tokens)
+    bar(0.6)                           # 20% + 40% from previous steps
+    resp = send(data)
+    bar(1.)                            # always 1. in the last step
+```
+
+That's it! The user experience and ETA should be greatly improved now.
+
+
+### FPS Calibration
+
+So, you want to calibrate the engine?
+
+The `alive-progress` bars have a cool visual feedback of the current throughput, so you can actually **see** how fast your processing is, as the spinner runs faster or slower with it.
+<br>For this to happen, I've put together and implemented a few fps curves to empirically find which one gave the best feel of speed:
+
+<p align="center"><img alt="alive-progress fps curves" src="img/alive-bar_fps.png" width="80%" height="80%"></p>
+<p align="center">(interactive version [here](https://www.desmos.com/calculator/ema05elsux))</p>
+
+The graph shows the logarithmic (red), parabolic (blue) and linear (green) curves, these are the ones I started with. It was not an easy task, I've made hundreds of tests, and never found one that really inspired that feel of speed I was looking for. The best one was the logarithmic one, but it reacted poorly with small numbers.
+I know I could make it work with a few twists for those small numbers, so I experimented a lot and adjusted the logarithmic curve (dotted orange) until I finally found the behavior I expected. It is the one that seemed to provide the best all around perceived speed changes throughout the whole spectrum from units to billions.
+That is the curve I've settled with, and it's the one used in all modes and conditions. In the future and if someone would find it useful, that curve could be configurable.
+
+Well, the default `alive-progress` calibration is **1,000,000** in bounded modes, i.e., it takes 1 million iterations per second for the bar to refresh itself at 60 frames per second. In the manual unbounded mode it is **1.0** (100%). Both enable a vast operating range and generally work really well.
+
+For example, take a look at the effect these very different calibrations have, running the very same code at the very same speed! Notice the feel the spinner passes to the user, is this processing going slow or going fast? And remember that isn't only the spinner refreshing but the whole line, complete with the bar rendition and all widgets, so everything gets smoother or sluggish:
+
+![alive-progress calibration](img/alive-calibration.gif)
+
+> So, if your processing hardly gets to 20 items per second, and you think `alive-progress` is rendering sluggish, you could increase that sense of speed by calibrating it to let's say `40`, and it will be running waaaay faster... Actually it is better to leave some headroom and calibrate it to something between 50% and 100% more, and then tweak it from there to find the one you like the most! :)
+
+
+
+### The Pause Mechanism
+
+Oh you want to stop it altogether!
+
+Why would you want to pause it, I hear? To get to manually act on some items at will, I say!
+<br>Suppose you need to reconcile payment transactions (been there, done that). You need to iterate over thousands of them, detect somehow the faulty ones, and fix them. This fix is not simple nor deterministic, you need to study each one to understand what to do. They could be missing a recipient, or have the wrong amount, or not be synced with the server, etc, it's hard to even imagine all possibilities. Typically you would have to let the detection process run until completion, appending to a list each inconsistency found, and waiting potentially a long time until you can actually start fixing them. You could of course mitigate that by processing in chunks or printing them and acting in another shell, but those have their own shortcomings.
+<br>Now there's a better way, pause the actual detection for a moment! Then you have to wait only until the next fault is found, and act in near real time!
+
+To use the pause mechanism you must be inside a function, to enable the code to `yield` the items you want to interact with. You should already be using one in your code, but in the ipython shell for example, just wrap the `alive_bar` context inside one. Then you just need to enter the `bar.pause()` context!! Something like `with bar.pause(): yield transaction`.
+
+```python
+def reconcile_transactions():
+    qs = Transaction.objects.filter()  # django example, or in sqlalchemy: session.query(Transaction).filter()
+    with alive_bar(qs.count()) as bar:
+        for transaction in qs:
+            if not validate(transaction):
+                with bar.pause(): yield transaction
+            bar()
+```
+
+That's it! Then you can use it in any code or even ipython! Just call the reconcile function to instantiate the generator and assign it to `gen` for example, and whenever you want another transaction to fix, call `next(gen, None)`! The progress bar will pop in as usual, but as soon as an inconsistency is found, the bar pauses itself and you get the prompt back with a transaction! It's almost magic! 😃
+
+```text
+In [11]: gen = reconcile_transactions()
+
+In [12]: next(gen, None)
+|█████████████████████                   | 105/200 [52%] in 5s (18.8/s, eta: 4s)
+Out[12]: Transaction<#123
+```
+
+You can then use `_12` ipython's shortcut to get the transaction, if you don't like that just assign it with `trn = next(gen, None)`, and you're set up as well to fix that `trn` at once!
+<br>When you're done, revive the detection process with the same `next` as before... The bar reappears **exactly like it had stopped** and continues on the next item like nothing happened!! Nice huh :)
+
+```text
+In [21]: next(gen, None)
+|█████████████████████                   | ▁▃▅ 106/200 [52%] in 5s (18.8/s, eta: 4s)
+```
+
+
+### Forcing animations on non-interactive consoles
+
+Those astonishing animations refuse to display?
+
+There are ttys that do not report themselves as "interactive", which are valid for example in shell pipelines "|" or headless consoles. But there are some that do that for no good reason, like Pycharm's python console for instance. And if a console is not interactive, `alive_bar` disables all animations and refreshes, only printing the final receipt. This is made to avoid spamming a log file or messing up a pipe output with hundreds of refreshes.
+
+So if you are in an interactive environment, like the aforementioned Pycharm console, you can see `alive_bar` in all its glory! Just use the `force_tty` argument!
+
+```python
+with alive_bar(1000, force_tty=True) as bar:
+    for i in range(1000):
+        time.sleep(.01)
+        bar()
+```
+
+You can also set it system-wide using the `config_handler`, then you won't need to pass it manually anymore.
+
+Do note that Pycharm's console is heavily instrumented and thus has more overhead, so the outcome may not be as fluid as one would expect. To see `alive_bar` animations perfectly, always prefer a full-fledged terminal.
+
+> (📌 new) Now `force_tty` also supports `False`, which will disable animations even on interactive displays.
 
 
 ## Interesting facts
@@ -652,11 +657,13 @@ The `alive_progress` framework starting from version 2.0 does not support Python
 This software is licensed under the MIT License. See the LICENSE file in the top distribution directory for the full license text.
 
 
-## Did you like it?
+---
+Maintaining an open source project is hard and time-consuming.
+<br>I put much ❤️ and effort into this, continually.
 
-I've put much ❤️ and effort into this.
+If you've appreciated my work and would like me to continue improving it, please back me up with a donation!
+<br>I'd appreciate any encouragement 😊
+[<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
+[<img align="right" alt="Donate with PayPal button" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate?business=6SWSHEB5ZNS5N&no_recurring=0&item_name=I%27m+the+author+of+alive-progress%2C+clearly+and+about-time.+Thank+you+for+appreciating+my+work%21&currency_code=USD)
 
-If you've appreciated my work and would like me to continue improving it,
-<br>please back me up with a donation! I'll surely appreciate the encouragement!
-<br>Thank you! 😊
-[<img align="left" alt="Donate with PayPal button" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate?business=6SWSHEB5ZNS5N&no_recurring=0&item_name=I%27m+the+author+of+alive-progress%2C+clearly+and+about-time.+Thank+you+for+appreciating+my+work%21&currency_code=USD)
+---
