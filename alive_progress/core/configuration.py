@@ -1,6 +1,9 @@
 import os
+import sys
 from collections import namedtuple
 from types import FunctionType
+
+from ..utils.terminal import NON_TTY, TTY
 
 ERROR = object()  # represents a config value not accepted.
 
@@ -63,10 +66,15 @@ def _bool_input_factory():
     return _input
 
 
-def _tristate_input_factory():
+def _force_tty_input_factory():
     def _input(x):
-        return None if x is None else bool(x)
+        return table.get(x, ERROR)
 
+    table = {
+        None: TTY if sys.stdout.isatty() else NON_TTY,
+        False: NON_TTY,
+        True: TTY,
+    }
     return _input
 
 
@@ -149,7 +157,7 @@ def create_config():
             spinner=_spinner_input_factory(None),  # accept empty.
             bar=_bar_input_factory(),
             unknown=_spinner_input_factory(ERROR),  # do not accept empty.
-            force_tty=_tristate_input_factory(),
+            force_tty=_force_tty_input_factory(),
             manual=_bool_input_factory(),
             enrich_print=_bool_input_factory(),
             receipt_text=_bool_input_factory(),
