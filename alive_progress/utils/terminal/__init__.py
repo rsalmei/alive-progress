@@ -10,13 +10,14 @@ if sys.platform == 'win32':
     os.system('')
 
 
-def _create(mod):
+def _create(mod, interactive):
     def emit(text):
         mod.write(text)
         mod.flush()
 
     terminal = SimpleNamespace(
         emit=emit,
+        interactive=interactive,
         cursor_up_1=mod.factory_cursor_up(1),
 
         # from mod terminal impl.
@@ -33,7 +34,23 @@ def _create(mod):
     return terminal
 
 
-TTY = _create(tty)
-JUPYTER = _create(jupyter)
-NON_TTY = _create(non_tty)
-VOID = _create(void)
+def _is_notebook():
+    """This detection is tricky, because by design there's no way to tell which kind
+    of frontend is connected, there may even be more than one with different types!
+    Also, there may be other types I'm not aware of...
+    So, I've chosen what I thought it was the safest method, with a negative logic:
+    if it _isn't_ None or TerminalInteractiveShell, it should be the "jupyter" type.
+    The jupyter type does not emit any ANSI Escape Codes.
+    """
+    if 'IPython' not in sys.modules:
+        # if IPython hasn't been imported, there's nothing to check.
+        return False
+
+    from IPython import get_ipython
+    class_ = get_ipython().__class__.__name__
+    return class_ != 'TerminalInteractiveShell'
+
+
+TTY = _create(jupyter if _is_notebook() else tty, True)
+NON_TTY = _create(non_tty, False)
+VOID = _create(void, False)
