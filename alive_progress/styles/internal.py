@@ -33,10 +33,10 @@ def __create_spinners():
     dots_waves2 = delayed_spinner_factory(dots, 5, 2)
 
     _balloon = bouncing_spinner_factory('🎈', 12, background='⠁⠈⠐⠠⢀⡀⠄⠂', overlay=True)
-    pennywise = sequential_spinner_factory(  # do not use block mode, so that they doesn't grow.
+    it = sequential_spinner_factory(  # do not use block mode, so that they doesn't grow.
         _balloon,
         _balloon,  # makes the balloon twice as common.
-        bouncing_spinner_factory('🤡', background='⠁⠈⠐⠠⢀⡀⠄⠂', overlay=True),
+        bouncing_spinner_factory('🤡', background='⠁⠈⠐⠠⢀⡀⠄⠂', overlay=False),
         intermix=False
     ).randomize()
 
@@ -100,8 +100,8 @@ def __create_spinners():
     return _wrap_ordered(
         locals(),
         'classic stars twirl twirls horizontal vertical waves waves2 waves3 dots dots_waves'
-        ' dots_waves2 pennywise ball_belt balls_belt triangles brackets bubbles flowers elements'
-        ' loving notes notes2 arrow arrows arrows2 arrows_in arrows_out radioactive boat fish fish2'
+        ' dots_waves2 it ball_belt balls_belt triangles brackets bubbles flowers elements loving'
+        ' notes notes2 arrow arrows arrows2 arrows_in arrows_out radioactive boat fish fish2'
         ' fishes crab frank wait wait2 wait3 pulse'
     )
 
