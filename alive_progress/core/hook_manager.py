@@ -6,10 +6,8 @@ from itertools import chain, islice, repeat
 from logging import StreamHandler
 from types import SimpleNamespace
 
-from ..utils.terminal import clear_line
 
-
-def buffered_hook_manager(header_template, get_pos, cond_refresh):
+def buffered_hook_manager(header_template, get_pos, cond_refresh, _term):
     """Create and maintain a buffered hook manager, used for instrumenting print
     statements and logging.
 
@@ -17,6 +15,7 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh):
         header_template (): the template for enriching output
         get_pos (Callable[..., Any]): the container to retrieve the current position
         cond_refresh: Condition object to force a refresh when printing
+        _term: the current terminal
 
     Returns:
         a closure with several functions
@@ -43,12 +42,15 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh):
             header = get_header()
             with cond_refresh:
                 nested = ''.join(line or ' ' * len(header) for line in buffer)
+                text = f'{header}{nested.strip()}\n'
                 if stream in base:
-                    # this avoids potential flickering, since now the stream can also be
-                    # files from logging, and thus not needing to clear the screen...
-                    clear_line()
-                stream.write(f'{header}{nested.strip()}\n')
-                stream.flush()
+                    # use the current terminal abstraction.
+                    _term.clear_line()
+                    _term.emit(text)
+                else:
+                    # handle other streams from logging.
+                    stream.write(text)
+                    stream.flush()
                 cond_refresh.notify()
                 buffer[:] = []
 
