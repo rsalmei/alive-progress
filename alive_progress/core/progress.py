@@ -96,7 +96,7 @@ def alive_bar(total=None, *, calibrate=None, **options):
 
 
 @contextmanager
-def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition, _sampler=None):
+def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition):
     """Actual alive_bar handler, that exposes internal functions for configuration of
     both normal operation and overhead estimation."""
 
@@ -124,8 +124,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             run.last_len = print_cells(fragments, term.cols(), run.last_len, _term=term)
             term.flush()
 
-    if _sampler is not None:  # used for sampling overhead estimation.
-        _sampler._alive_repr = alive_repr
+    __alive_bar._alive_repr = alive_repr
 
     def set_text(message):
         run.text = to_cells(message)
