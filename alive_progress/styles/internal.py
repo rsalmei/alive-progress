@@ -114,9 +114,9 @@ def __create_bars():
     blocks = bar_factory('▏▎▍▌▋▊▉')
     bubbles = bar_factory('∙○⦿●', borders='<>')
     solid = bar_factory('∙□☐■', borders='<>')
+    checks = bar_factory('✓')
     circles = bar_factory('●', background='○', borders='<>')
     squares = bar_factory('■', background='□', borders='<>')
-    checks = bar_factory('✓')
     halloween = bar_factory('🎃', background='   👻   💀', errors=('😱', '🗡🗡🗡🗡'))
     filling = bar_factory('▁▂▃▄▅▆▇█')
     notes = bar_factory('♩♪♫♬', errors='♭♯')
@@ -127,7 +127,7 @@ def __create_bars():
 
     return _wrap_ordered(
         locals(),
-        'smooth classic classic2 brackets blocks bubbles solid circles squares checks halloween'
+        'smooth classic classic2 brackets blocks bubbles solid checks circles squares halloween'
         ' filling notes ruler ruler2 fish scuba'
     )
 
