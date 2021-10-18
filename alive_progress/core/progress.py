@@ -5,7 +5,7 @@ from contextlib import contextmanager
 
 from .calibration import calibrated_fps
 from .configuration import config_handler
-from .hook_manager import buffered_hook_manager
+from .hook_manager import buffered_hook_manager, passthrough_hook_manager
 from ..utils.cells import combine_cells, fix_cells, print_cells, to_cells
 from ..utils.terminal import VOID
 from ..utils.timing import elapsed_text, eta_text, gen_simple_exponential_smoothing_eta
@@ -96,8 +96,7 @@ def alive_bar(total=None, *, calibrate=None, **options):
 
 
 @contextmanager
-def __alive_bar(config, total=None, *, calibrate=None,
-                _cond=threading.Condition, _hooks=buffered_hook_manager, _sampler=None):
+def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition, _sampler=None):
     """Actual alive_bar handler, that exposes internal functions for configuration of
     both normal operation and overhead estimation."""
 
@@ -155,8 +154,26 @@ def __alive_bar(config, total=None, *, calibrate=None,
         bar._handle, bar.text = __noop, __noop
         return time.perf_counter() - run.init
 
-    bar, term = __AliveBarHandle(), VOID if config.disable else config.force_tty
+    if total or not config.manual:  # we can count items.
+        logic_total, current = total, lambda: run.count
+        rate_spec, factor, header = 'f', 1.e6, 'on {:d}: '
+    else:  # there's only a manual percentage.
+        logic_total, current = 1., lambda: run.percent
+        rate_spec, factor, header = '%', 1., 'on {:.1%}: '
+
+    title, fps = _render_title(config), calibrated_fps(calibrate or factor)
+    bar, bar_repr = __AliveBarHandle(), _create_bars(config)
+    bar.current, run.text, run.last_len, run.elapsed = current, '', 0, 0.
+    run.count, run.percent, run.rate, run.init = 0, 0., 0., 0.
     thread, event_renderer, cond_refresh = None, threading.Event(), _cond()
+
+    if config.disable:
+        term, hook_manager = VOID, passthrough_hook_manager()
+    else:
+        term = config.force_tty
+        hook_manager = buffered_hook_manager(
+            header if config.enrich_print else '', current, cond_refresh, term)
+
     if term.interactive:
         @contextmanager
         def pause_monitoring():
@@ -173,14 +190,6 @@ def __alive_bar(config, total=None, *, calibrate=None,
         thread = threading.Thread(target=run, args=(_create_spinner_player(config),))
         thread.daemon = True
         thread.start()
-
-    if total or not config.manual:  # we can count items.
-        logic_total, current = total, lambda: run.count
-        rate_spec, factor, header = 'f', 1.e6, 'on {:d}: '
-    else:  # there's only a manual percentage.
-        logic_total, current = 1., lambda: run.percent
-        rate_spec, factor, header = '%', 1., 'on {:.1%}: '
-    bar.current, bar_repr = current, _create_bars(config)
 
     if total or config.manual:  # we can track progress and therefore eta.
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
@@ -203,9 +212,6 @@ def __alive_bar(config, total=None, *, calibrate=None,
 
     def elapsed_end():
         return f'in {elapsed_text(run.elapsed, True)}'
-
-    run.text, run.last_len, run.elapsed = '', 0, 0.
-    run.count, run.percent, run.rate, run.init = 0, 0., 0., 0.
 
     if total:
         if config.manual:
@@ -245,9 +251,6 @@ def __alive_bar(config, total=None, *, calibrate=None,
     if not config.elapsed:
         elapsed = elapsed_end = __noop
 
-    title = _render_title(config)
-    fps = calibrated_fps(calibrate or factor)
-    hook_manager = _hooks(header if config.enrich_print else '', current, cond_refresh, term)
     start_monitoring()
     try:
         yield bar

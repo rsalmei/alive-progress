@@ -93,6 +93,17 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, _term):
     return hook_manager
 
 
+def passthrough_hook_manager():
+    passthrough_hook_manager.flush_buffers = __noop
+    passthrough_hook_manager.install = __noop
+    passthrough_hook_manager.uninstall = __noop
+    return passthrough_hook_manager
+
+
+def __noop():
+    pass
+
+
 if sys.version_info >= (3, 7):  # pragma: no cover
     def _set_stream(handler, stream):
         return handler.setStream(stream)
