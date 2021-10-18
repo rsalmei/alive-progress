@@ -7,7 +7,7 @@ from logging import StreamHandler
 from types import SimpleNamespace
 
 
-def buffered_hook_manager(header_template, get_pos, cond_refresh, _term):
+def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
     """Create and maintain a buffered hook manager, used for instrumenting print
     statements and logging.
 
@@ -15,7 +15,7 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, _term):
         header_template (): the template for enriching output
         get_pos (Callable[..., Any]): the container to retrieve the current position
         cond_refresh: Condition object to force a refresh when printing
-        _term: the current terminal
+        term: the current terminal
 
     Returns:
         a closure with several functions
@@ -43,14 +43,12 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, _term):
             with cond_refresh:
                 nested = ''.join(line or ' ' * len(header) for line in buffer)
                 text = f'{header}{nested.strip()}\n'
-                if stream in base:
-                    # use the current terminal abstraction.
-                    _term.clear_line()
-                    _term.emit(text)
-                else:
-                    # handle other streams from logging.
-                    stream.write(text)
-                    stream.flush()
+                if stream in base:  # pragma: no cover
+                    # use the current terminal abstraction for preparing the screen.
+                    term.clear_line()
+                # handle all streams, both screen and logging.
+                stream.write(text)
+                stream.flush()
                 cond_refresh.notify()
                 buffer[:] = []
 
@@ -59,7 +57,7 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, _term):
             handler.stream.flush()
         return SimpleNamespace(write=partial(write, handler.stream),
                                flush=partial(flush, handler.stream),
-                               isatty=sys.__stdout__.isatty)
+                               isatty=sys.stdout.isatty)
 
     def install():
         root = logging.root
