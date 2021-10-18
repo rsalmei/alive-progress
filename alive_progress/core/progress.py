@@ -278,7 +278,7 @@ class __AliveBarHandle:
 def _create_bars(local_config):
     bar = local_config.bar
     if bar is None:
-        obj = lambda p: None
+        obj = __noop
         obj.unknown, obj.end = obj, obj
         return obj
     return bar(local_config.length, local_config.unknown)

@@ -77,7 +77,7 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
 
     # internal data.
     buffers = defaultdict(list)
-    get_header = (lambda: header_template.format(get_pos())) if header_template else lambda: ''
+    get_header = gen_header(header_template, get_pos) if header_template else null_header
     base = sys.stdout, sys.stderr  # needed for tests.
     before_handlers = {}
 
@@ -91,15 +91,26 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
     return hook_manager
 
 
-def passthrough_hook_manager():
+def passthrough_hook_manager():  # pragma: no cover
     passthrough_hook_manager.flush_buffers = __noop
     passthrough_hook_manager.install = __noop
     passthrough_hook_manager.uninstall = __noop
     return passthrough_hook_manager
 
 
-def __noop():
+def __noop():  # pragma: no cover
     pass
+
+
+def gen_header(header_template, get_pos):  # pragma: no cover
+    def inner():
+        return header_template.format(get_pos())
+
+    return inner
+
+
+def null_header():  # pragma: no cover
+    return ''
 
 
 if sys.version_info >= (3, 7):  # pragma: no cover
