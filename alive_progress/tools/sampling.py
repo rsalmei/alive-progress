@@ -12,13 +12,12 @@ def overhead(total=None, *, calibrate=None, **options):
     repeat = 300  # timeit how many times to repeat the whole test.
 
     import timeit
-    config, sampler = config_handler(force_tty=False, **options), SimpleNamespace()
-    with __alive_bar(config, total, calibrate=calibrate, _write=__noop_p, _flush=__noop,
-                     _cond=__lock, _term_cols=__noop_z, _hook_manager=__hook_manager,
-                     _sampler=sampler) as bar:
+    config, sampler = config_handler(disable=True, **options), SimpleNamespace()
+    with __alive_bar(config, total, calibrate=calibrate,
+                     _cond=__lock, _hooks=__hook_manager, _sampler=sampler) as bar:
         sampler.__dict__.update(bar.__dict__)
         # the timing of the print_cells function increases proportionately with the
-        # number of columns in the terminal, so I want a baseline here with `_term_cols=0`.
+        # number of columns in the terminal, so I want a baseline here `VOID.cols == 0`.
         res = timeit.repeat('_alive_repr()', repeat=repeat, number=number, globals=sampler.__dict__)
 
     return duration_human(min(res) / number).replace('us', 'µs')
@@ -68,10 +67,6 @@ def __noop_p(_ignore):
     return 0
 
 
-def __noop_z():
-    return 0
-
-
 class __lock:
     def __enter__(self):
         pass
@@ -80,7 +75,7 @@ class __lock:
         pass
 
 
-def __hook_manager(_=None, __=None, ___=None):
+def __hook_manager(_1=None, _2=None, _3=None, _4=None):
     __hook_manager.flush_buffers = __noop
     __hook_manager.install = __noop
     __hook_manager.uninstall = __noop
