@@ -75,11 +75,10 @@ def alive_bar(total=None, *, calibrate=None, **options):
             theme (str): a set of matching spinner, bar and unknown
                 accepts a predefined theme name
             force_tty (Optional[int|bool]): forces a specific kind of terminal:
-                False -> disables animations; enables print hooks and the final receipt
-                True -> enables animations, print hooks and the final receipt
-                    auto-detects Jupyter Notebooks!
-                None (default) -> auto select, according to the terminal's tty state
-            disabled (bool): if True, completely disable all output
+                False -> disables animations, keeping only the the final receipt
+                True -> enables animations, and auto-detects Jupyter Notebooks!
+                None (default) -> auto select, according to the terminal/Jupyter
+            disable (bool): if True, completely disables all output, do not install hooks
             manual (bool): set to manually control the bar position
             enrich_print (bool): enriches print() and logging messages with the bar position
             receipt_text (bool): set to repeat the last text message in the final receipt
