@@ -51,6 +51,6 @@ def _is_notebook():
     return class_ != 'TerminalInteractiveShell'
 
 
-TTY = _create(jupyter if _is_notebook() else tty, True)
+FULL = _create(jupyter if _is_notebook() else tty, True)
 NON_TTY = _create(non_tty, False)
 VOID = _create(void, False)

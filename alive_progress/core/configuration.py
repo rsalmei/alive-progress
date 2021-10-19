@@ -3,7 +3,7 @@ import sys
 from collections import namedtuple
 from types import FunctionType
 
-from ..utils.terminal import NON_TTY, TTY
+from ..utils.terminal import NON_TTY, FULL
 
 ERROR = object()  # represents a config value not accepted.
 
@@ -71,9 +71,9 @@ def _force_tty_input_factory():
         return table.get(x, ERROR)
 
     table = {
-        None: TTY if sys.stdout.isatty() else NON_TTY,
+        None: FULL if sys.stdout.isatty() else NON_TTY,
         False: NON_TTY,
-        True: TTY,
+        True: FULL,
     }
     return _input
 

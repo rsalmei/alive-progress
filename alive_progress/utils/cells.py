@@ -59,7 +59,7 @@ SPACES = repeat(' ')
 VS_15 = '\ufe0e'
 
 
-def print_cells(fragments, cols, last_line_len=0, _term=terminal.TTY):
+def print_cells(fragments, cols, last_line_len=0, _term=terminal.FULL):
     """Print a tuple of fragments of tuples of cells on the terminal, until a given number of
     cols is achieved, slicing over cells when needed.
 

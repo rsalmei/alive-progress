@@ -6,7 +6,7 @@ import pytest
 from alive_progress.core.configuration import Config, ERROR, __style_input_factory, \
     _bool_input_factory, _int_input_factory, create_config
 from alive_progress.styles.internal import BARS, SPINNERS, THEMES
-from alive_progress.utils.terminal import NON_TTY, TTY
+from alive_progress.utils.terminal import NON_TTY, FULL
 
 
 @pytest.mark.parametrize('lower, upper, num, expected', [
@@ -95,7 +95,7 @@ def test_config_creation(handler):
     (dict(manual=True), {}),
     (dict(enrich_print=False), {}),
     (dict(title_length=20), {}),
-    (dict(force_tty=True, manual=True, enrich_print=False, title_length=10), dict(force_tty=TTY)),
+    (dict(force_tty=True, manual=True, enrich_print=False, title_length=10), dict(force_tty=FULL)),
     (dict(spinner=None, manual=None), dict(manual=False)),
 ])
 def config_params(request):
