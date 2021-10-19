@@ -34,6 +34,19 @@ I like to think of it as a new kind of progress bar for Python, since it has amo
 - it is **customizable**, with a growing smorgasbord of different bar and spinner styles, as well as several factories to easily generate yours! Now (📌 new in 2.0) we even have super powerful and cool `.check()` tools in both bars and spinners, to help you design your animations! You can see all the frames and cycles exploded on screen, with several verbosity levels, even including an **alive** rendition! 😜
 
 
+## 📌 NEW 2.1 series!
+
+YES! Now `alive-progres` has support for Jupyter Notebooks, and also includes a Disabled state! Both were highly sought after, and have finally landed!
+<br>And better, I've implemented an auto-detection mechanism for jupyter notebooks, so it just works, out of the box, without any changes in your code!!
+
+See for yourself:
+
+![alive-progress demo](img/alive-jupyter.gif)
+
+It seems to work very well, but at this moment it should be considered **Experimental**.
+<br>There were instances in which some visual glitches did appear to me, but it's something I think I can't possibly workaround. It seems Jupyter sometimes refresh the screen at odd times, which makes the screen loses some updates...
+
+
 ## 📌 NEW 2.0 series!
 
 This is a major breakthrough in `alive-progress`!
@@ -130,7 +143,8 @@ So, in short: retrieve the items as usual, enter the `alive_bar` context manager
 While inside an `alive_bar` context, you can effortlessly display messages with:
 - the usual Python `print()` statement, where `alive_bar` nicely cleans up the line, prints your message alongside the current bar position at the time, and continues the bar right below it;
 - the standard Python `logging` framework, including file outputs, are also enriched exactly like the previous one;
-- the cool `bar.text('message')`, which sets a situational message right within the bar, where you can display something about the current item, or the phase the processing is in!
+- the cool `bar.text('message')`, which sets a situational message right within the bar, where you can display something about the current item, or the phase the processing is in;
+- and all of this works just the same in an actual terminal or in a Jupyter notebook!
 
 ![alive-progress printing messages](img/print-hook.gif)
 
@@ -297,7 +311,8 @@ These are the options - default values in brackets:
 <br>   ↳ accepts a predefined spinner name, or a custom spinner factory (cannot be None)
 - `theme`: [`'smooth'`] a set of matching spinner, bar and unknown
 <br>   ↳ accepts a predefined theme name
-- `force_tty`: [`None`] forces animations to be on, off, or according to the tty (more details [here](#advanced))
+- `force_tty`: [`None`] forces animations to be on, off, or according to the tty (more details [here](#forcing-animations-on-non-interactive-consoles))
+- `disable`: [`False`] if True, completely disables all output, do not install hooks
 - `manual`: [`False`] set to manually control the bar position
 - `enrich_print`: [`True`] enriches print() and logging messages with the bar position
 - `receipt_text`: [`False`] set to repeat the last text message in the final receipt
@@ -309,7 +324,7 @@ These are the options - default values in brackets:
 - `spinner_length`: [`0`] forces the spinner length, or `0` for its natural one
 
 And there's also one that can only be set locally in an `alive_bar` context:
-- `calibrate`: maximum theoretical throughput to calibrate animation speed (more details [here](#advanced))
+- `calibrate`: maximum theoretical throughput to calibrate animation speed (more details [here](#fps-calibration))
 
 To set them locally, just send them as keyword arguments to `alive_bar`:
 
@@ -432,10 +447,10 @@ If you've appreciated my work and would like me to continue improving it, please
 
 ## Advanced
 
-### Static loop-less use
+### Loop-less use
 
 So, you need to monitor a fixed operation, without any loops?
-<br>It'll work for sure! Here is an example (although a naive approach, we'll do better):
+<br>It'll work for sure! Here is a naive example (we'll do better in a moment):
 
 ```python
 with alive_bar(4) as bar:
@@ -449,9 +464,9 @@ with alive_bar(4) as bar:
     bar()  # we're done! four bar calls with `total=4`
 ```
 
-It's naive because it considers all steps are equal, but actually each one may take a very different time to complete. Think a `read_file` and a `tokenize` steps being extremely fast, making the percentage skyrocket to 50%, then stopping for a long time in the `process` step. You get the point, it can ruin the user experience and create a very misleading ETA.
+It's naive because it assumes all steps take the same amount of time, but actually each one may take very different times to complete. Think `read_file` and `tokenize` may be extremely fast, which makes the percentage skyrocket to 50%, then stopping for a long time in the `process` step... You get the point, it can ruin the user experience and create a very misleading ETA.
 
-What you need to do is distribute the steps accordingly! Since you told `alive_bar` there were four steps, when the first one completed it understood 1/4 or 25% of the whole processing was complete, which as we've seen may not be the case. Thus, you need to measure how long your steps do take, and use the **manual mode** to increase the bar percentage by different amounts at each step!
+To improve upon that you need to distribute the steps' percentages accordingly! Since you told `alive_bar` there were four steps, when the first one completed it understood 1/4 or 25% of the whole processing was complete. Thus, you need to measure how long your steps actually take, and use the **manual mode** to increase the bar percentage by different amounts at each step!
 
 You can use my other open source project [about-time](https://github.com/rsalmei/about-time) to easily measure these durations! Just try to simulate with some representative inputs, to get better results. Something like:
 
@@ -560,9 +575,11 @@ In [21]: next(gen, None)
 
 Those astonishing animations refuse to display?
 
-There are ttys that do not report themselves as "interactive", which are valid for example in shell pipelines "|" or headless consoles. But there are some that do that for no good reason, like Pycharm's python console for instance. And if a console is not interactive, `alive_bar` disables all animations and refreshes, only printing the final receipt. This is made to avoid spamming a log file or messing up a pipe output with hundreds of refreshes.
+There are terminals that occasionally do not report themselves as "interactive", for example in shell pipeline commands "|" or background processes. And there are some that never reports themselves as interactive, like Pycharm's python console and Jupyter Notebooks for instance.
 
-So if you are in an interactive environment, like the aforementioned Pycharm console, you can see `alive_bar` in all its glory! Just use the `force_tty` argument!
+When a console is not interactive, `alive-progress` disables all kinds of animations, only printing the final receipt. This is made to avoid spamming a log file or messing up a pipe output with thousands of progress bar updates.
+
+So, when you know it's safe, you can in fact see `alive-progress` in all its glory! Just use the `force_tty` argument!
 
 ```python
 with alive_bar(1000, force_tty=True) as bar:
@@ -571,11 +588,16 @@ with alive_bar(1000, force_tty=True) as bar:
         bar()
 ```
 
-You can also set it system-wide using the `config_handler`, then you won't need to pass it manually anymore.
+The values accepted are:
+- `force_tty=True` -> enables animations, and auto-detects Jupyter Notebooks!
+- `force_tty=False` -> disables animations, keeping only the final receipt
+- `force_tty=None` (default) -> auto select, according to the terminal's tty state
 
-Do note that Pycharm's console is heavily instrumented and thus has more overhead, so the outcome may not be as fluid as one would expect. To see `alive_bar` animations perfectly, always prefer a full-fledged terminal.
+You can also set it system-wide using the `config_handler`, then you won't need to pass that manually in all `alive_bar` calls.
 
-> (📌 new) Now `force_tty` also supports `False`, which will disable animations even on interactive displays.
+Do note that Pycharm's console and Jupyter notebooks are heavily instrumented and thus have more overhead, so the outcome may not be as fluid as you would expect; and on top of that Jupyter notebooks do not support ANSI Escape Codes, so I had to develop some workarounds, to emulate functions like "clear the line" and "clear from cursor".
+
+> To see `alive_bar` animations as I intended, always prefer a full-fledged terminal.
 
 
 ## Interesting facts
@@ -631,6 +653,7 @@ The `alive_progress` framework starting from version 2.0 does not support Python
 
 
 ## Changelog highlights (complete [here](CHANGELOG.md)):
+- 2.1.0: Jupyter notebook support (experimental), Jupyter auto-detection, disable feature and configuration
 - 2.0.0: new system-wide Cell Architecture with grapheme clusters support; super cool spinner compiler and runner; `.check()` tools in both spinners and bars; bars and spinners engines revamp; new animation modes in alongside and sequential spinners; new builtin spinners, bars and themes; dynamic showtime with themes, scroll protection and filter patterns; improved logging for files; several new configuration options for customizing appearance; new iterator adapter `alive_it`; uses `time.perf_counter()` high resolution clock; requires python 3.6+ (and officially supports python 3.9 and 3.10)
 - 1.6.2: new `bar.current()` method; newlines get printed on vanilla Python REPL; bar is truncated to 80 chars on Windows.
 - 1.6.1: fix logging support for python 3.6 and lower; support logging for file; support for wide unicode chars, which use 2 columns but have length 1

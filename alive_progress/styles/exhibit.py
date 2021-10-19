@@ -11,7 +11,7 @@ from ..animations.spinners import scrolling_spinner_factory, sequential_spinner_
 from ..animations.utils import spinner_player
 from ..core.configuration import config_handler
 from ..utils.cells import combine_cells, print_cells
-from ..utils.terminal import clear_end, hide_cursor, show_cursor
+from ..utils.terminal import FULL
 
 Show = Enum('Show', 'SPINNERS BARS THEMES')
 
@@ -160,19 +160,19 @@ def _showtime_gen(fps, gens, info, length):
 
     start, sleep, frame, line_num = time.perf_counter(), 1. / fps, 0, 0
     start, current = start - sleep, start  # simulates the first frame took exactly "sleep" ms.
-    hide_cursor()
+    FULL.hide_cursor()
     try:
         while True:
             cols, lines = os.get_terminal_size()
 
             title = 'Welcome to alive-progress!', next(logo)
             print_cells(title, cols)  # line 1.
-            clear_end()
+            FULL.clear_end()
             print()
 
             info = fps_monitor.format(frame / (current - start)), next(info_player)
             print_cells(info, cols)  # line 2.
-            clear_end()
+            FULL.clear_end()
 
             content = [next(gen) for gen in gens]  # always consume gens, to maintain them in sync.
             for line_num, fragments in enumerate(content, 3):
@@ -180,7 +180,7 @@ def _showtime_gen(fps, gens, info, length):
                     break
                 print()
                 print_cells(fragments, cols)
-                clear_end()
+                FULL.clear_end()
 
             frame += 1
             current = time.perf_counter()
@@ -189,7 +189,7 @@ def _showtime_gen(fps, gens, info, length):
     except KeyboardInterrupt:
         pass
     finally:
-        show_cursor()
+        FULL.show_cursor()
 
 
 def _spinner_gen(name, spinner_factory, max_natural):

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.0 - Oct 18, 2021
+- Jupyter notebook support (experimental), Jupyter auto-detection, disable feature and configuration
+- four internal terminal abstractions, to support TTY, JUPYTER, NON_TTY and VOID
+
+
 ## 2.0.0 - Aug 25, 2021
 This is a major breakthrough in `alive-progress`!
 - now there's complete support for Emojis 🤩 and exotic Unicode chars in general, which required MAJOR refactoring deep within the project, giving rise to what I called **Cells Architecture** => now all internal components use and generate streams of cells instead of chars, and correctly interprets grapheme clusters — it has enabled to render complex multi-chars symbols as if they were one, thus making them work on any spinners, bars, texts, borders, backgrounds, everything!!! there's even support for wide chars, which are represented with any number of chars, including one, but take two spaces on screen!! pretty advanced stuff 🤓
