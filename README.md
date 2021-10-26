@@ -43,8 +43,8 @@ See for yourself:
 
 ![alive-progress demo](img/alive-jupyter.gif)
 
-It seems to work very well, but at this moment it should be considered **Experimental**.
-<br>There were instances in which some visual glitches did appear to me, but it's something I think I can't possibly workaround. It seems Jupyter sometimes refresh the screen at odd times, which makes the screen loses some updates...
+> It seems to work very well, but at this moment it should be considered **experimental**.
+> <br>There were instances in which some visual glitches have appeared, like two `alive_bar` refreshes being concatenated together instead of over one another... And it's something I think I can't possibly work around: it seems Jupyter sometimes refresh the canvas at odd times, which makes it lose some data. Please let me know on the issues if something funnier arises.
 
 
 ## 📌 NEW 2.0 series!
@@ -248,10 +248,8 @@ It's actually quite simple, you do not need to think about which mode you should
 
 ---
 Maintaining an open source project is hard and time-consuming.
-<br>I put much ❤️ and effort into this, continually.
-
-If you've appreciated my work and would like me to continue improving it, please back me up with a donation!
-<br>I'd appreciate any encouragement 😊
+<br>I've put much ❤️ and effort into this.
+<br>You can back me up with a donation if you've appreciated my work, thank you 😊
 [<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
 [<img align="right" alt="Donate with PayPal button" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate?business=6SWSHEB5ZNS5N&no_recurring=0&item_name=I%27m+the+author+of+alive-progress%2C+clearly+and+about-time.+Thank+you+for+appreciating+my+work%21&currency_code=USD)
 
@@ -435,10 +433,8 @@ Wow, if you read everything till here, you should now have a sound knowledge abo
 
 ---
 Maintaining an open source project is hard and time-consuming.
-<br>I put much ❤️ and effort into this, continually.
-
-If you've appreciated my work and would like me to continue improving it, please back me up with a donation!
-<br>I'd appreciate any encouragement 😊
+<br>I've put much ❤️ and effort into this.
+<br>You can back me up with a donation if you've appreciated my work, thank you 😊
 [<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
 [<img align="right" alt="Donate with PayPal button" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate?business=6SWSHEB5ZNS5N&no_recurring=0&item_name=I%27m+the+author+of+alive-progress%2C+clearly+and+about-time.+Thank+you+for+appreciating+my+work%21&currency_code=USD)
 
@@ -610,18 +606,18 @@ Do note that Pycharm's console and Jupyter notebooks are heavily instrumented an
 
 ## To do
 
-- enable multiple simultaneous bars, for nested or multiple activities (this is always requested!);
-- reset a running bar context, a quantifying mode is expected;
-- dynamic bar width rendition, listening to changes in terminal size (the whole progress-bar line already truncates when needed, according to terminal size);
-- improve test coverage, currently at 77% branch coverage, working to achieve 100% (but it's hard, since it's multi-threaded and includes system hooks);
-- create a contrib system, to allow a simple way to share the coolest users' spinners and bars;
-- jupyter notebook support (it's actually another whole implementation using graphical widgets, so not very likely to be done);
-- support colors in spinners and bars (it's **very** hard, since color codes alter string sizes, and correctly cut, reverse and iterate is very complex);
+- enable multiple simultaneous bars, for nested or multiple activities (this is always requested!)
+- reset a running bar context, a quantifying mode is expected
+- dynamic bar width rendition, listening to changes in terminal size (the whole progress-bar line already truncates when needed, according to terminal size)
+- improve test coverage, currently at 77% branch coverage, working to achieve 100% (but it's hard, since it's multi-threaded and includes system hooks)
+- create a contrib system, to allow a simple way to share the coolest users' spinners and bars
+- support colors in spinners and bars (it's **very** hard, since color codes alter string sizes, and correctly cut, reverse and iterate is very complex)
 - any other ideas welcome!
 
 <details>
 <summary>Already done 👍</summary>
 
+> - jupyter notebook support (experimental, text output instead of graphical, which I think it is way way cooler, since it has personality 😉)
 > - create an unknown mode for bars (without a known total and eta)
 > - implement a pausing mechanism
 > - change spinner styles
@@ -682,10 +678,8 @@ This software is licensed under the MIT License. See the LICENSE file in the top
 
 ---
 Maintaining an open source project is hard and time-consuming.
-<br>I put much ❤️ and effort into this, continually.
-
-If you've appreciated my work and would like me to continue improving it, please back me up with a donation!
-<br>I'd appreciate any encouragement 😊
+<br>I've put much ❤️ and effort into this.
+<br>You can back me up with a donation if you've appreciated my work, thank you 😊
 [<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
 [<img align="right" alt="Donate with PayPal button" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate?business=6SWSHEB5ZNS5N&no_recurring=0&item_name=I%27m+the+author+of+alive-progress%2C+clearly+and+about-time.+Thank+you+for+appreciating+my+work%21&currency_code=USD)
 
