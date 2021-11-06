@@ -2,23 +2,23 @@
 
 ## 2.1.0 - Oct 18, 2021
 - Jupyter notebook support (experimental), Jupyter auto-detection, disable feature and configuration
-- four internal terminal abstractions, to support TTY, JUPYTER, NON_TTY and VOID
+- four internal terminal abstractions, to support TTY, JUPYTER, NON_TTY, and VOID
 
 
 ## 2.0.0 - Aug 25, 2021
-This is a major breakthrough in `alive-progress`!
+This is a major achievement in `alive-progress`!
 - now there's complete support for Emojis 🤩 and exotic Unicode chars in general, which required MAJOR refactoring deep within the project, giving rise to what I called **Cells Architecture** => now all internal components use and generate streams of cells instead of chars, and correctly interprets grapheme clusters — it has enabled to render complex multi-chars symbols as if they were one, thus making them work on any spinners, bars, texts, borders, backgrounds, everything!!! there's even support for wide chars, which are represented with any number of chars, including one, but take two spaces on screen!! pretty advanced stuff 🤓
-- new super cool spinner compiler and runner, which generates complete animations ahead-of-time, and play these ready-to-go animations seamlessly, with no overhead at all! 🚀
+- new super cool spinner compiler and runner, which generates complete animations ahead of time, and plays these ready-to-go animations seamlessly, with no overhead at all! 🚀
 - the spinner compiler also includes advanced extra commands to generate and modify animations, like reshape, replace, transpose, or randomize the animation cycles!
-- new powerful and polished `.check()` tools, that compile and beautifully render all frames from all animation cycles of spinners and bars! they can even include complete frame data, internal codepoints and even their animations! 👏
+- new powerful and polished `.check()` tools, that compile and beautifully render all frames from all animation cycles of spinners and bars! they can even include complete frame data, internal codepoints, and even their animations! 👏
 - bars engine revamp, with invisible fills, advanced support for multi-char tips (which gradually enter and leave the bar), borders, tips and errors of any length, and underflow errors that can leap into the border if they can't fit!
-- spinners engine revamp, with standardized factory signatures, improved performance, new types and new features: smoother bouncing spinners (with an additional frame at the edges), optimized scrolling of text messages (which go slower and pause for a moment at the edges), new alongside and sequential spinners, nicer effect in alongside spinners (which use weighted spreading over the available space), smoother animation in scrolling spinners (when the input is longer than the available space)
-- new builtin spinners, bars and themes, which makes use of the new animation features
+- spinners engine revamp, with standardized factory signatures, improved performance, new types, and new features: smoother bouncing spinners (with an additional frame at the edges), optimized scrolling of text messages (which go slower and pause for a moment at the edges), new alongside and sequential spinners, nicer effect in alongside spinners (which use weighted spreading over the available space), smoother animation in scrolling spinners (when the input is longer than the available space)
+- new builtin spinners, bars, and themes, which makes use of the new animation features
 - new showtime that displays themes and is dynamic => it does not scroll the screen when it can't fit either vertically or horizontally, and can even filter for patterns!
 - improved support for logging into files, which gets enriched as the print hook is!
 - several new configuration options for customizing appearance, including support for disabling any `alive-progress` widgets!
 - includes a new iterator adapter `alive_it`, that accepts an iterable and calls `bar()` for you!
-- requires python 3.6+ (and officially supports python 3.9 and 3.10)
+- requires Python 3.6+ (and officially supports Python 3.9 and 3.10)
 
 
 ## 1.6.2 - Jan 7, 2021
@@ -28,15 +28,15 @@ This is a major breakthrough in `alive-progress`!
 
 
 ## 1.6.1 - Jul 11, 2020
-- fix logging support for python 3.6 and lower
+- fix logging support for Python 3.6 and lower
 - support logging for file
-- support for wide unicode chars, which use 2 columns but have length 1
+- support for wide Unicode chars, which use 2 columns but have length 1
 
 
 ## 1.6.0 - Jul 9, 2020
 - soft wrapping support
 - hiding cursor support
-- python logging support
+- Python logging support
 - exponential smoothing of ETA time series
 - proper bar title, always visible
 - enhanced times representation
@@ -45,7 +45,7 @@ This is a major breakthrough in `alive-progress`!
 
 
 ## 1.5.1 - May 4, 2020
-- fix compatibility with python 2.7 (should be the last one, version 2 is in the works, with python 3 support only)
+- fix compatibility with Python 2.7 (should be the last one, version 2 is in the works, with Python 3 support only)
 
 
 ## 1.5.0 - May 2, 2020
@@ -63,16 +63,16 @@ This is a major breakthrough in `alive-progress`!
 
 
 ## 1.4.2 - Apr 13, 2020
-- sanitize text input, keeping '\n' from entering and replicating bar on screen
+- sanitize text input, keeping '\n' from entering and replicating the bar on the screen
 
 
 ## 1.4.1 - Mar 7, 2020
-- include license file in source distribution
+- include a license file in the source distribution
 
 
 ## 1.4.0 - Mar 5, 2020
 - print() enrichment can now be disabled (locally and globally)
-- exhibits now have a real time fps indicator
+- exhibits now have a real-time fps indicator
 - new exhibit functions `show_spinners` and `show_bars`
 - new utility `print_chars`
 - `show_bars` gains some advanced demonstrations (try it again!)
@@ -89,7 +89,7 @@ This is a major breakthrough in `alive-progress`!
 ## 1.3.1 - Jan 26, 2020
 - fix a subtle race condition that could leave artifacts if ended very fast
 - flush print buffer when position changes or bar terminates
-- keep total argument from unexpected types
+- keep the total argument from unexpected types
 
 
 ## 1.3.0 - Sep 17, 2019
@@ -112,8 +112,8 @@ This is a major breakthrough in `alive-progress`!
 
 
 ## 1.0.1 - Aug 9, 2019
-- pycharm console support with force_tty
-- improve compatibility with python stdio streams
+- PyCharm console support with force_tty
+- improve compatibility with Python stdio streams
 
 
 ## 1.0.0 - Aug 5, 2019
