@@ -1,6 +1,9 @@
 import os
+import sys
 from collections import namedtuple
 from types import FunctionType
+
+from ..utils.terminal import NON_TTY, FULL
 
 ERROR = object()  # represents a config value not accepted.
 
@@ -63,10 +66,15 @@ def _bool_input_factory():
     return _input
 
 
-def _tristate_input_factory():
+def _force_tty_input_factory():
     def _input(x):
-        return None if x is None else bool(x)
+        return table.get(x, ERROR)
 
+    table = {
+        None: FULL if sys.stdout.isatty() else NON_TTY,
+        False: NON_TTY,
+        True: FULL,
+    }
     return _input
 
 
@@ -77,8 +85,9 @@ def _text_input_factory():
     return _input
 
 
-Config = namedtuple('Config', 'title length spinner bar unknown force_tty manual enrich_print '
-                              ' receipt_text monitor stats elapsed title_length spinner_length')
+Config = namedtuple('Config', 'title length spinner bar unknown force_tty disable manual '
+                              'enrich_print receipt_text monitor stats elapsed title_length '
+                              'spinner_length')
 
 
 def create_config():
@@ -89,6 +98,7 @@ def create_config():
             length=40,
             theme='smooth',  # includes spinner, bar and unknown.
             force_tty=None,
+            disable=False,
             manual=False,
             enrich_print=True,
             receipt_text=False,
@@ -113,8 +123,7 @@ def create_config():
         """Create an immutable copy of the current configuration, with optional customization."""
         lazy_init()
         local_config = {**global_config, **_parse(theme, options)}
-        # noinspection PyArgumentList
-        return Config(**{k: local_config[k] for k in Config._fields})
+        return Config(**local_config)
 
     def _parse(theme, options):
         """Validate and convert some configuration options."""
@@ -149,7 +158,8 @@ def create_config():
             spinner=_spinner_input_factory(None),  # accept empty.
             bar=_bar_input_factory(),
             unknown=_spinner_input_factory(ERROR),  # do not accept empty.
-            force_tty=_tristate_input_factory(),
+            force_tty=_force_tty_input_factory(),
+            disable=_bool_input_factory(),
             manual=_bool_input_factory(),
             enrich_print=_bool_input_factory(),
             receipt_text=_bool_input_factory(),
