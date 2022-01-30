@@ -2,6 +2,4 @@ ipython
 pdbpp
 twine
 wheel
-about-time
-grapheme
 nox  # although it is for testing, it is not needed inside each test scope.
