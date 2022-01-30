@@ -24,11 +24,13 @@ def test_hook_manager_captures_stdout(capsys):
         print('ok')
     assert capsys.readouterr().out == 'nice 35! ok\n'
 
+
 def test_hook_manager_captures_bytes_stdout(capsys):
     hook_manager = buffered_hook_manager('nice {}! ', lambda: 35, Condition(), FULL)
     with hook(hook_manager):
         click.echo('ok')
     assert capsys.readouterr().out == 'nice 35! ok\n'
+
 
 # I couldn't make this work yet, there's some weird interaction
 # between my hook and the pytest one...
