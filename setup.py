@@ -44,7 +44,7 @@ setup(
         # 'Programming Language :: Python :: 3.3',
         # 'Programming Language :: Python :: 3.4',
         # 'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+        # 'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
@@ -54,6 +54,6 @@ setup(
              'multi-threaded REPL alive animated visual feedback'.split(),
     packages=find_packages(),
     data_files=[('', ['LICENSE'])],
-    python_requires='>=3.6, <4',
+    python_requires='>=3.7, <4',
     install_requires=['about_time==3.1.1', 'grapheme==0.6.0'],
 )
