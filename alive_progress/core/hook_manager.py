@@ -32,6 +32,9 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
             stream.flush()
 
     def write(stream, part):
+        if isinstance(part, bytes):
+            encoding = sys.getdefaultencoding()
+            part = part.decode(encoding)
         buffer = buffers[stream]
         if part != '\n':
             # this will generate a sequence of lines interspersed with None, which will later

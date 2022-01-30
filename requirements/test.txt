@@ -1,3 +1,4 @@
 pytest
 pytest-cov
 pytest-sugar
+click # For testing bytes stdout on hook manager
