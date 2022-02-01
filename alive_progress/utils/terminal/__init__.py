@@ -11,12 +11,7 @@ if sys.platform == 'win32':
 
 
 def _create(mod, interactive):
-    def emit(text):
-        mod.write(text)
-        mod.flush()
-
     terminal = SimpleNamespace(
-        emit=emit,
         interactive=interactive,
         cursor_up_1=mod.factory_cursor_up(1),
 
@@ -46,6 +41,7 @@ def _is_notebook():
         # if IPython hasn't been imported, there's nothing to check.
         return False
 
+    # noinspection PyPackageRequirements
     from IPython import get_ipython
     class_ = get_ipython().__class__.__name__
     return class_ != 'TerminalInteractiveShell'

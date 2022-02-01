@@ -119,9 +119,8 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         fragments = (run.title, bar_repr(run.percent), spin, monitor(),
                      elapsed(), stats(), run.text)
 
-        with cond_refresh:
-            run.last_len = print_cells(fragments, term.cols(), run.last_len, _term=term)
-            term.flush()
+        run.last_len = print_cells(fragments, term.cols(), run.last_len, _term=term)
+        term.flush()
 
     __alive_bar._alive_repr = alive_repr
     def set_text(text=None):
@@ -275,6 +274,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         term.write('\n')
     else:
         term.clear_line()
+    term.flush()
 
 
 class _GatedProperty:
