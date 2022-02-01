@@ -124,9 +124,9 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             term.flush()
 
     __alive_bar._alive_repr = alive_repr
+    def set_text(text=None):
+        run.text = to_cells(None if text is None else str(text))
 
-    def set_text(message):
-        run.text = to_cells(message)
     def set_title(title=None):
         run.title = _render_title(config, None if title is None else str(title))
 
@@ -255,6 +255,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     if not config.elapsed:
         elapsed = elapsed_end = __noop
 
+    set_text()
     set_title()
     start_monitoring()
     try:
