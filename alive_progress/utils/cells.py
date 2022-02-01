@@ -89,7 +89,7 @@ def print_cells(fragments, cols, last_line_len=0, _term=terminal.FULL):
         if available == 0:
             break
     else:
-        if last_line_len and sum(len(fragment) for fragment in line) < last_line_len:
+        if last_line_len and cols - available < last_line_len:
             _term.clear_end(available)
 
     return cols - available
