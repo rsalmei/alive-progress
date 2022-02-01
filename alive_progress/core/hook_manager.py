@@ -47,8 +47,9 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
         else:
             header = get_header()
             with cond_refresh:
-                nested = ''.join(line or ' ' * len(header) for line in buffer)
-                text = f'{header}{nested.strip()}\n'
+                spacer = ' ' * len(header)
+                nested = ''.join(line or spacer for line in buffer)
+                text = f'{header}{nested.rstrip()}\n'
                 if stream in base:  # pragma: no cover
                     # use the current terminal abstraction for preparing the screen.
                     term.clear_line()
