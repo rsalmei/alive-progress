@@ -267,11 +267,41 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     term.emit('\n')
 
 
+class _GatedProperty:
+    def __set_name__(self, owner, name):
+        self.prop = f'_{name}'
+
+    # noinspection PyProtectedMember
+    def __get__(self, obj, objtype=None):
+        if obj._handle:
+            return getattr(obj, self.prop)
+        return _noop
+
+    def __set__(self, obj, value):
+        raise AttributeError(f"Can't set {self.prop}")
+
+
+class _GatedAssignProperty(_GatedProperty):
+    # noinspection PyProtectedMember
+    def __set__(self, obj, value):
+        if obj._handle:
+            getattr(obj, self.prop)(value)
+
+
 class __AliveBarHandle:
+    pause = _GatedProperty()
+    current = _GatedProperty()
+    text = _GatedAssignProperty()
+    title = _GatedAssignProperty()
+
+    def __init__(self, pause, get_current, set_title, set_text):
+        self._handle, self._pause, self._current = None, pause, get_current
+        self._title, self._text = set_title, set_text
+
     # this enables to exchange the __call__ implementation.
     def __call__(self, *args, **kwargs):
-        # noinspection PyUnresolvedReferences
-        self._handle(*args, **kwargs)
+        if self._handle:
+            self._handle(*args, **kwargs)
 
 
 def _create_bars(local_config):
