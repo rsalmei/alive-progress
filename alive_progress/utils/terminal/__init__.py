@@ -19,7 +19,7 @@ def _create(mod, interactive):
         write=mod.write,
         flush=mod.flush,
         cols=mod.cols,
-        cr=mod.carriage_return,
+        carriage_return=mod.carriage_return,
         clear_line=mod.clear_line,
         clear_end=mod.clear_end,
         hide_cursor=mod.hide_cursor,
@@ -46,7 +46,6 @@ def _is_notebook():
     class_ = get_ipython().__class__.__name__
     return class_ != 'TerminalInteractiveShell'
 
-
-FULL = _create(jupyter if _is_notebook() else tty, True)
-NON_TTY = _create(non_tty, False)
+FULL = _create(jupyter.BASE if _is_notebook() else tty.BASE, True)
+NON_TTY = _create(non_tty.BASE, False)
 VOID = _create(void, False)

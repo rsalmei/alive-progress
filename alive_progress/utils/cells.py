@@ -52,14 +52,14 @@ import re
 import unicodedata
 from itertools import chain, islice, repeat
 
-from . import terminal
+from .terminal import FULL
 
 PATTERN_SANITIZE = re.compile(r'[\r\n]')
 SPACES = repeat(' ')
 VS_15 = '\ufe0e'
 
 
-def print_cells(fragments, cols, last_line_len=0, _term=terminal.FULL):
+def print_cells(fragments, cols, last_line_len=0, _term=FULL):
     """Print a tuple of fragments of tuples of cells on the terminal, until a given number of
     cols is achieved, slicing over cells when needed.
 
@@ -77,7 +77,7 @@ def print_cells(fragments, cols, last_line_len=0, _term=terminal.FULL):
     """
     line = islice(chain.from_iterable(zip(SPACES, filter(None, fragments))), 1, None)
     available = cols
-    _term.write(_term.cr)
+    _term.write(_term.carriage_return)
     for fragment in line:
         length = len(fragment)
         if length <= available:
