@@ -6,6 +6,9 @@ from itertools import chain, islice, repeat
 from logging import StreamHandler
 from types import SimpleNamespace
 
+# support for click.echo, which calls `write` with bytes instead of str.
+ENCODING = sys.getdefaultencoding()
+
 
 def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
     """Create and maintain a buffered hook manager, used for instrumenting print
@@ -33,8 +36,8 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
 
     def write(stream, part):
         if isinstance(part, bytes):
-            encoding = sys.getdefaultencoding()
-            part = part.decode(encoding)
+            part = part.decode(ENCODING)
+
         buffer = buffers[stream]
         if part != '\n':
             # this will generate a sequence of lines interspersed with None, which will later
