@@ -82,6 +82,11 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
          for handler, original_stream in before_handlers.items()]
         before_handlers.clear()
 
+        # does the number of logging handlers changed??
+        # if yes, it probably means logging was initialized within alive_bar context,
+        # and thus there can be an instrumented stdout or stderr within handlers,
+        # which causes a TypeError: unhashable type: 'types.SimpleNamespace'...
+
     # internal data.
     buffers = defaultdict(list)
     get_header = gen_header(header_template, get_pos) if header_template else null_header
