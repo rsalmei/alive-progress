@@ -1,4 +1,4 @@
-import os
+import shutil
 import sys
 
 _original_stdout = sys.stdout  # support for jupyter notebooks.
@@ -27,7 +27,8 @@ show_cursor = _ansi_escape_code('?25h')  # shows the cursor: CSI ? 25 h.
 factory_cursor_up = lambda num: _ansi_escape_code('A', num)  # sends cursor up: CSI {x}A.
 
 def cols():
-    return os.get_terminal_size()[0]
+    # more resilient one, although 7x slower than os' one.
+    return shutil.get_terminal_size()[0]
 
 
 carriage_return = '\r'
