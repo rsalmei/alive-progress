@@ -3,7 +3,7 @@ import threading
 import time
 from contextlib import contextmanager
 
-from .calibration import calibrated_fps
+from .calibration import calibrated_fps, custom_fps
 from .configuration import config_handler
 from .hook_manager import buffered_hook_manager, passthrough_hook_manager
 from ..utils.cells import combine_cells, fix_cells, print_cells, to_cells
@@ -163,6 +163,10 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     bar, bar_repr = __AliveBarHandle(), _create_bars(config)
     bar.current, run.text, run.last_len, run.elapsed = current, '', 0, 0.
     run.count, run.percent, run.rate, run.init = 0, 0., 0., 0.
+    if config.refresh_secs:
+        fps = custom_fps(config.refresh_secs)
+    else:
+        fps = calibrated_fps(calibrate or factor)
     thread, event_renderer, cond_refresh = None, threading.Event(), _cond()
 
     if config.disable:
