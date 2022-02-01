@@ -116,7 +116,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         run.elapsed = time.perf_counter() - run.init
         run.rate = current() / run.elapsed
 
-        fragments = (title, bar_repr(run.percent), spin, monitor(),
+        fragments = (run.title, bar_repr(run.percent), spin, monitor(),
                      elapsed(), stats(), run.text)
 
         with cond_refresh:
@@ -127,6 +127,8 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
 
     def set_text(message):
         run.text = to_cells(message)
+    def set_title(title=None):
+        run.title = _render_title(config, None if title is None else str(title))
 
     if config.manual:
         def bar_handle(percent):  # for manual progress modes.
@@ -253,6 +255,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     if not config.elapsed:
         elapsed = elapsed_end = __noop
 
+    set_title()
     start_monitoring()
     try:
         yield bar
