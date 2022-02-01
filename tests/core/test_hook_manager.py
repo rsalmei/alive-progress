@@ -1,10 +1,10 @@
 import logging
 import sys
-from threading import Condition
 from contextlib import contextmanager
+from threading import Condition
 from unittest import mock
-import click
 
+import click
 import pytest
 
 from alive_progress.core.hook_manager import buffered_hook_manager
@@ -18,18 +18,30 @@ def hook(hook_manager):
     hook_manager.uninstall()
 
 
-def test_hook_manager_captures_stdout(capsys):
-    hook_manager = buffered_hook_manager('nice {}! ', lambda: 35, Condition(), FULL)
-    with hook(hook_manager):
-        print('ok')
-    assert capsys.readouterr().out == 'nice 35! ok\n'
+@pytest.fixture(params=[
+    ('ok', 'nice 35! ok\n'),
+    ('ok  ', 'nice 35! ok\n'),
+    ('  ok', 'nice 35!   ok\n'),
+    ('  ok  ', 'nice 35!   ok\n'),
+])
+def print_data(request):
+    yield request.param
 
 
-def test_hook_manager_captures_bytes_stdout(capsys):
+def test_hook_manager_captures_stdout(print_data, capsys):
+    out, expected = print_data
     hook_manager = buffered_hook_manager('nice {}! ', lambda: 35, Condition(), FULL)
     with hook(hook_manager):
-        click.echo('ok')
-    assert capsys.readouterr().out == 'nice 35! ok\n'
+        print(out)
+    assert capsys.readouterr().out == expected
+
+
+def test_hook_manager_captures_bytes_stdout(print_data, capsys):
+    out, expected = print_data
+    hook_manager = buffered_hook_manager('nice {}! ', lambda: 35, Condition(), FULL)
+    with hook(hook_manager):
+        click.echo(out)
+    assert capsys.readouterr().out == expected
 
 
 # I couldn't make this work yet, there's some weird interaction

@@ -1,6 +1,6 @@
 import pytest
 
-from alive_progress.core.calibration import calibrated_fps
+from alive_progress.core.calibration import calibrated_fps, custom_fps
 
 
 @pytest.mark.parametrize('calibrate, rate, expected', [
@@ -22,4 +22,15 @@ from alive_progress.core.calibration import calibrated_fps
 ])
 def test_calibrate(calibrate, rate, expected):
     fps = calibrated_fps(calibrate)
+    assert fps(rate) == expected
+
+
+@pytest.mark.parametrize('rate, expected', [
+    (1., 1),
+    (10., .1),
+    (10. * 60., pytest.approx(.001666666666666)),
+    (.1, 10.),
+])
+def test_custom(rate, expected):
+    fps = custom_fps(rate)
     assert fps(rate) == expected
