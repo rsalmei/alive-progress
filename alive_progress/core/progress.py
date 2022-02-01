@@ -267,12 +267,14 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             local_copy.join()
             del bar.pause  # avoid pause being called again.
 
-    # prints the nice final receipt.
-    elapsed, stats, monitor, bar_repr = elapsed_end, stats_end, monitor_end, bar_repr.end
-    if not config.receipt_text:
-        run.text = ''
-    alive_repr()
-    term.emit('\n')
+    if config.receipt:  # prints the nice but optional final receipt.
+        elapsed, stats, monitor, bar_repr = elapsed_end, stats_end, monitor_end, bar_repr.end
+        if not config.receipt_text:
+            run.text = ''
+        alive_repr()
+        term.write('\n')
+    else:
+        term.clear_line()
 
 
 class _GatedProperty:
