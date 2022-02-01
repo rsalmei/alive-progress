@@ -122,7 +122,6 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         run.last_len = print_cells(fragments, term.cols(), run.last_len, _term=term)
         term.flush()
 
-    __alive_bar._alive_repr = alive_repr
     def set_text(text=None):
         run.text = to_cells(None if text is None else str(text))
 
@@ -143,15 +142,27 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     def start_monitoring(offset=0.):
         term.hide_cursor()
         hook_manager.install()
-        bar._handle, bar.text = bar_handle, set_text
+        bar._handle = bar_handle
         run.init = time.perf_counter() - offset
         event_renderer.set()
 
     def stop_monitoring():
         term.show_cursor()
         hook_manager.uninstall()
-        bar._handle, bar.text = __noop, __noop
+        bar._handle = None
         return time.perf_counter() - run.init
+
+    @contextmanager
+    def pause_monitoring():
+        event_renderer.clear()
+        offset = stop_monitoring()
+        alive_repr()
+        term.write('\n')
+        term.flush()
+        try:
+            yield
+        finally:
+            start_monitoring(offset)
 
     if total or not config.manual:  # we can count items.
         logic_total, current = total, lambda: run.count
@@ -160,14 +171,15 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         logic_total, current = 1., lambda: run.percent
         rate_spec, factor, header = '%', 1., 'on {:.1%}: '
 
-    title, fps = _render_title(config), calibrated_fps(calibrate or factor)
-    bar, bar_repr = __AliveBarHandle(), _create_bars(config)
-    bar.current, run.text, run.last_len, run.elapsed = current, '', 0, 0.
-    run.count, run.percent, run.rate, run.init = 0, 0., 0., 0.
     if config.refresh_secs:
         fps = custom_fps(config.refresh_secs)
     else:
         fps = calibrated_fps(calibrate or factor)
+
+    __alive_bar._alive_repr = alive_repr  # sampling mode.
+    bar_repr, run.last_len, run.elapsed = _create_bars(config), 0, 0.
+    run.count, run.percent, run.rate, run.init, run.text, run.title = 0, 0., 0., 0., None, None
+    bar = __AliveBarHandle(pause_monitoring, current, set_title, set_text)
     thread, event_renderer, cond_refresh = None, threading.Event(), _cond()
 
     if config.disable:
@@ -178,18 +190,6 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             header if config.enrich_print else '', current, cond_refresh, term)
 
     if term.interactive:
-        @contextmanager
-        def pause_monitoring():
-            event_renderer.clear()
-            offset = stop_monitoring()
-            alive_repr()
-            term.emit('\n')
-            try:
-                yield
-            finally:
-                start_monitoring(offset)
-
-        bar.pause = pause_monitoring
         thread = threading.Thread(target=run, args=(_create_spinner_player(config),))
         thread.daemon = True
         thread.start()
@@ -224,35 +224,36 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             def update_hook():
                 run.percent = run.count / total
 
-        def monitor():
+        def monitor_run():
             return f'{run.count}/{total} [{run.percent:.0%}]'
 
         def monitor_end():
             warning = '(!) ' if run.count != total else ''
-            return f'{warning}{monitor_original()}'
+            return f'{warning}{monitor_run()}'
     else:
         def update_hook():
             pass
 
         if config.manual:
-            def monitor():
+            def monitor_run():
                 return f'{run.percent:.0%}'
 
             def monitor_end():
                 warning = '(!) ' if run.percent != 1. else ''
-                return f'{warning}{monitor_original()}'
+                return f'{warning}{monitor_run()}'
         else:
-            def monitor():
+            def monitor_run():
                 return f'{run.count}'
 
-            monitor_end = monitor
-    monitor_original = monitor
+            monitor_end = monitor_run
+
+    monitor = monitor_run
     if not config.monitor:
-        monitor = monitor_end = __noop
+        monitor = monitor_end = _noop
     if not config.stats:
-        stats = stats_end = __noop
+        stats = stats_end = _noop
     if not config.elapsed:
-        elapsed = elapsed_end = __noop
+        elapsed = elapsed_end = _noop
 
     set_text()
     set_title()
@@ -264,7 +265,6 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         if thread:  # lets the internal thread terminate gracefully.
             local_copy, thread = thread, None
             local_copy.join()
-            del bar.pause  # avoid pause being called again.
 
     if config.receipt:  # prints the nice but optional final receipt.
         elapsed, stats, monitor, bar_repr = elapsed_end, stats_end, monitor_end, bar_repr.end
@@ -314,26 +314,26 @@ class __AliveBarHandle:
             self._handle(*args, **kwargs)
 
 
-def _create_bars(local_config):
-    bar = local_config.bar
+def _create_bars(config):
+    bar = config.bar
     if bar is None:
-        obj = __noop
+        obj = _noop
         obj.unknown, obj.end = obj, obj
         return obj
-    return bar(local_config.length, local_config.unknown)
+    return bar(config.length, config.unknown)
 
 
-def _create_spinner_player(local_config):
-    spinner = local_config.spinner
+def _create_spinner_player(config):
+    spinner = config.spinner
     if spinner is None:
         from itertools import repeat
         return repeat('')
     from ..animations.utils import spinner_player
-    return spinner_player(spinner(local_config.spinner_length))
+    return spinner_player(spinner(config.spinner_length))
 
 
-def _render_title(local_config):
-    title, length = to_cells(str(local_config.title or '')), local_config.title_length
+def _render_title(config, title=None):
+    title, length = to_cells(title or config.title or ''), config.title_length
     if not length:
         return title
 
@@ -349,7 +349,7 @@ def _render_title(local_config):
     return combine_cells(fix_cells(title[:length - 1]), ('…',))
 
 
-def __noop(*_args, **_kwargs):  # pragma: no cover
+def _noop(*_args, **_kwargs):  # pragma: no cover
     pass
 
 
