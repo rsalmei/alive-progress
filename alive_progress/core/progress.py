@@ -396,18 +396,21 @@ def alive_it(it, total=None, *, calibrate=None, **options):
 
 class __AliveBarIteratorAdapter:
     def __init__(self, it, inner_bar):
-        self._data = it, inner_bar
+        self._it, self._inner_bar = it, inner_bar
 
     def __iter__(self):
-        if not hasattr(self, '_data'):  # this iterator has already exhausted.
+        if '_inner_bar' not in self.__dict__:  # this iterator has already exhausted.
             return
 
-        it, inner_bar = self._data
-        with inner_bar as bar:
-            self.__dict__ = bar.__dict__  # makes this adapter work as the real bar.
-            for item in it:
+        with self._inner_bar as self._bar:
+            del self._inner_bar
+            for item in self._it:
                 yield item
-                bar()
+                self._bar()
 
     def __call__(self, *args, **kwargs):
         raise UserWarning('The bar position is controlled automatically with `alive_it`.')
+
+    def __getattr__(self, item):
+        # makes this adapter work as the real bar.
+        return getattr(self._bar, item)
