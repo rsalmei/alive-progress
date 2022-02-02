@@ -22,7 +22,7 @@ I've started this cool progress bar thinking about all that, the **alive-progres
 I like to think of it as a new kind of progress bar for Python since it has among other things:
 
 - a **live spinner** that is incredibly cool, and clearly shows your lengthy process did not hang, or your ssh connection did not drop;
-- a **visual feedback** of your current processing, as the live spinner runs faster or slower with it;
+- a **visual feedback** which reacts to your processing, as the live spinner will go faster or slower with it;
 - an **efficient** multi-threaded bar, which updates itself at a fraction of the actual processing speed (1,000,000 iterations per second equates to roughly 60 updates per second) to keep **CPU usage low** and avoid terminal spamming (you can also calibrate this to your liking);
 - nice monitoring of both _position and throughput_ of your processing;
 - an **ETA** (expected time of arrival) with a smart _exponential smoothing algorithm_, that shows the time to completion;
@@ -32,6 +32,18 @@ I like to think of it as a new kind of progress bar for Python since it has amon
 - it automatically detects if there's an **allocated tty**, and if there isn't (like in a shell pipeline), only the final receipt is printed (so you can safely include it in any code, and rest assured your log file won't get thousands of progress lines);
 - you can **pause** it! I think that's an unprecedented feature for progress bars ANYWHERE — in Python or any other language — no one has ever done it! It's incredible to be able to get back to the Python prompt during any running process! Then you can manually adjust an item or prepare something, and get back into that running process as if it had never stopped!! All `alive_bar` widgets are kept as they were, and the elapsed time nicely ignores the paused time!;
 - it is **customizable**, with a growing smorgasbord of bar and spinner styles, as well as several factories to easily generate yours! Now (📌 new in 2.0) we even have super powerful and cool `.check()` tools in both bars and spinners, to help you design your animations! You can see all the frames and cycles exploded on screen, with several verbosity levels, even including an **alive** rendition! 😜
+
+
+## 📌 NEW 2.2 series!
+
+Some major new features, often requested, has finally landed!
+- bar title can be dynamically set, changed or removed
+- new custom fps system, which enables very slow refresh rates (long periods)
+- the final receipt can be hidden (great for special effects)
+- new support for `click.echo()` printing
+- terminal columns detection is safer for exotic environments
+
+PS.: removed Python 3.6 support
 
 
 ## 📌 NEW 2.1 series!
@@ -49,10 +61,10 @@ See for yourself:
 
 ## 📌 NEW 2.0 series!
 
-This is a major achievement in `alive-progress`!
+This is a major breakthrough in `alive-progress`!
 <br>I took 1 year developing it, and I'm very proud of what I've accomplished \o/
 
-- now there's complete support for Emojis 🤩 and exotic Unicode chars in general, which required MAJOR refactoring deep within the project, giving rise to what I called "**Cell Architecture**" => now all internal components use and generate streams of cells instead of chars, and correctly interprets grapheme clusters — it has enabled to render complex multi-chars symbols as if they were one, thus making them work on any spinners, bars, texts, borders, backgrounds, everything!!! there's even support for wide chars, which are represented with any number of chars, including one, but take two spaces on screen!! pretty advanced stuff 🤓
+- now there's complete support for Emojis 🤩 and exotic Unicode chars in general, which required MAJOR refactoring deep within the project, giving rise to what I called "**Cell Architecture**" => now all internal components use and generate streams of cells instead of characters, and correctly interpret grapheme clusters — those so called wide chars, which are encoded with a variable number of chars, but always take two cells on screen!! This has enabled to render complex multi-chars symbols as if they were one, thus making them work on any spinners, bars, texts, borders and backgrounds, even when fractured!!! Pretty advanced stuff 🤓
 - new super cool spinner compiler and runner, which generates complete animations ahead of time, and plays these ready-to-go animations seamlessly, with no overhead at all! 🚀
 - the spinner compiler also includes advanced extra commands to generate and modify animations, like reshape, replace, transpose, or randomize the animation cycles!
 - new powerful and polished `.check()` tools, that compile and beautifully render all frames from all animation cycles of spinners and bars! they can even include complete frame data, internal codepoints, and even their animations! 👏
@@ -141,10 +153,13 @@ So, in short: retrieve the items as always, enter the `alive_bar` context manage
 ### Displaying messages
 
 While inside an `alive_bar` context, you can effortlessly display messages with:
+- the cool `bar.text('message')` or `bar.text = 'message'`, which sets a situational message right within the bar, where you can display something about the current item, or the phase the processing is in;
+- the new dynamic title, which can be set at the start, but can still be changed anytime with `bar.title('Title')` or `bar.title = 'Title'` — mix with `title_length` to keep the bar from changing its length;
 - the usual Python `print()` statement, where `alive_bar` nicely cleans up the line, prints your message alongside the current bar position at the time, and continues the bar right below it;
 - the standard Python `logging` framework, including file outputs, are also enriched exactly like the previous one;
-- the cool `bar.text('message')`, which sets a situational message right within the bar, where you can display something about the current item, or the phase the processing is in;
-- and all of this works just the same in an actual terminal or a Jupyter notebook!
+- if your using click CLI lib, you can even `click.echo()` for printing styled text.
+
+Isn't it awesome? And all of this works just the same in an actual terminal or a Jupyter notebook!
 
 ![alive-progress printing messages](img/print-hook.gif)
 
@@ -313,6 +328,7 @@ These are the options - default values in brackets:
 - `disable`: [`False`] if True, completely disables all output, do not install hooks
 - `manual`: [`False`] set to manually control the bar position
 - `enrich_print`: [`True`] enriches print() and logging messages with the bar position
+- `receipt`: [`True`] prints the nice final receipt, disables if False
 - `receipt_text`: [`False`] set to repeat the last text message in the final receipt
 - `monitor`: [`True`] set to display the monitor widget `123/100 [123%]`
 - `stats`: [`True`] set to display the stats widget `(123.4/s eta: 12s)`
@@ -320,6 +336,7 @@ These are the options - default values in brackets:
 - `title_length`: [`0`] fixes the length of titles, or 0 for unlimited
 <br>   ↳ title will be truncated if longer, and a cool ellipsis "…" will appear at the end
 - `spinner_length`: [`0`] forces the spinner length, or `0` for its natural one
+- `refresh_secs`: [`0`] forces the refresh period to this, `0` is the reactive visual feedback
 
 And there's also one that can only be set locally in an `alive_bar` context:
 - `calibrate`: maximum theoretical throughput to calibrate animation speed (more details [here](#fps-calibration))
@@ -327,7 +344,7 @@ And there's also one that can only be set locally in an `alive_bar` context:
 To set them locally, just send them as keyword arguments to `alive_bar`:
 
 ```python
-with alive_bar(total, title='Processing', length=20, bar='halloween'):
+with alive_bar(total, title='Processing', length=20, bar='halloween') as bar:
     ...
 ```
 
@@ -338,7 +355,7 @@ from alive_progress import config_handler
 
 config_handler.set_global(length=20, spinner='wait')
 
-with alive_bar(total, bar='blocks', spinner='twirls'):
+with alive_bar(total, bar='blocks', spinner='twirls') as bar:
     # the length is 20, the bar is 'blocks' and the spinner is 'twirls'.
     ...
 ```
@@ -646,17 +663,24 @@ Do note that Pycharm's console and Jupyter notebooks are heavily instrumented an
 
 ## Python versions End of Life notice
 
-The `alive_progress` framework starting from version 2.0 does not support Python 2.7 and 3.5 anymore.
-<br>If you still need support for them, you can always use the versions 1.x, which are also full-featured and do work very well, just:
+The `alive_progress` framework starting from version 2.0 will always drop support of EOL Pythons.
+<br>If you need support for any EOL Python, you can always use the previous `alive_progress` version, which should still work very well.
 
+For Python 2.7 and 3.5:
 ```sh
 ❯ pip install -U "alive_progress<2"
 ```
 
-> If you put this version as a dependency in a requirements.txt file, I strongly recommend putting `alive_progress<2`, as this will always fetch the latest release of the v1.x series. That way, if I ever release a bug fix for it, you will get it the next time you install it.
+For Python 3.6:
+```sh
+❯ pip install -U "alive_progress<2.2"
+```
+
+> If you put this as a dependency in a requirements.txt file, I strongly recommend using the aforementioned "less than" format, as that will always fetch the latest release that satisfies the condition. That way, if I ever release a bug fix for previous versions, you will get it.
 
 
 ## Changelog highlights (complete [here](CHANGELOG.md)):
+- 2.2.0: bar title can be dynamically set, changed or removed; customizable refresh rates; final receipt can be hidden; `click.echo()` support; faster performance; safer terminal columns detection; remove Python 3.6
 - 2.1.0: Jupyter notebook support (experimental), Jupyter auto-detection, disable feature and configuration
 - 2.0.0: new system-wide Cell Architecture with grapheme clusters support; super cool spinner compiler and runner; `.check()` tools in both spinners and bars; bars and spinners engines revamp; new animation modes in alongside and sequential spinners; new builtin spinners, bars, and themes; dynamic showtime with themes, scroll protection and filter patterns; improved logging for files; several new configuration options for customizing appearance; new iterator adapter `alive_it`; uses `time.perf_counter()` high-resolution clock; requires Python 3.6+ (and officially supports Python 3.9 and 3.10)
 - 1.6.2: new `bar.current()` method; newlines get printed on vanilla Python REPL; the bar is truncated to 80 chars on Windows.

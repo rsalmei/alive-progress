@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.2.0 - Feb 02, 2022
+- bar title can be dynamically set, changed or removed
+- new custom fps system, which enables very slow refresh rates (long periods)
+- the final receipt can be hidden (great for special effects)
+- new support for `click.echo()` printing
+- more resilient `text` method, which accepts any value, even numbers
+- bar methods like `current` and `pause` are now read-only (non-data descriptors)
+- bar methods like `text` and `current` now support assigning in addition to calling (data descriptors)
+- faster performance, with optimized flush control
+- terminal columns detection is safer for exotic environments
+- fix hook manager trimming spaces at the start
+- remove Python 3.6 support
+
+
 ## 2.1.0 - Oct 18, 2021
 - Jupyter notebook support (experimental), Jupyter auto-detection, disable feature and configuration
 - four internal terminal abstractions, to support TTY, JUPYTER, NON_TTY, and VOID

@@ -106,6 +106,17 @@ def test_alongside_spinner_with_pivot(inputs, expected, spinner_test):
 
 
 @pytest.mark.parametrize('inputs, expected', [
+    (('123', 'abc'), (('11a', '22b', '33c'),)),
+    (('12', 'abc'), (('11a', '22b', '11c', '22a', '11b', '22c'),)),
+    ((('12', '34', '56'), 'ab'), (('12a', '34b', '56a', '12b', '34a', '56b'),)),
+])
+def test_alongside_spinner_custom(inputs, expected, spinner_test):
+    spinner_factory = alongside_spinner_factory(*(spinner_test(x) for x in inputs))
+    spinner = spinner_factory(3)  # custom spinner size.
+    assert tuple(tuple(join_cells(f) for f in spinner()) for _ in expected) == expected
+
+
+@pytest.mark.parametrize('inputs, expected', [
     (('123', 'abc'), (('1',), ('a',), ('2',), ('b',), ('3',), ('c',))),
     (('12', 'abc'), (('1',), ('a',), ('2',), ('b',), ('1',), ('c',),
                      ('2',), ('a',), ('1',), ('b',), ('2',), ('c',))),
