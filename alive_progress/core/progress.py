@@ -81,6 +81,7 @@ def alive_bar(total=None, *, calibrate=None, **options):
             disable (bool): if True, completely disables all output, do not install hooks
             manual (bool): set to manually control the bar position
             enrich_print (bool): enriches print() and logging messages with the bar position
+            receipt (bool): prints the nice final receipt, disables if False
             receipt_text (bool): set to repeat the last text message in the final receipt
             monitor (bool): set to display the monitor widget `123/100 [123%]`
             stats (bool): set to display the stats widget `(123.4/s eta: 12s)`
@@ -88,6 +89,7 @@ def alive_bar(total=None, *, calibrate=None, **options):
             title_length (int): fixes the title lengths, or 0 for unlimited
                 title will be truncated if longer, and a cool ellipsis "…" will appear at the end
             spinner_length (int): forces the spinner length, or `0` for its natural one
+            refresh_secs (int): forces the refresh period to this, `0` is the reactive visual feedback
 
     """
     config = config_handler(**options)
