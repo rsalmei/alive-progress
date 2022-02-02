@@ -36,7 +36,7 @@ I like to think of it as a new kind of progress bar for Python since it has amon
 
 ## 📌 NEW 2.2 series!
 
-Some major new features, often requested, has finally landed!
+Some major new features, often requested, have finally landed!
 - bar title can be dynamically set, changed or removed
 - new custom fps system, which enables very slow refresh rates (long periods)
 - the final receipt can be hidden (great for special effects)
