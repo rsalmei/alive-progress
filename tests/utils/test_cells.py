@@ -1,6 +1,9 @@
+import sys
+
 import pytest
 
-from alive_progress.utils.cells import to_cells
+from alive_progress.utils.cells import to_cells, print_cells
+from alive_progress.utils.terminal import tty
 
 
 @pytest.mark.parametrize('text, expected', [
@@ -49,3 +52,24 @@ def test_sanitize_text_wide_chars(text, expected, show_marks):
 def test_sanitize_text_double(text, expected, show_marks):
     result = to_cells(text)
     assert show_marks(result) == expected
+
+
+@pytest.mark.parametrize('fragments, cols, expected', [
+    (('ok', '1'), 10, '\rok 1'),
+    (('ok', '1'), 4, '\rok 1'),
+    (('ok', '1'), 3, '\rok '),
+    (('ok', '1'), 1, '\ro'),
+])
+def test_print_cells(fragments, cols, expected, capsys):
+    term = tty.get(sys.stdout)
+    assert print_cells(fragments, cols, _term=term) == len(expected) - 1
+    term.flush()
+    assert capsys.readouterr().out == expected
+
+
+def test_print_cells_clear(capsys):
+    term = tty.get(sys.stdout)
+    msg = 'loooong'
+    assert print_cells((msg,), 100, 8, _term=term) == len(msg)
+    term.flush()
+    assert capsys.readouterr().out == f'\r{msg}\x1b[K'

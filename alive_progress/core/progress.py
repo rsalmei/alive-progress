@@ -3,7 +3,7 @@ import threading
 import time
 from contextlib import contextmanager
 
-from .calibration import calibrated_fps
+from .calibration import calibrated_fps, custom_fps
 from .configuration import config_handler
 from .hook_manager import buffered_hook_manager, passthrough_hook_manager
 from ..utils.cells import combine_cells, fix_cells, print_cells, to_cells
@@ -81,13 +81,24 @@ def alive_bar(total=None, *, calibrate=None, **options):
             disable (bool): if True, completely disables all output, do not install hooks
             manual (bool): set to manually control the bar position
             enrich_print (bool): enriches print() and logging messages with the bar position
+            receipt (bool): prints the nice final receipt, disables if False
             receipt_text (bool): set to repeat the last text message in the final receipt
-            monitor (bool): set to display the monitor widget `123/100 [123%]`
-            stats (bool): set to display the stats widget `(123.4/s eta: 12s)`
-            elapsed (bool): set to display the elapsed time widget `in 12s`
+            monitor (bool|str): configures the monitor widget `152/200 [76%]`
+                send a string with `{count}`, `{total}` and `{percent}` to customize it
+            elapsed (bool|str): configures the elapsed time widget `in 12s`
+                send a string with `{elapsed}` to customize it
+            stats (bool|str): configures the stats widget `(123.4/s, eta: 12s)`
+                send a string with `{rate}` and `{eta}` to customize it
+            monitor_end (bool|str): configures the monitor widget within final receipt
+                same as monitor, the default format is dynamic, it inherits monitor's one
+            elapsed_end (bool|str): configures the elapsed time widget within final receipt
+                same as elapsed, the default format is dynamic, it inherits elapsed's one
+            stats_end (bool|str): configures the stats widget within final receipt
+                send a string with `{rate}` to customize it (no relation to stats)
             title_length (int): fixes the title lengths, or 0 for unlimited
                 title will be truncated if longer, and a cool ellipsis "…" will appear at the end
             spinner_length (int): forces the spinner length, or `0` for its natural one
+            refresh_secs (int): forces the refresh period, `0` for the reactive visual feedback
 
     """
     config = config_handler(**options)
@@ -112,21 +123,21 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
                 alive_repr(next(spinner_player))
                 cond_refresh.wait(1. / fps(run.rate))
 
-    def alive_repr(spin=None):
+    def alive_repr(spinner=None):
         run.elapsed = time.perf_counter() - run.init
         run.rate = current() / run.elapsed
 
-        fragments = (title, bar_repr(run.percent), spin, monitor(),
+        fragments = (run.title, bar_repr(run.percent), spinner, monitor(),
                      elapsed(), stats(), run.text)
 
-        with cond_refresh:
-            run.last_len = print_cells(fragments, term.cols(), run.last_len, _term=term)
-            term.flush()
+        run.last_len = print_cells(fragments, term.cols(), run.last_len, _term=term)
+        term.flush()
 
-    __alive_bar._alive_repr = alive_repr
+    def set_text(text=None):
+        run.text = to_cells(None if text is None else str(text))
 
-    def set_text(message):
-        run.text = to_cells(message)
+    def set_title(title=None):
+        run.title = _render_title(config, None if title is None else str(title))
 
     if config.manual:
         def bar_handle(percent):  # for manual progress modes.
@@ -136,21 +147,33 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     else:
         def bar_handle(count=1):  # for counting progress modes.
             hook_manager.flush_buffers()
-            run.count += max(0, int(count))
+            run.count += max(1, int(count))
             update_hook()
 
     def start_monitoring(offset=0.):
         term.hide_cursor()
         hook_manager.install()
-        bar._handle, bar.text = bar_handle, set_text
+        bar._handle = bar_handle
         run.init = time.perf_counter() - offset
         event_renderer.set()
 
     def stop_monitoring():
         term.show_cursor()
         hook_manager.uninstall()
-        bar._handle, bar.text = __noop, __noop
+        bar._handle = None
         return time.perf_counter() - run.init
+
+    @contextmanager
+    def pause_monitoring():
+        event_renderer.clear()
+        offset = stop_monitoring()
+        alive_repr()
+        term.write('\n')
+        term.flush()
+        try:
+            yield
+        finally:
+            start_monitoring(offset)
 
     if total or not config.manual:  # we can count items.
         logic_total, current = total, lambda: run.count
@@ -159,10 +182,15 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         logic_total, current = 1., lambda: run.percent
         rate_spec, factor, header = '%', 1., 'on {:.1%}: '
 
-    title, fps = _render_title(config), calibrated_fps(calibrate or factor)
-    bar, bar_repr = __AliveBarHandle(), _create_bars(config)
-    bar.current, run.text, run.last_len, run.elapsed = current, '', 0, 0.
-    run.count, run.percent, run.rate, run.init = 0, 0., 0., 0.
+    if config.refresh_secs:
+        fps = custom_fps(config.refresh_secs)
+    else:
+        fps = calibrated_fps(calibrate or factor)
+
+    __alive_bar._alive_repr = alive_repr  # sampling mode.
+    bar_repr, run.last_len, run.elapsed = _create_bars(config), 0, 0.
+    run.count, run.percent, run.rate, run.init, run.text, run.title = 0, 0., 0., 0., None, None
+    bar = __AliveBarHandle(pause_monitoring, current, set_title, set_text)
     thread, event_renderer, cond_refresh = None, threading.Event(), _cond()
 
     if config.disable:
@@ -173,43 +201,43 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             header if config.enrich_print else '', current, cond_refresh, term)
 
     if term.interactive:
-        @contextmanager
-        def pause_monitoring():
-            event_renderer.clear()
-            offset = stop_monitoring()
-            alive_repr()
-            term.emit('\n')
-            try:
-                yield
-            finally:
-                start_monitoring(offset)
-
-        bar.pause = pause_monitoring
         thread = threading.Thread(target=run, args=(_create_spinner_player(config),))
         thread.daemon = True
         thread.start()
+
+    def stats_end(f):
+        return f.format(rate=run.rate, rate_spec=rate_spec)
+
+    def elapsed_run(f):
+        return f.format(elapsed=elapsed_text(run.elapsed, False))
+
+    def elapsed_end(f):
+        return f.format(elapsed=elapsed_text(run.elapsed, True))
+
+    def monitor_run(f):
+        return f.format(count=run.count, total=total, percent=run.percent)
+
+    def monitor_end(f):
+        warning = '(!) ' if current() != logic_total else ''
+        return f'{warning}{monitor_run(f)}'
 
     if total or config.manual:  # we can track progress and therefore eta.
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
         gen_eta.send(None)
 
-        def stats():
+        def stats_run(f):
             eta = eta_text(gen_eta.send((current(), run.rate)))
-            return f'({run.rate:.1{rate_spec}}/s, eta: {eta})'
+            return f.format(rate=run.rate, rate_spec=rate_spec, eta=eta)
+
+        stats_default = '({rate:.1{rate_spec}}/s, eta: {eta})'
     else:  # unknown progress.
         bar_repr = bar_repr.unknown
 
-        def stats():
-            return f'({run.rate:.1f}/s)'
+        def stats_run(f):
+            return f.format(rate=run.rate, eta='?')
 
-    def stats_end():
-        return f'({run.rate:.2{rate_spec}}/s)'
-
-    def elapsed():
-        return f'in {elapsed_text(run.elapsed, False)}'
-
-    def elapsed_end():
-        return f'in {elapsed_text(run.elapsed, True)}'
+        stats_default = '({rate:.1f}/s)'
+    stats_end_default = '({rate:.2{rate_spec}}/s)'
 
     if total:
         if config.manual:
@@ -219,81 +247,119 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             def update_hook():
                 run.percent = run.count / total
 
-        def monitor():
-            return f'{run.count}/{total} [{run.percent:.0%}]'
-
-        def monitor_end():
-            warning = '(!) ' if run.count != total else ''
-            return f'{warning}{monitor_original()}'
+        monitor_default = '{count}/{total} [{percent:.0%}]'
     else:
         def update_hook():
             pass
 
         if config.manual:
-            def monitor():
-                return f'{run.percent:.0%}'
-
-            def monitor_end():
-                warning = '(!) ' if run.percent != 1. else ''
-                return f'{warning}{monitor_original()}'
+            monitor_default = '{percent:.0%}'
         else:
-            def monitor():
-                return f'{run.count}'
+            monitor_default = '{count}'
+    elapsed_default = 'in {elapsed}'
 
-            monitor_end = monitor
-    monitor_original = monitor
-    if not config.monitor:
-        monitor = monitor_end = __noop
-    if not config.stats:
-        stats = stats_end = __noop
-    if not config.elapsed:
-        elapsed = elapsed_end = __noop
+    monitor = _Fragment(monitor_run, config.monitor, monitor_default)
+    monitor_end = _Fragment(monitor_end, config.monitor_end, monitor.f)
+    stats = _Fragment(stats_run, config.stats, stats_default)
+    stats_end = _Fragment(stats_end, config.stats_end, stats_end_default)
+    elapsed = _Fragment(elapsed_run, config.elapsed, elapsed_default)
+    elapsed_end = _Fragment(elapsed_end, config.elapsed_end, elapsed.f)
 
+    set_text()
+    set_title()
     start_monitoring()
     try:
         yield bar
+    except KeyboardInterrupt:
+        pass
     finally:
         stop_monitoring()
         if thread:  # lets the internal thread terminate gracefully.
             local_copy, thread = thread, None
             local_copy.join()
-            del bar.pause  # avoid pause being called again.
 
-    # prints the nice final receipt.
-    elapsed, stats, monitor, bar_repr = elapsed_end, stats_end, monitor_end, bar_repr.end
-    if not config.receipt_text:
-        run.text = ''
-    alive_repr()
-    term.emit('\n')
+    if config.receipt:  # prints the nice but optional final receipt.
+        elapsed, stats, monitor, bar_repr = elapsed_end, stats_end, monitor_end, bar_repr.end
+        if not config.receipt_text:
+            run.text = ''
+        alive_repr()
+        term.write('\n')
+    else:
+        term.clear_line()
+    term.flush()
+
+
+class _Fragment:
+    def __init__(self, func, value, default):
+        self.func = func
+        if isinstance(value, str):
+            self.f = value
+        elif value:
+            self.f = default
+        else:
+            self.f = ''
+
+    def __call__(self):
+        return self.func(self.f)
+
+
+class _GatedProperty:
+    def __set_name__(self, owner, name):
+        self.prop = f'_{name}'
+
+    # noinspection PyProtectedMember
+    def __get__(self, obj, objtype=None):
+        if obj._handle:
+            return getattr(obj, self.prop)
+        return _noop
+
+    def __set__(self, obj, value):
+        raise AttributeError(f"Can't set {self.prop}")
+
+
+class _GatedAssignProperty(_GatedProperty):
+    # noinspection PyProtectedMember
+    def __set__(self, obj, value):
+        if obj._handle:
+            getattr(obj, self.prop)(value)
 
 
 class __AliveBarHandle:
+    pause = _GatedProperty()
+    current = _GatedProperty()
+    text = _GatedAssignProperty()
+    title = _GatedAssignProperty()
+
+    def __init__(self, pause, get_current, set_title, set_text):
+        self._handle, self._pause, self._current = None, pause, get_current
+        self._title, self._text = set_title, set_text
+
     # this enables to exchange the __call__ implementation.
     def __call__(self, *args, **kwargs):
-        # noinspection PyUnresolvedReferences
-        self._handle(*args, **kwargs)
+        if self._handle:
+            self._handle(*args, **kwargs)
 
 
-def _create_bars(local_config):
-    bar = local_config.bar
+def _create_bars(config):
+    bar = config.bar
     if bar is None:
-        obj = __noop
+        obj = _noop
         obj.unknown, obj.end = obj, obj
         return obj
-    return bar(local_config.length, local_config.unknown)
+    return bar(config.length, config.unknown)
 
 
-def _create_spinner_player(local_config):
-    spinner = local_config.spinner
+def _create_spinner_player(config):
+    spinner = config.spinner
     if spinner is None:
         from itertools import repeat
         return repeat('')
     from ..animations.utils import spinner_player
-    return spinner_player(spinner(local_config.spinner_length))
+    return spinner_player(spinner(config.spinner_length))
 
 
-def _render_title(local_config):
-    title, length = to_cells(str(local_config.title or '')), local_config.title_length
+def _render_title(config, title=None):
+    title, length = to_cells(title or config.title or ''), config.title_length
     if not length:
         return title
 
@@ -309,7 +375,7 @@ def _render_title(local_config):
     return combine_cells(fix_cells(title[:length - 1]), ('…',))
 
 
-def __noop(*_args, **_kwargs):  # pragma: no cover
+def _noop(*_args, **_kwargs):  # pragma: no cover
     pass
 
 
@@ -366,18 +432,21 @@ def alive_it(it, total=None, *, calibrate=None, **options):
 
 class __AliveBarIteratorAdapter:
     def __init__(self, it, inner_bar):
-        self._data = it, inner_bar
+        self._it, self._inner_bar = it, inner_bar
 
     def __iter__(self):
-        if not hasattr(self, '_data'):  # this iterator has already exhausted.
+        if '_inner_bar' not in self.__dict__:  # this iterator has already exhausted.
             return
 
-        it, inner_bar = self._data
-        with inner_bar as bar:
-            self.__dict__ = bar.__dict__  # makes this adapter work as the real bar.
-            for item in it:
+        with self._inner_bar as self._bar:
+            del self._inner_bar
+            for item in self._it:
                 yield item
-                bar()
+                self._bar()
 
     def __call__(self, *args, **kwargs):
         raise UserWarning('The bar position is controlled automatically with `alive_it`.')
+
+    def __getattr__(self, item):
+        # makes this adapter work as the real bar.
+        return getattr(self._bar, item)

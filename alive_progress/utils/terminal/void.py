@@ -6,18 +6,18 @@ def flush():
     pass
 
 
-def _emit_ansi_escape(_=''):
+def _ansi_escape_code(_=''):
     def inner(_=None):
         pass
 
     return inner
 
 
-clear_line = _emit_ansi_escape()
-clear_end = _emit_ansi_escape()
-hide_cursor = _emit_ansi_escape()
-show_cursor = _emit_ansi_escape()
-factory_cursor_up = lambda _: _emit_ansi_escape()
+clear_line = _ansi_escape_code()
+clear_end = _ansi_escape_code()
+hide_cursor = _ansi_escape_code()
+show_cursor = _ansi_escape_code()
+factory_cursor_up = lambda _: _ansi_escape_code()
 
 
 def cols():

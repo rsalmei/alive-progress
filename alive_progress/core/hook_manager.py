@@ -6,6 +6,9 @@ from itertools import chain, islice, repeat
 from logging import StreamHandler
 from types import SimpleNamespace
 
+# support for click.echo, which calls `write` with bytes instead of str.
+ENCODING = sys.getdefaultencoding()
+
 
 def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
     """Create and maintain a buffered hook manager, used for instrumenting print
@@ -32,6 +35,9 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
             stream.flush()
 
     def write(stream, part):
+        if isinstance(part, bytes):
+            part = part.decode(ENCODING)
+
         buffer = buffers[stream]
         if part != '\n':
             # this will generate a sequence of lines interspersed with None, which will later
@@ -41,8 +47,9 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
         else:
             header = get_header()
             with cond_refresh:
-                nested = ''.join(line or ' ' * len(header) for line in buffer)
-                text = f'{header}{nested.strip()}\n'
+                spacer = ' ' * len(header)
+                nested = ''.join(line or spacer for line in buffer)
+                text = f'{header}{nested.rstrip()}\n'
                 if stream in base:  # pragma: no cover
                     # use the current terminal abstraction for preparing the screen.
                     term.clear_line()
@@ -74,6 +81,11 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
         [_set_stream(handler, original_stream)
          for handler, original_stream in before_handlers.items()]
         before_handlers.clear()
+
+        # does the number of logging handlers changed??
+        # if yes, it probably means logging was initialized within alive_bar context,
+        # and thus there can be an instrumented stdout or stderr within handlers,
+        # which causes a TypeError: unhashable type: 'types.SimpleNamespace'...
 
     # internal data.
     buffers = defaultdict(list)

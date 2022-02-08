@@ -11,12 +11,7 @@ if sys.platform == 'win32':
 
 
 def _create(mod, interactive):
-    def emit(text):
-        mod.write(text)
-        mod.flush()
-
     terminal = SimpleNamespace(
-        emit=emit,
         interactive=interactive,
         cursor_up_1=mod.factory_cursor_up(1),
 
@@ -24,7 +19,7 @@ def _create(mod, interactive):
         write=mod.write,
         flush=mod.flush,
         cols=mod.cols,
-        cr=mod.carriage_return,
+        carriage_return=mod.carriage_return,
         clear_line=mod.clear_line,
         clear_end=mod.clear_end,
         hide_cursor=mod.hide_cursor,
@@ -46,11 +41,11 @@ def _is_notebook():
         # if IPython hasn't been imported, there's nothing to check.
         return False
 
+    # noinspection PyPackageRequirements
     from IPython import get_ipython
     class_ = get_ipython().__class__.__name__
     return class_ != 'TerminalInteractiveShell'
 
-
-FULL = _create(jupyter if _is_notebook() else tty, True)
-NON_TTY = _create(non_tty, False)
+FULL = _create(jupyter.BASE if _is_notebook() else tty.BASE, True)
+NON_TTY = _create(non_tty.BASE, False)
 VOID = _create(void, False)

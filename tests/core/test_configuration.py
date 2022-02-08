@@ -4,7 +4,7 @@ import pytest
 
 # noinspection PyProtectedMember
 from alive_progress.core.configuration import Config, ERROR, __style_input_factory, \
-    _bool_input_factory, _int_input_factory, create_config
+    _bool_input_factory, _int_input_factory, create_config, _format_input_factory
 from alive_progress.styles.internal import BARS, SPINNERS, THEMES
 from alive_progress.utils.terminal import NON_TTY, FULL
 
@@ -31,6 +31,29 @@ def test_int_input_factory(lower, upper, num, expected):
 ])
 def test_bool_input_factory(param, expected):
     func = _bool_input_factory()
+    assert func(param) == expected
+
+
+@pytest.mark.parametrize('param, expected', [
+    (True, True),
+    (False, False),
+    (1.2345, True),
+    (object(), True),
+    (None, False),
+    ([], False),
+    ('', ''),
+    ('any text', 'any text'),
+    ('text {{text', 'text {{text'),
+    ('text {{apple', 'text {{apple'),
+    ('text apple}}', 'text apple}}'),
+    ('text {{text}}', 'text {{text}}'),
+    ('{kiwi}', '{kiwi}'),
+    ('text {kiwi} text', 'text {kiwi} text'),
+    ('{mango}', ERROR),
+    ('text {mango} text', ERROR),
+])
+def test_format_input_factory(param, expected):
+    func = _format_input_factory('banana apple kiwi')
     assert func(param) == expected
 
 
