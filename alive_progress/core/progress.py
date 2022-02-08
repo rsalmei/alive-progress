@@ -138,7 +138,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     else:
         def bar_handle(count=1):  # for counting progress modes.
             hook_manager.flush_buffers()
-            run.count += max(0, int(count))
+            run.count += max(1, int(count))
             update_hook()
 
     def start_monitoring(offset=0.):
