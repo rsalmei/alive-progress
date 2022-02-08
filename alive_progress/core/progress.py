@@ -261,6 +261,8 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     start_monitoring()
     try:
         yield bar
+    except KeyboardInterrupt:
+        pass
     finally:
         stop_monitoring()
         if thread:  # lets the internal thread terminate gracefully.
