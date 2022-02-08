@@ -114,11 +114,11 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
                 alive_repr(next(spinner_player))
                 cond_refresh.wait(1. / fps(run.rate))
 
-    def alive_repr(spin=None):
+    def alive_repr(spinner=None):
         run.elapsed = time.perf_counter() - run.init
         run.rate = current() / run.elapsed
 
-        fragments = (run.title, bar_repr(run.percent), spin, monitor(),
+        fragments = (run.title, bar_repr(run.percent), spinner, monitor(),
                      elapsed(), stats(), run.text)
 
         run.last_len = print_cells(fragments, term.cols(), run.last_len, _term=term)
