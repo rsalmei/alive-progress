@@ -83,13 +83,22 @@ def alive_bar(total=None, *, calibrate=None, **options):
             enrich_print (bool): enriches print() and logging messages with the bar position
             receipt (bool): prints the nice final receipt, disables if False
             receipt_text (bool): set to repeat the last text message in the final receipt
-            monitor (bool): set to display the monitor widget `123/100 [123%]`
-            stats (bool): set to display the stats widget `(123.4/s eta: 12s)`
-            elapsed (bool): set to display the elapsed time widget `in 12s`
+            monitor (bool|str): configures the monitor widget `152/200 [76%]`
+                send a string with `{count}`, `{total}` and `{percent}` to customize it
+            elapsed (bool|str): configures the elapsed time widget `in 12s`
+                send a string with `{elapsed}` to customize it
+            stats (bool|str): configures the stats widget `(123.4/s, eta: 12s)`
+                send a string with `{rate}` and `{eta}` to customize it
+            monitor_end (bool|str): configures the monitor widget within final receipt
+                same as monitor, the default format is dynamic, it inherits monitor's one
+            elapsed_end (bool|str): configures the elapsed time widget within final receipt
+                same as elapsed, the default format is dynamic, it inherits elapsed's one
+            stats_end (bool|str): configures the stats widget within final receipt
+                send a string with `{rate}` to customize it (no relation to stats)
             title_length (int): fixes the title lengths, or 0 for unlimited
                 title will be truncated if longer, and a cool ellipsis "…" will appear at the end
             spinner_length (int): forces the spinner length, or `0` for its natural one
-            refresh_secs (int): forces the refresh period to this, `0` is the reactive visual feedback
+            refresh_secs (int): forces the refresh period, `0` for the reactive visual feedback
 
     """
     config = config_handler(**options)
