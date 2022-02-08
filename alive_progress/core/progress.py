@@ -83,13 +83,22 @@ def alive_bar(total=None, *, calibrate=None, **options):
             enrich_print (bool): enriches print() and logging messages with the bar position
             receipt (bool): prints the nice final receipt, disables if False
             receipt_text (bool): set to repeat the last text message in the final receipt
-            monitor (bool): set to display the monitor widget `123/100 [123%]`
-            stats (bool): set to display the stats widget `(123.4/s eta: 12s)`
-            elapsed (bool): set to display the elapsed time widget `in 12s`
+            monitor (bool|str): configures the monitor widget `152/200 [76%]`
+                send a string with `{count}`, `{total}` and `{percent}` to customize it
+            elapsed (bool|str): configures the elapsed time widget `in 12s`
+                send a string with `{elapsed}` to customize it
+            stats (bool|str): configures the stats widget `(123.4/s, eta: 12s)`
+                send a string with `{rate}` and `{eta}` to customize it
+            monitor_end (bool|str): configures the monitor widget within final receipt
+                same as monitor, the default format is dynamic, it inherits monitor's one
+            elapsed_end (bool|str): configures the elapsed time widget within final receipt
+                same as elapsed, the default format is dynamic, it inherits elapsed's one
+            stats_end (bool|str): configures the stats widget within final receipt
+                send a string with `{rate}` to customize it (no relation to stats)
             title_length (int): fixes the title lengths, or 0 for unlimited
                 title will be truncated if longer, and a cool ellipsis "…" will appear at the end
             spinner_length (int): forces the spinner length, or `0` for its natural one
-            refresh_secs (int): forces the refresh period to this, `0` is the reactive visual feedback
+            refresh_secs (int): forces the refresh period, `0` for the reactive visual feedback
 
     """
     config = config_handler(**options)
@@ -114,11 +123,11 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
                 alive_repr(next(spinner_player))
                 cond_refresh.wait(1. / fps(run.rate))
 
-    def alive_repr(spin=None):
+    def alive_repr(spinner=None):
         run.elapsed = time.perf_counter() - run.init
         run.rate = current() / run.elapsed
 
-        fragments = (run.title, bar_repr(run.percent), spin, monitor(),
+        fragments = (run.title, bar_repr(run.percent), spinner, monitor(),
                      elapsed(), stats(), run.text)
 
         run.last_len = print_cells(fragments, term.cols(), run.last_len, _term=term)
@@ -138,7 +147,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     else:
         def bar_handle(count=1):  # for counting progress modes.
             hook_manager.flush_buffers()
-            run.count += max(0, int(count))
+            run.count += max(1, int(count))
             update_hook()
 
     def start_monitoring(offset=0.):
@@ -196,27 +205,39 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         thread.daemon = True
         thread.start()
 
+    def stats_end(f):
+        return f.format(rate=run.rate, rate_spec=rate_spec)
+
+    def elapsed_run(f):
+        return f.format(elapsed=elapsed_text(run.elapsed, False))
+
+    def elapsed_end(f):
+        return f.format(elapsed=elapsed_text(run.elapsed, True))
+
+    def monitor_run(f):
+        return f.format(count=run.count, total=total, percent=run.percent)
+
+    def monitor_end(f):
+        warning = '(!) ' if current() != logic_total else ''
+        return f'{warning}{monitor_run(f)}'
+
     if total or config.manual:  # we can track progress and therefore eta.
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
         gen_eta.send(None)
 
-        def stats():
+        def stats_run(f):
             eta = eta_text(gen_eta.send((current(), run.rate)))
-            return f'({run.rate:.1{rate_spec}}/s, eta: {eta})'
+            return f.format(rate=run.rate, rate_spec=rate_spec, eta=eta)
+
+        stats_default = '({rate:.1{rate_spec}}/s, eta: {eta})'
     else:  # unknown progress.
         bar_repr = bar_repr.unknown
 
-        def stats():
-            return f'({run.rate:.1f}/s)'
+        def stats_run(f):
+            return f.format(rate=run.rate, eta='?')
 
-    def stats_end():
-        return f'({run.rate:.2{rate_spec}}/s)'
-
-    def elapsed():
-        return f'in {elapsed_text(run.elapsed, False)}'
-
-    def elapsed_end():
-        return f'in {elapsed_text(run.elapsed, True)}'
+        stats_default = '({rate:.1f}/s)'
+    stats_end_default = '({rate:.2{rate_spec}}/s)'
 
     if total:
         if config.manual:
@@ -226,42 +247,31 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             def update_hook():
                 run.percent = run.count / total
 
-        def monitor_run():
-            return f'{run.count}/{total} [{run.percent:.0%}]'
-
-        def monitor_end():
-            warning = '(!) ' if run.count != total else ''
-            return f'{warning}{monitor_run()}'
+        monitor_default = '{count}/{total} [{percent:.0%}]'
     else:
         def update_hook():
             pass
 
         if config.manual:
-            def monitor_run():
-                return f'{run.percent:.0%}'
-
-            def monitor_end():
-                warning = '(!) ' if run.percent != 1. else ''
-                return f'{warning}{monitor_run()}'
+            monitor_default = '{percent:.0%}'
         else:
-            def monitor_run():
-                return f'{run.count}'
+            monitor_default = '{count}'
+    elapsed_default = 'in {elapsed}'
 
-            monitor_end = monitor_run
-
-    monitor = monitor_run
-    if not config.monitor:
-        monitor = monitor_end = _noop
-    if not config.stats:
-        stats = stats_end = _noop
-    if not config.elapsed:
-        elapsed = elapsed_end = _noop
+    monitor = _Fragment(monitor_run, config.monitor, monitor_default)
+    monitor_end = _Fragment(monitor_end, config.monitor_end, monitor.f)
+    stats = _Fragment(stats_run, config.stats, stats_default)
+    stats_end = _Fragment(stats_end, config.stats_end, stats_end_default)
+    elapsed = _Fragment(elapsed_run, config.elapsed, elapsed_default)
+    elapsed_end = _Fragment(elapsed_end, config.elapsed_end, elapsed.f)
 
     set_text()
     set_title()
     start_monitoring()
     try:
         yield bar
+    except KeyboardInterrupt:
+        pass
     finally:
         stop_monitoring()
         if thread:  # lets the internal thread terminate gracefully.
@@ -277,6 +287,20 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     else:
         term.clear_line()
     term.flush()
+
+
+class _Fragment:
+    def __init__(self, func, value, default):
+        self.func = func
+        if isinstance(value, str):
+            self.f = value
+        elif value:
+            self.f = default
+        else:
+            self.f = ''
+
+    def __call__(self):
+        return self.func(self.f)
 
 
 class _GatedProperty:

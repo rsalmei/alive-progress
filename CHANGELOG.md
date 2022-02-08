@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.0 - Feb 07, 2022
+- customizable `monitor`, `elapsed`, and `stats` core widgets
+- new `monitor_end`, `elapsed_end`, and `stats_end` core widgets
+- better support for CTRL+C, which makes `alive_bar` stop prematurely
+
+
 ## 2.2.0 - Feb 02, 2022
 - bar title can be dynamically set, changed or removed
 - new custom fps system, which enables very slow refresh rates (long periods)

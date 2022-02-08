@@ -34,19 +34,52 @@ I like to think of it as a new kind of progress bar for Python since it has amon
 - it is **customizable**, with a growing smorgasbord of bar and spinner styles, as well as several factories to easily generate yours! Now (📌 new in 2.0) we even have super powerful and cool `.check()` tools in both bars and spinners, to help you design your animations! You can see all the frames and cycles exploded on screen, with several verbosity levels, even including an **alive** rendition! 😜
 
 
-## 📌 NEW 2.2 series!
+## 📌 NEW in 2.3 series!
+
+This is all about customization, the most core widgets can now be changed:
+- send a string to the `monitor`, `elapsed`, and `stats` widgets, to make them look like you want!
+
+> It's awesome that these strings support all Python format features, so you can use e.g. `{percent:.1%}` 😉.
+
+They can be further customized when on the **final receipt**!
+- new `monitor_end`, `elapsed_end`, and `stats_end`, with dynamic formats inherited from the standard ones!
+
+> If you've hidden some widget before just so it wouldn't appear on the receipt, now you can see them in all their glory, and hide just the receipt one! Or the other way around 😜
+
+And the cherry on top, `alive-progress` now beautifully supports CTRL+C, which actually makes it stop prematurely! I don't know why I haven't thought about that before...
+<br>If you stop a running `alive_bar` now, you'll see this:
+```python
+Download |██████████████████⚠︎                     | (!) 45/100 [45%] in 4.8s (9.43/s)
+```
+
+instead of this:
+```python
+Download |██████████████████                      | ▅▃▁ 45/100 [45%] in 5s (9.6/s, eta: 6s)^C
+---------------------------------------------------------------------------
+KeyboardInterrupt                         Traceback (most recent call last)
+<ipython-input-1-d78c3e930677> in <module>
+      1 with alive_bar(100, title='Download') as bar:
+      2     for i in range(100):
+----> 3         time.sleep(0.1)
+      4         bar()
+      5
+```
+
+So, the interactive use will be much smoother now! 😃
+
+
+## 📌 NEW in 2.2 series!
 
 Some major new features, often requested, have finally landed!
-- bar title can be dynamically set, changed or removed
-- new custom fps system, which enables very slow refresh rates (long periods)
-- the final receipt can be hidden (great for special effects)
+- bar title can be dynamically set, changed or even removed after displayed
+- new custom fps system, which enables very slow refresh rates (to let it run on those k8s for long periods)
+- the final receipt can be totally hidden (great for special effects, like using the cool spinners standalone)
 - new support for `click.echo()` printing
 - terminal columns detection is safer for exotic environments
+- requires Python 3.7+
 
-PS.: removed Python 3.6 support
 
-
-## 📌 NEW 2.1 series!
+## 📌 NEW in 2.1 series!
 
 YES! Now `alive-progress` has support for Jupyter Notebooks, and also includes a _Disabled_ state! Both were highly sought after, and have finally landed!
 <br>And better, I've implemented an auto-detection mechanism for jupyter notebooks, so it just works, out of the box, without any changes in your code!!
@@ -59,7 +92,7 @@ See for yourself:
 > <br>There were instances in which some visual glitches have appeared, like two `alive_bar` refreshes being concatenated together instead of over one another... And it's something I think I can't possibly workaround: it seems Jupyter sometimes refresh the canvas at odd times, which makes it lose some data. Please let me know on the issues if something funnier arises.
 
 
-## 📌 NEW 2.0 series!
+## 📌 NEW in 2.0 series!
 
 This is a major breakthrough in `alive-progress`!
 <br>I took 1 year developing it, and I'm very proud of what I've accomplished \o/
@@ -330,9 +363,18 @@ These are the options - default values in brackets:
 - `enrich_print`: [`True`] enriches print() and logging messages with the bar position
 - `receipt`: [`True`] prints the nice final receipt, disables if False
 - `receipt_text`: [`False`] set to repeat the last text message in the final receipt
-- `monitor`: [`True`] set to display the monitor widget `123/100 [123%]`
-- `stats`: [`True`] set to display the stats widget `(123.4/s eta: 12s)`
-- `elapsed`: [`True`] set to display the elapsed time widget `in 12s`
+- `monitor` (bool|str): [`True`] configures the monitor widget `152/200 [76%]`
+<br>   ↳ send a string with `{count}`, `{total}` and `{percent}` to customize it
+- `elapsed` (bool|str): [`True`] configures the elapsed time widget `in 12s`
+<br>   ↳ send a string with `{elapsed}` to customize it
+- `stats` (bool|str): [`True`] configures the stats widget `(123.4/s, eta: 12s)`
+<br>   ↳ send a string with `{rate}` and `{eta}` to customize it
+- `monitor_end` (bool|str): [`True`] configures the monitor widget within final receipt
+<br>   ↳ same as monitor, the default format is dynamic, it inherits `monitor`'s one
+- `elapsed_end` (bool|str): [`True`] configures the elapsed time widget within final receipt
+<br>   ↳ same as elapsed, the default format is dynamic, it inherits `elapsed`'s one
+- `stats_end` (bool|str): [`True`] configures the stats widget within final receipt
+<br>   ↳ send a string with `{rate}` to customize it (no relation to stats)
 - `title_length`: [`0`] fixes the length of titles, or 0 for unlimited
 <br>   ↳ title will be truncated if longer, and a cool ellipsis "…" will appear at the end
 - `spinner_length`: [`0`] forces the spinner length, or `0` for its natural one
@@ -680,10 +722,11 @@ For Python 3.6:
 
 
 ## Changelog highlights (complete [here](CHANGELOG.md)):
+- 2.3.0: customizable `monitor`, `elapsed`, and `stats` core widgets, new `monitor_end`, `elapsed_end`, and `stats_end` core widgets, better support for CTRL+C, which makes `alive_bar` stop prematurely
 - 2.2.0: bar title can be dynamically set, changed or removed; customizable refresh rates; final receipt can be hidden; `click.echo()` support; faster performance; safer terminal columns detection; remove Python 3.6
 - 2.1.0: Jupyter notebook support (experimental), Jupyter auto-detection, disable feature and configuration
 - 2.0.0: new system-wide Cell Architecture with grapheme clusters support; super cool spinner compiler and runner; `.check()` tools in both spinners and bars; bars and spinners engines revamp; new animation modes in alongside and sequential spinners; new builtin spinners, bars, and themes; dynamic showtime with themes, scroll protection and filter patterns; improved logging for files; several new configuration options for customizing appearance; new iterator adapter `alive_it`; uses `time.perf_counter()` high-resolution clock; requires Python 3.6+ (and officially supports Python 3.9 and 3.10)
-- 1.6.2: new `bar.current()` method; newlines get printed on vanilla Python REPL; the bar is truncated to 80 chars on Windows.
+- 1.6.2: new `bar.current()` method; newlines get printed on vanilla Python REPL; the bar is truncated to 80 chars on Windows
 - 1.6.1: fix logging support for Python 3.6 and lower; support logging for file; support for wide Unicode chars, which use 2 columns but have length 1
 - 1.6.0: soft wrapping support; hiding cursor support; Python logging support; exponential smoothing of ETA time series; proper bar title, always visible; enhanced times representation; new `bar.text()` method, to set situational messages at any time, without incrementing position (deprecates 'text' parameter in `bar()`); performance optimizations
 - 1.5.1: fix compatibility with Python 2.7 (should be the last one, version 2 is in the works, with Python 3 support only)
