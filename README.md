@@ -36,18 +36,18 @@ I like to think of it as a new kind of progress bar for Python since it has amon
 
 ## 📌 NEW in 2.3 series!
 
-This is all about customization, the most core widgets can now be changed:
-- send a string to the `monitor`, `elapsed`, and `stats` widgets, to make them look like you want!
+This is all about customization, the core widgets can now be changed:
+- send a string to the `monitor`, `elapsed`, and `stats` widgets, to make them look anyway you want!
 
-> It's awesome that these strings support all Python format features, so you can use e.g. `{percent:.1%}` 😉.
+> It's awesome that these strings support all Python format features, so you can e.g. `{percent:.1%}` 😉.
 
 They can be further customized when on the **final receipt**!
 - new `monitor_end`, `elapsed_end`, and `stats_end`, with dynamic formats inherited from the standard ones!
 
-> If you've hidden some widget before just so it wouldn't appear on the receipt, now you can see them in all their glory, and hide just the receipt one! Or the other way around 😜
+> If you've hidden some widgets before, just so they wouldn't appear on the receipt, now you can see them in all their running glory, and hide just the receipt one! Or the other way around 😜
 
 And the cherry on top, `alive-progress` now beautifully supports CTRL+C, which actually makes it stop prematurely! I don't know why I haven't thought about that before...
-<br>If you stop a running `alive_bar` now, you'll see this:
+<br>If you stop a running `alive_bar` now, you'll see this (notice both warnings, no spinner, and no ETA: it is the final receipt!):
 ```python
 Download |██████████████████⚠︎                     | (!) 45/100 [45%] in 4.8s (9.43/s)
 ```
@@ -65,7 +65,7 @@ KeyboardInterrupt                         Traceback (most recent call last)
       5
 ```
 
-So, the interactive use will be much smoother now! 😃
+So, interactive use will be much smoother now! 😃
 
 
 ## 📌 NEW in 2.2 series!
