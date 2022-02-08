@@ -196,27 +196,39 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         thread.daemon = True
         thread.start()
 
+    def stats_end(f):
+        return f.format(rate=run.rate, rate_spec=rate_spec)
+
+    def elapsed_run(f):
+        return f.format(elapsed=elapsed_text(run.elapsed, False))
+
+    def elapsed_end(f):
+        return f.format(elapsed=elapsed_text(run.elapsed, True))
+
+    def monitor_run(f):
+        return f.format(count=run.count, total=total, percent=run.percent)
+
+    def monitor_end(f):
+        warning = '(!) ' if current() != logic_total else ''
+        return f'{warning}{monitor_run(f)}'
+
     if total or config.manual:  # we can track progress and therefore eta.
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
         gen_eta.send(None)
 
-        def stats():
+        def stats_run(f):
             eta = eta_text(gen_eta.send((current(), run.rate)))
-            return f'({run.rate:.1{rate_spec}}/s, eta: {eta})'
+            return f.format(rate=run.rate, rate_spec=rate_spec, eta=eta)
+
+        stats_default = '({rate:.1{rate_spec}}/s, eta: {eta})'
     else:  # unknown progress.
         bar_repr = bar_repr.unknown
 
-        def stats():
-            return f'({run.rate:.1f}/s)'
+        def stats_run(f):
+            return f.format(rate=run.rate, eta='?')
 
-    def stats_end():
-        return f'({run.rate:.2{rate_spec}}/s)'
-
-    def elapsed():
-        return f'in {elapsed_text(run.elapsed, False)}'
-
-    def elapsed_end():
-        return f'in {elapsed_text(run.elapsed, True)}'
+        stats_default = '({rate:.1f}/s)'
+    stats_end_default = '({rate:.2{rate_spec}}/s)'
 
     if total:
         if config.manual:
@@ -226,36 +238,23 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             def update_hook():
                 run.percent = run.count / total
 
-        def monitor_run():
-            return f'{run.count}/{total} [{run.percent:.0%}]'
-
-        def monitor_end():
-            warning = '(!) ' if run.count != total else ''
-            return f'{warning}{monitor_run()}'
+        monitor_default = '{count}/{total} [{percent:.0%}]'
     else:
         def update_hook():
             pass
 
         if config.manual:
-            def monitor_run():
-                return f'{run.percent:.0%}'
-
-            def monitor_end():
-                warning = '(!) ' if run.percent != 1. else ''
-                return f'{warning}{monitor_run()}'
+            monitor_default = '{percent:.0%}'
         else:
-            def monitor_run():
-                return f'{run.count}'
+            monitor_default = '{count}'
+    elapsed_default = 'in {elapsed}'
 
-            monitor_end = monitor_run
-
-    monitor = monitor_run
-    if not config.monitor:
-        monitor = monitor_end = _noop
-    if not config.stats:
-        stats = stats_end = _noop
-    if not config.elapsed:
-        elapsed = elapsed_end = _noop
+    monitor = _Fragment(monitor_run, config.monitor, monitor_default)
+    monitor_end = _Fragment(monitor_end, config.monitor_end, monitor.f)
+    stats = _Fragment(stats_run, config.stats, stats_default)
+    stats_end = _Fragment(stats_end, config.stats_end, stats_end_default)
+    elapsed = _Fragment(elapsed_run, config.elapsed, elapsed_default)
+    elapsed_end = _Fragment(elapsed_end, config.elapsed_end, elapsed.f)
 
     set_text()
     set_title()
@@ -277,6 +276,20 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     else:
         term.clear_line()
     term.flush()
+
+
+class _Fragment:
+    def __init__(self, func, value, default):
+        self.func = func
+        if isinstance(value, str):
+            self.f = value
+        elif value:
+            self.f = default
+        else:
+            self.f = ''
+
+    def __call__(self):
+        return self.func(self.f)
 
 
 class _GatedProperty:
