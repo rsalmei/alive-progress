@@ -6,8 +6,8 @@ from contextlib import contextmanager
 from .calibration import calibrated_fps, custom_fps
 from .configuration import config_handler
 from .hook_manager import buffered_hook_manager, passthrough_hook_manager
+from ..utils import terminal
 from ..utils.cells import combine_cells, fix_cells, print_cells, to_cells
-from ..utils.terminal import VOID
 from ..utils.timing import elapsed_text, eta_text, gen_simple_exponential_smoothing_eta
 
 
@@ -195,7 +195,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     thread, event_renderer, cond_refresh = None, threading.Event(), _cond()
 
     if config.disable:
-        term, hook_manager = VOID, passthrough_hook_manager()
+        term, hook_manager = terminal.VOID, passthrough_hook_manager()
     else:
         term = config.force_tty
         hook_manager = buffered_hook_manager(
