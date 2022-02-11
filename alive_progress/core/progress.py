@@ -99,6 +99,7 @@ def alive_bar(total=None, *, calibrate=None, **options):
                 title will be truncated if longer, and a cool ellipsis "…" will appear at the end
             spinner_length (int): forces the spinner length, or `0` for its natural one
             refresh_secs (int): forces the refresh period, `0` for the reactive visual feedback
+            ctrl_c (bool): if False, disables CTRL+C (captures it)
 
     """
     config = config_handler(**options)
@@ -271,7 +272,8 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     try:
         yield bar
     except KeyboardInterrupt:
-        pass
+        if config.ctrl_c:
+            raise
     finally:
         stop_monitoring()
         if thread:  # lets the internal thread terminate gracefully.
