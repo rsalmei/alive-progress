@@ -6,8 +6,8 @@ from contextlib import contextmanager
 from .calibration import calibrated_fps, custom_fps
 from .configuration import config_handler
 from .hook_manager import buffered_hook_manager, passthrough_hook_manager
+from ..utils import terminal
 from ..utils.cells import combine_cells, fix_cells, print_cells, to_cells
-from ..utils.terminal import VOID
 from ..utils.timing import elapsed_text, eta_text, gen_simple_exponential_smoothing_eta
 
 
@@ -99,6 +99,7 @@ def alive_bar(total=None, *, calibrate=None, **options):
                 title will be truncated if longer, and a cool ellipsis "…" will appear at the end
             spinner_length (int): forces the spinner length, or `0` for its natural one
             refresh_secs (int): forces the refresh period, `0` for the reactive visual feedback
+            ctrl_c (bool): if False, disables CTRL+C (captures it)
 
     """
     config = config_handler(**options)
@@ -194,7 +195,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     thread, event_renderer, cond_refresh = None, threading.Event(), _cond()
 
     if config.disable:
-        term, hook_manager = VOID, passthrough_hook_manager()
+        term, hook_manager = terminal.VOID, passthrough_hook_manager()
     else:
         term = config.force_tty
         hook_manager = buffered_hook_manager(
@@ -271,22 +272,23 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     try:
         yield bar
     except KeyboardInterrupt:
-        pass
+        if config.ctrl_c:
+            raise
     finally:
         stop_monitoring()
         if thread:  # lets the internal thread terminate gracefully.
             local_copy, thread = thread, None
             local_copy.join()
 
-    if config.receipt:  # prints the nice but optional final receipt.
-        elapsed, stats, monitor, bar_repr = elapsed_end, stats_end, monitor_end, bar_repr.end
-        if not config.receipt_text:
-            run.text = ''
-        alive_repr()
-        term.write('\n')
-    else:
-        term.clear_line()
-    term.flush()
+        if config.receipt:  # prints the nice but optional final receipt.
+            elapsed, stats, monitor, bar_repr = elapsed_end, stats_end, monitor_end, bar_repr.end
+            if not config.receipt_text:
+                run.text = ''
+            alive_repr()
+            term.write('\n')
+        else:
+            term.clear_line()
+        term.flush()
 
 
 class _Fragment:

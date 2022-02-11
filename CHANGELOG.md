@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.1 - Feb 11, 2022
+- introduce ctrl_c config param
+- print the final receipt even when interrupted
+
+
 ## 2.3.0 - Feb 07, 2022
 - customizable `monitor`, `elapsed`, and `stats` core widgets
 - new `monitor_end`, `elapsed_end`, and `stats_end` core widgets

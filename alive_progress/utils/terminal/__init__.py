@@ -46,6 +46,7 @@ def _is_notebook():
     class_ = get_ipython().__class__.__name__
     return class_ != 'TerminalInteractiveShell'
 
+
 FULL = _create(jupyter.BASE if _is_notebook() else tty.BASE, True)
 NON_TTY = _create(non_tty.BASE, False)
 VOID = _create(void, False)
