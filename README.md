@@ -46,26 +46,13 @@ They can be further customized when on the **final receipt**!
 
 > If you've hidden some widgets before, just so they wouldn't appear on the receipt, now you can see them in all their running glory, and hide just the receipt one! Or the other way around 😜
 
-And the cherry on top, `alive-progress` now beautifully supports CTRL+C, which actually makes it stop prematurely! I don't know why I haven't thought about that before...
-<br>If you stop a running `alive_bar` now, you'll see this (notice both warnings, no spinner, and no ETA: it is the final receipt!):
+Another addition, now `alive-progress` beautifully renders its cool final receipt whenever it is stopped, even if you CTRL+C it prematurely! I don't know why I haven't thought about that before...
 ```python
 Download |██████████████████⚠︎                     | (!) 45/100 [45%] in 4.8s (9.43/s)
 ```
 
-instead of this:
-```python
-Download |██████████████████                      | ▅▃▁ 45/100 [45%] in 5s (9.6/s, eta: 6s)^C
----------------------------------------------------------------------------
-KeyboardInterrupt                         Traceback (most recent call last)
-<ipython-input-1-d78c3e930677> in <module>
-      1 with alive_bar(100, title='Download') as bar:
-      2     for i in range(100):
-----> 3         time.sleep(0.1)
-      4         bar()
-      5
-```
-
-So, interactive use will be much smoother now! 😃
+And finally, you can choose to disable CTRL+C at all! The default is the safer `ctrl_c=True`, which does make CTRL-C work as usual.
+<br>Disable it to make your interactive `alive_bar` use much smoother (there are no stacktraces if you stop it), and/or if it is at the top-level of your program. If it is e.g. inside a for-loop, it will just continue to the next iteration, which may or may not be what you want.
 
 
 ## 📌 NEW in 2.2 series!
@@ -125,7 +112,7 @@ Just install with pip:
 ```
 
 
-## Awake it
+## Try it
 
 Want to see it gloriously running in your system before anything?
 
@@ -134,6 +121,20 @@ Want to see it gloriously running in your system before anything?
 ```
 
 ![alive-progress demo-tool](img/alive-demo-tool.png)
+
+Wondering what styles are builtin? It's `showtime`! ;)
+```python
+from alive_progress.styles import showtime
+
+showtime()
+```
+
+![alive-progress spinners](img/showtime-spinners.gif)
+
+I've made these styles just to try the factories I've created, but I think some of them ended up very very cool! Use them at will, mix them to your heart's content!
+
+
+## Awake it
 
 Cool huh?? Now enter an `ipython` REPL and try it yourself:
 
@@ -308,17 +309,6 @@ Maintaining an open source project is hard and time-consuming.
 
 ### Styles
 
-Wondering what styles are builtin? It's `showtime`! ;)
-```python
-from alive_progress.styles import showtime
-
-showtime()
-```
-
-![alive-progress spinners](img/showtime-spinners.gif)
-
-I've made these styles just to try the factories I've created, but I think some of them ended up very very cool! Use them at will, mix them to your heart's content!
-
 The `showtime` exhibit has an optional argument to choose which show to present, `Show.SPINNERS` (default), `Show.BARS` or `Show.THEMES`, do take a look at them! ;)
 
 ![alive-progress bars](img/showtime-bars.gif)
@@ -379,6 +369,7 @@ These are the options - default values in brackets:
 <br>   ↳ title will be truncated if longer, and a cool ellipsis "…" will appear at the end
 - `spinner_length`: [`0`] forces the spinner length, or `0` for its natural one
 - `refresh_secs`: [`0`] forces the refresh period to this, `0` is the reactive visual feedback
+- `ctrl_c`: [`True`]: if False, disables CTRL+C (captures it)
 
 And there's also one that can only be set locally in an `alive_bar` context:
 - `calibrate`: maximum theoretical throughput to calibrate animation speed (more details [here](#fps-calibration))
@@ -722,6 +713,7 @@ For Python 3.6:
 
 
 ## Changelog highlights (complete [here](CHANGELOG.md)):
+- 2.3.1: introduce ctrl_c config param; print the final receipt even when interrupted
 - 2.3.0: customizable `monitor`, `elapsed`, and `stats` core widgets, new `monitor_end`, `elapsed_end`, and `stats_end` core widgets, better support for CTRL+C, which makes `alive_bar` stop prematurely
 - 2.2.0: bar title can be dynamically set, changed or removed; customizable refresh rates; final receipt can be hidden; `click.echo()` support; faster performance; safer terminal columns detection; remove Python 3.6
 - 2.1.0: Jupyter notebook support (experimental), Jupyter auto-detection, disable feature and configuration
