@@ -52,7 +52,27 @@ Download |██████████████████⚠︎          
 ```
 
 And finally, you can choose to disable CTRL+C at all! The default is the safer `ctrl_c=True`, which does make CTRL-C work as usual.
-<br>Disable it to make your interactive `alive_bar` use much smoother (there are no stacktraces if you stop it), and/or if it is at the top-level of your program. If it is e.g. inside a for-loop, it will just continue to the next iteration, which may or may not be what you want.
+<br>Disable it `ctrl_c=False`, to make your interactive `alive_bar` much smoother to use (there are no stacktraces if you stop it), and/or if it is at the top-level of your program!
+
+> If it is e.g. inside a for-loop, it will just continue to the next iteration, which may or may not be what you want... 😜
+```python
+In [3]: for i in range(10):
+   ...:     with alive_bar(100, ctrl_c=False, title=f'Download{i}') as bar:
+   ...:         for i in range(100):
+   ...:             time.sleep(0.02)
+   ...:             bar()
+   ...:
+Download0 |████████▊⚠︎                              | (!) 22/100 [22%] in 0.6s (36.40/s)
+Download1 |████████████████▊⚠︎                      | (!) 42/100 [42%] in 1.0s (41.43/s)
+Download2 |██████▍⚠︎                                | (!) 16/100 [16%] in 0.4s (39.29/s)
+Download3 |█████▋⚠︎                                 | (!) 14/100 [14%] in 0.4s (33.68/s)
+Download4 |█████████████▎⚠︎                         | (!) 33/100 [33%] in 0.8s (39.48/s)
+Download5 |███████▎⚠︎                               | (!) 18/100 [18%] in 0.5s (37.69/s)
+Download6 |█████▎⚠︎                                 | (!) 13/100 [13%] in 0.3s (37.28/s)
+Download7 |████████████⚠︎                           | (!) 30/100 [30%] in 0.8s (38.43/s)
+Download8 |██████⚠︎                                 | (!) 15/100 [15%] in 0.4s (36.26/s)
+...
+```
 
 
 ## 📌 NEW in 2.2 series!
