@@ -35,6 +35,8 @@ def __create_spinners():
     triangles = bouncing_spinner_factory(('▶', '◀'), 6, 2, hide=False)
     brackets = bouncing_spinner_factory(('>', '<'), 8, 3, hide=False)
     bubbles = bouncing_spinner_factory(('∙●⦿', '○'), 10, 5, hide=False)
+    circles = bouncing_spinner_factory('●', 8, background='○', hide=False)
+    squares = bouncing_spinner_factory('■', 8, background='□', hide=False)
     flowers = bouncing_spinner_factory('💐🌷🌸🌹🌺🌻🌼', 12, (2, 4)).pause(center=6).randomize()
     elements = bouncing_spinner_factory(('🔥💨', '🌊⚡️'), 6, 2)
     loving = bouncing_spinner_factory(('😍🥰', '⭐️🤩'), 8, (2, 3), '. ', hide=False, overlay=True)
