@@ -29,13 +29,13 @@ cases = [
     Case('Overflow+total', 1200, dict(total=800)),
     Case('Unknown', 1000, dict(total=0)),
 
-    Case(title='Manual mode'),
+    Case(title='Manual modes'),
     Case('Normal+total+manual', 1000, dict(total=1000, manual=True)),
     Case('Underflow+total+manual', 800, dict(total=1200, manual=True)),
     Case('Overflow+total+manual', 1200, dict(total=800, manual=True)),
     Case('Unknown+manual', 1000, dict(total=0, manual=True)),
 
-    Case(title='Logging hooks'),
+    Case(title='Print and Logging hooks'),
     Case('Simultaneous', 1000, dict(total=1000), hooks=True),
 
     # title('Quantifying mode')  # soon, quantifying mode...
@@ -47,7 +47,7 @@ cases = [
 ]
 features = [dict(total=1000, bar=bar, spinner='loving') for bar in BARS]
 cases += [Case(name.capitalize(), 1000, {**features[i % len(BARS)], **config}, done=True)
-          for i, (name, config) in enumerate(OVERHEAD_SAMPLING, 2)]
+          for i, (name, config) in enumerate(OVERHEAD_SAMPLING, 1)]
 
 
 def demo(sleep=None):

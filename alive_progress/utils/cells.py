@@ -49,18 +49,17 @@ Support for these cool chars, like Emojis 😃, was so damn hard to implement be
 """
 
 import re
-import sys
 import unicodedata
 from itertools import chain, islice, repeat
 
-from .terminal import carriage_return, clear_end
+from .terminal import FULL
 
 PATTERN_SANITIZE = re.compile(r'[\r\n]')
 SPACES = repeat(' ')
 VS_15 = '\ufe0e'
 
 
-def print_cells(fragments, cols, last_line_len=0, _write=sys.__stdout__.write):  # noqa
+def print_cells(fragments, cols, last_line_len=0, _term=FULL):
     """Print a tuple of fragments of tuples of cells on the terminal, until a given number of
     cols is achieved, slicing over cells when needed.
 
@@ -70,6 +69,7 @@ def print_cells(fragments, cols, last_line_len=0, _write=sys.__stdout__.write): 
         cols (int): maximum columns to use
         last_line_len (int): if the size of these fragments are smaller than this, the line is
             cleared before printing anything
+        _term: the terminal to be used
 
     Returns:
         the number of actually used cols.
@@ -77,20 +77,20 @@ def print_cells(fragments, cols, last_line_len=0, _write=sys.__stdout__.write): 
     """
     line = islice(chain.from_iterable(zip(SPACES, filter(None, fragments))), 1, None)
     available = cols
-    _write(carriage_return)  # should be noop in both non-interactive tty and sampling.
+    _term.write(_term.carriage_return)
     for fragment in line:
         length = len(fragment)
-        if length > available:
-            available, fragment = 0, fix_cells(fragment[:available])
-        else:
+        if length <= available:
             available -= length
+        else:
+            available, fragment = 0, fix_cells(fragment[:available])
 
-        _write(join_cells(fragment))
-        if not available:
+        _term.write(join_cells(fragment))
+        if available == 0:
             break
     else:
-        if last_line_len and sum(len(fragment) for fragment in line) < last_line_len:
-            clear_end()
+        if last_line_len and cols - available < last_line_len:
+            _term.clear_end(available)
 
     return cols - available
 

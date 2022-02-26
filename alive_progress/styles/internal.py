@@ -1,21 +1,11 @@
-import sys
-from collections import OrderedDict
-
 from ..animations.bars import bar_factory
 from ..animations.spinners import alongside_spinner_factory, bouncing_spinner_factory, \
     delayed_spinner_factory, frame_spinner_factory, scrolling_spinner_factory, \
     sequential_spinner_factory
 
 
-def _wrap_ordered(context, desired):
-    result = {k: v for k, v in context.items() if not k.startswith('_')}
-    desired = desired.split()
-    assert set(result) == set(desired), \
-        'missing={}\nextra={}'.format(str(set(result) - set(desired)),
-                                      str(set(desired) - set(result)))
-    if sys.version_info >= (3, 7):  # python 3.7+ have dict ordering.
-        return result
-    return OrderedDict((x, result[x]) for x in desired)
+def _filter(context):
+    return {k: v for k, v in context.items() if not k.startswith('_')}
 
 
 def __create_spinners():
@@ -33,10 +23,10 @@ def __create_spinners():
     dots_waves2 = delayed_spinner_factory(dots, 5, 2)
 
     _balloon = bouncing_spinner_factory('🎈', 12, background='⠁⠈⠐⠠⢀⡀⠄⠂', overlay=True)
-    pennywise = sequential_spinner_factory(  # do not use block mode, so that they doesn't grow.
+    it = sequential_spinner_factory(  # do not use block mode, so that they doesn't grow.
         _balloon,
         _balloon,  # makes the balloon twice as common.
-        bouncing_spinner_factory('🤡', background='⠁⠈⠐⠠⢀⡀⠄⠂', overlay=True),
+        bouncing_spinner_factory('🤡', background='⠁⠈⠐⠠⢀⡀⠄⠂', overlay=False),
         intermix=False
     ).randomize()
 
@@ -99,13 +89,7 @@ def __create_spinners():
         r'––––––––––––•', r'––––––––––––•', r'––––––––––––•', r'––––––––\-––•',
     )).reshape(4).transpose().randomize()
 
-    return _wrap_ordered(
-        locals(),
-        'classic stars twirl twirls horizontal vertical waves waves2 waves3 dots dots_waves'
-        ' dots_waves2 pennywise ball_belt balls_belt triangles brackets bubbles circles squares'
-        ' flowers  elements loving notes notes2 arrow arrows arrows2 arrows_in arrows_out '
-        ' radioactive boat  fish fish2 fishes crab frank wait wait2 wait3 pulse'
-    )
+    return _filter(locals())
 
 
 def __create_bars():
@@ -116,9 +100,9 @@ def __create_bars():
     blocks = bar_factory('▏▎▍▌▋▊▉')
     bubbles = bar_factory('∙○⦿●', borders='<>')
     solid = bar_factory('∙□☐■', borders='<>')
+    checks = bar_factory('✓')
     circles = bar_factory('●', background='○', borders='<>')
     squares = bar_factory('■', background='□', borders='<>')
-    checks = bar_factory('✓')
     halloween = bar_factory('🎃', background='   👻   💀', errors=('😱', '🗡🗡🗡🗡'))
     filling = bar_factory('▁▂▃▄▅▆▇█')
     notes = bar_factory('♩♪♫♬', errors='♭♯')
@@ -127,11 +111,7 @@ def __create_bars():
     fish = bar_factory(tip="><('>", background='¸.·´¯`·.·´¯`·.¸¸.·´¯`·.')
     scuba = bar_factory(tip='>=≗)o', background='_)_)._∙__⠈__)○____∙○___)__⠈(_(__')
 
-    return _wrap_ordered(
-        locals(),
-        'smooth classic classic2 brackets blocks bubbles solid circles squares checks halloween'
-        ' filling notes ruler ruler2 fish scuba'
-    )
+    return _filter(locals())
 
 
 def __create_themes():
@@ -140,7 +120,7 @@ def __create_themes():
     scuba = dict(bar='scuba', spinner='fish2', unknown='fishes')  # I love scuba-diving.
     musical = dict(bar='notes', spinner='notes', unknown='notes2')
 
-    return _wrap_ordered(locals(), 'smooth classic scuba musical')
+    return _filter(locals())
 
 
 SPINNERS = __create_spinners()

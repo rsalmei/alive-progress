@@ -6,10 +6,11 @@ from itertools import chain, islice, repeat
 from logging import StreamHandler
 from types import SimpleNamespace
 
-from ..utils.terminal import clear_line
+# support for click.echo, which calls `write` with bytes instead of str.
+ENCODING = sys.getdefaultencoding()
 
 
-def buffered_hook_manager(header_template, get_pos, cond_refresh):
+def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
     """Create and maintain a buffered hook manager, used for instrumenting print
     statements and logging.
 
@@ -17,6 +18,7 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh):
         header_template (): the template for enriching output
         get_pos (Callable[..., Any]): the container to retrieve the current position
         cond_refresh: Condition object to force a refresh when printing
+        term: the current terminal
 
     Returns:
         a closure with several functions
@@ -33,6 +35,9 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh):
             stream.flush()
 
     def write(stream, part):
+        if isinstance(part, bytes):
+            part = part.decode(ENCODING)
+
         buffer = buffers[stream]
         if part != '\n':
             # this will generate a sequence of lines interspersed with None, which will later
@@ -42,12 +47,14 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh):
         else:
             header = get_header()
             with cond_refresh:
-                nested = ''.join(line or ' ' * len(header) for line in buffer)
-                if stream in base:
-                    # this avoids potential flickering, since now the stream can also be
-                    # files from logging, and thus not needing to clear the screen...
-                    clear_line()
-                stream.write(f'{header}{nested.strip()}\n')
+                spacer = ' ' * len(header)
+                nested = ''.join(line or spacer for line in buffer)
+                text = f'{header}{nested.rstrip()}\n'
+                if stream in base:  # pragma: no cover
+                    # use the current terminal abstraction for preparing the screen.
+                    term.clear_line()
+                # handle all streams, both screen and logging.
+                stream.write(text)
                 stream.flush()
                 cond_refresh.notify()
                 buffer[:] = []
@@ -57,7 +64,7 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh):
             handler.stream.flush()
         return SimpleNamespace(write=partial(write, handler.stream),
                                flush=partial(flush, handler.stream),
-                               isatty=sys.__stdout__.isatty)
+                               isatty=sys.stdout.isatty)
 
     def install():
         root = logging.root
@@ -75,9 +82,14 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh):
          for handler, original_stream in before_handlers.items()]
         before_handlers.clear()
 
+        # does the number of logging handlers changed??
+        # if yes, it probably means logging was initialized within alive_bar context,
+        # and thus there can be an instrumented stdout or stderr within handlers,
+        # which causes a TypeError: unhashable type: 'types.SimpleNamespace'...
+
     # internal data.
     buffers = defaultdict(list)
-    get_header = (lambda: header_template.format(get_pos())) if header_template else lambda: ''
+    get_header = gen_header(header_template, get_pos) if header_template else null_header
     base = sys.stdout, sys.stderr  # needed for tests.
     before_handlers = {}
 
@@ -89,6 +101,28 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh):
     )
 
     return hook_manager
+
+
+def passthrough_hook_manager():  # pragma: no cover
+    passthrough_hook_manager.flush_buffers = __noop
+    passthrough_hook_manager.install = __noop
+    passthrough_hook_manager.uninstall = __noop
+    return passthrough_hook_manager
+
+
+def __noop():  # pragma: no cover
+    pass
+
+
+def gen_header(header_template, get_pos):  # pragma: no cover
+    def inner():
+        return header_template.format(get_pos())
+
+    return inner
+
+
+def null_header():  # pragma: no cover
+    return ''
 
 
 if sys.version_info >= (3, 7):  # pragma: no cover
