@@ -9,6 +9,10 @@ from types import SimpleNamespace
 # support for click.echo, which calls `write` with bytes instead of str.
 ENCODING = sys.getdefaultencoding()
 
+def get_all_loggers():
+    """Returns all currently registered loggers"""
+    return [logging.root] + [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+
 
 def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
     """Create and maintain a buffered hook manager, used for instrumenting print
@@ -67,10 +71,10 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
                                isatty=sys.stdout.isatty)
 
     def install():
-        root = logging.root
         # modify all stream handlers, including their subclasses.
         before_handlers.update({h: _set_stream(h, get_hook_for(h))  # noqa
-                                for h in root.handlers if isinstance(h, StreamHandler)})
+                                for logger in get_all_loggers()
+                                for h in logger.handlers if isinstance(h, StreamHandler)})
         sys.stdout, sys.stderr = (get_hook_for(SimpleNamespace(stream=x)) for x in base)
 
     def uninstall():
