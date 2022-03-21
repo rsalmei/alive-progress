@@ -48,8 +48,8 @@ def show_spinners(*, fps=None, length=None, pattern=None):
 
     """
     selected = _filter(SPINNERS, pattern)
-    max_natural = max(s.natural for s in selected.values()) + 2
     max_name_length = max(len(s) for s in selected) + 2
+    max_natural = max(s.natural for s in selected.values()) + 2
     gens = [_spinner_gen(f'{k:^{max_name_length}}', s, max_natural) for k, s in selected.items()]
     info = Info(
         title=('Spinners', 'including their unknown bar performances'),
@@ -104,9 +104,9 @@ def show_themes(*, fps=None, length=None, pattern=None):
 
     """
     selected = _filter(THEMES, pattern)
+    max_name_length = max(len(s) for s in selected) + 2
     themes = {k: config_handler(**v) for k, v in selected.items()}
     max_natural = max(t.spinner.natural for t in themes.values())
-    max_name_length = max(len(s) for s in selected) + 2
     gens = [_theme_gen(f'{k:>{max_name_length}}', c, max_natural) for k, c in themes.items()]
     info = Info(
         title=('Themes', 'featuring their bar, spinner and unknown bar companions'),
@@ -137,7 +137,6 @@ def _showtime_gen(fps, gens, info, length):
     if not sys.stdout.isatty():
         raise UserWarning('This must be run on a tty connected terminal.')
 
-    logo = spinner_player(SPINNERS['waves']())
     title = lambda t, r=False: (
         scrolling_spinner_factory(t, right=r, wrap=False).pause(center=12),)
     message = lambda m, s=None: (
@@ -158,6 +157,7 @@ def _showtime_gen(fps, gens, info, length):
     fps_monitor = 'fps: {:.2f}'
     info_player = spinner_player(info_spinners(max(3, cols - len(fps_monitor.format(fps)) - 1)))
 
+    logo = spinner_player(SPINNERS['waves']())
     start, sleep, frame, line_num = time.perf_counter(), 1. / fps, 0, 0
     start, current = start - sleep, start  # simulates the first frame took exactly "sleep" ms.
     FULL.hide_cursor()
