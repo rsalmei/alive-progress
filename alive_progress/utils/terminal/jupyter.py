@@ -4,6 +4,9 @@ from . import tty
 
 
 def get(original):
+    def cols():
+        # it seems both `jupyter notebook` and `jupyter-lab` do not return cols, only 80 default.
+        return 120
 
     def clear_line():
         write(_clear_line)
