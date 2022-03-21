@@ -137,10 +137,12 @@ def _showtime_gen(fps, gens, info, length):
     if not sys.stdout.isatty():
         raise UserWarning('This must be run on a tty connected terminal.')
 
-    title = lambda t, r=False: (
-        scrolling_spinner_factory(t, right=r, wrap=False).pause(center=12),)
-    message = lambda m, s=None: (
-        scrolling_spinner_factory(f'{m} 👏 ({s})' if s else m, right=False),)
+    def title(t, r=False):
+        return scrolling_spinner_factory(t, right=r, wrap=False).pause(center=12),  # 1-tuple.
+
+    def message(m, s=None):
+        return scrolling_spinner_factory(f'{m} 👏 ({s})' if s else m, right=False),  # 1-tuple.
+
     info_spinners = sequential_spinner_factory(
         *(title('Now on stage...')
           + message(*info.title)
