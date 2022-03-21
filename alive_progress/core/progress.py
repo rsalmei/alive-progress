@@ -207,15 +207,6 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         thread.daemon = True
         thread.start()
 
-    def stats_end(f):
-        return f.format(rate=run.rate, rate_spec=rate_spec)
-
-    def elapsed_run(f):
-        return f.format(elapsed=elapsed_text(run.elapsed, False))
-
-    def elapsed_end(f):
-        return f.format(elapsed=elapsed_text(run.elapsed, True))
-
     def monitor_run(f):
         return f.format(count=run.count, total=total, percent=run.percent)
 
@@ -223,22 +214,30 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         warning = '(!) ' if current() != logic_total else ''
         return f'{warning}{monitor_run(f)}'
 
-    if total or config.manual:  # we can track progress and therefore eta.
-        gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
-        gen_eta.send(None)
+    def elapsed_run(f):
+        return f.format(elapsed=elapsed_text(run.elapsed, False))
 
+    def elapsed_end(f):
+        return f.format(elapsed=elapsed_text(run.elapsed, True))
+
+    if total or config.manual:  # we can track progress and therefore eta.
         def stats_run(f):
             eta = eta_text(gen_eta.send((current(), run.rate)))
             return f.format(rate=run.rate, rate_spec=rate_spec, eta=eta)
 
+        gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
+        gen_eta.send(None)
         stats_default = '({rate:.1{rate_spec}}/s, eta: {eta})'
     else:  # unknown progress.
-        bar_repr = bar_repr.unknown
-
         def stats_run(f):
             return f.format(rate=run.rate, eta='?')
 
+        bar_repr = bar_repr.unknown
         stats_default = '({rate:.1f}/s)'
+
+    def stats_end(f):
+        return f.format(rate=run.rate, rate_spec=rate_spec)
+
     stats_end_default = '({rate:.2{rate_spec}}/s)'
 
     if total:
@@ -267,9 +266,8 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     stats = _Widget(stats_run, config.stats, stats_default)
     stats_end = _Widget(stats_end, config.stats_end, stats_end_default)
 
-    set_text()
-    set_title()
     ctrl_c, bar = False, __AliveBarHandle(pause_monitoring, current, set_title, set_text)
+    set_text(), set_title()
     start_monitoring()
     try:
         yield bar if not _sampling else locals()
@@ -290,7 +288,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         if config.receipt:  # prints the nice but optional final receipt.
             elapsed, stats, monitor, bar_repr = elapsed_end, stats_end, monitor_end, bar_repr.end
             if not config.receipt_text:
-                run.text = ''
+                set_text()
             alive_repr()
             term.write('\n')
         else:
@@ -315,7 +313,7 @@ class _Widget:  # pragma: no cover
         return self.func(self.f)
 
 
-class _GatedProperty:
+class _GatedProperty:  # pragma: no cover
     def __set_name__(self, owner, name):
         self.prop = f'_{name}'
 
@@ -329,14 +327,14 @@ class _GatedProperty:
         raise AttributeError(f"Can't set {self.prop}")
 
 
-class _GatedAssignProperty(_GatedProperty):
+class _GatedAssignProperty(_GatedProperty):  # pragma: no cover
     # noinspection PyProtectedMember
     def __set__(self, obj, value):
         if obj._handle:
             getattr(obj, self.prop)(value)
 
 
-class __AliveBarHandle:
+class __AliveBarHandle:  # pragma: no cover
     pause = _GatedProperty()
     current = _GatedProperty()
     text = _GatedAssignProperty()
@@ -352,7 +350,7 @@ class __AliveBarHandle:
             self._handle(*args, **kwargs)
 
 
-def _create_bars(config):
+def _create_bars(config):  # pragma: no cover
     bar = config.bar
     if bar is None:
         def obj(*_args, **_kwargs):
@@ -363,8 +361,8 @@ def _create_bars(config):
 
     return bar(config.length, config.unknown), ' '
 
-def _create_spinner_player(config):
 
+def _create_spinner_player(config):  # pragma: no cover
     spinner = config.spinner
     if spinner is None:
         from itertools import repeat
