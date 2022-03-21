@@ -75,19 +75,23 @@ def print_cells(fragments, cols, last_line_len=0, _term=FULL):
     """
     available = cols
     _term.write(_term.carriage_return)
-        length = len(fragment)
-        if length <= available:
-            available -= length
     for fragment in filter(None, fragments):
+        if fragment == '\n':
+            _term.clear_end_line(available)
+            available = cols
+        elif available == 0:
+            continue
         else:
-            available, fragment = 0, fix_cells(fragment[:available])
+            length = len(fragment)
+            if length <= available:
+                available -= length
+            else:
+                available, fragment = 0, fix_cells(fragment[:available])
 
         _term.write(join_cells(fragment))
-        if available == 0:
-            break
-    else:
-        if last_line_len and cols - available < last_line_len:
-            _term.clear_end(available)
+
+    if last_line_len and cols - available < last_line_len:
+        _term.clear_end_line(available)
 
     return cols - available
 
