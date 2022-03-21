@@ -267,10 +267,12 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
 
     set_text()
     set_title()
+    ctrl_c, bar = False, __AliveBarHandle(pause_monitoring, current, set_title, set_text)
     start_monitoring()
     try:
         yield bar if not _sampling else locals()
     except KeyboardInterrupt:
+        ctrl_c = True
         if config.ctrl_c:
             raise
     finally:
@@ -278,6 +280,10 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         if thread:  # lets the internal thread terminate gracefully.
             local_copy, thread = thread, None
             local_copy.join()
+
+        # guarantees last_len is already set...
+        if ctrl_c and term.cols() - run.last_len < 2:
+            term.cursor_up_1()  # try to not duplicate last line when terminal prints "^C".
 
         if config.receipt:  # prints the nice but optional final receipt.
             elapsed, stats, monitor, bar_repr = elapsed_end, stats_end, monitor_end, bar_repr.end
