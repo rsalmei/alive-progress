@@ -50,12 +50,10 @@ Support for these cool chars, like Emojis 😃, was so damn hard to implement be
 
 import re
 import unicodedata
-from itertools import chain, islice, repeat
 
 from .terminal import FULL
 
 PATTERN_SANITIZE = re.compile(r'[\r\n]')
-SPACES = repeat(' ')
 VS_15 = '\ufe0e'
 
 
@@ -75,13 +73,12 @@ def print_cells(fragments, cols, last_line_len=0, _term=FULL):
         the number of actually used cols.
 
     """
-    line = islice(chain.from_iterable(zip(SPACES, filter(None, fragments))), 1, None)
     available = cols
     _term.write(_term.carriage_return)
-    for fragment in line:
         length = len(fragment)
         if length <= available:
             available -= length
+    for fragment in filter(None, fragments):
         else:
             available, fragment = 0, fix_cells(fragment[:available])
 
