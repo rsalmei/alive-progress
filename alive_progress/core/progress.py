@@ -121,15 +121,15 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         with cond_refresh:
             while thread:
                 event_renderer.wait()
-                alive_repr(next(spinner_player))
+                alive_repr(next(spinner_player), ' ')
                 cond_refresh.wait(1. / fps(run.rate))
 
-    def alive_repr(spinner=None):
+    def alive_repr(spinner=None, spinner_suffix=None):
         run.elapsed = time.perf_counter() - run.init
         run.rate = current() / run.elapsed
 
-        fragments = (run.title, bar_repr(run.percent), spinner, monitor(),
-                     elapsed(), stats(), run.text)
+        fragments = (run.title, bar_repr(run.percent), bar_suffix, spinner, spinner_suffix,
+                     monitor(), elapsed(), stats(), *run.text)
 
         run.last_len = print_cells(fragments, term.cols(), run.last_len, _term=term)
         term.flush()
@@ -139,6 +139,8 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
 
     def set_title(title=None):
         run.title = _render_title(config, None if title is None else str(title))
+        if run.title:
+            run.title += (' ',)  # space separator for print_cells.
 
     if config.manual:
         def bar_handle(percent):  # for manual progress modes.
@@ -188,10 +190,10 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     else:
         fps = calibrated_fps(calibrate or factor)
 
-    bar_repr, run.last_len, run.elapsed = _create_bars(config), 0, 0.
-    run.count, run.percent, run.rate, run.init, run.text, run.title = 0, 0., 0., 0., None, None
-    bar = __AliveBarHandle(pause_monitoring, current, set_title, set_text)
+    run.last_len, run.elapsed, run.count, run.percent = 0, 0., 0, 0.
+    run.rate, run.init, run.text, run.title, run.suffix = 0., 0., None, None, None
     thread, event_renderer, cond_refresh = None, threading.Event(), _cond()
+    bar_repr, bar_suffix = _create_bars(config)
 
     if config.disable:
         term, hook_manager = terminal.VOID, passthrough_hook_manager()
@@ -258,12 +260,12 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             monitor_default = '{count}'
     elapsed_default = 'in {elapsed}'
 
-    monitor = _Fragment(monitor_run, config.monitor, monitor_default)
-    monitor_end = _Fragment(monitor_end, config.monitor_end, monitor.f)
-    stats = _Fragment(stats_run, config.stats, stats_default)
-    stats_end = _Fragment(stats_end, config.stats_end, stats_end_default)
-    elapsed = _Fragment(elapsed_run, config.elapsed, elapsed_default)
-    elapsed_end = _Fragment(elapsed_end, config.elapsed_end, elapsed.f)
+    monitor = _Widget(monitor_run, config.monitor, monitor_default)
+    monitor_end = _Widget(monitor_end, config.monitor_end, monitor.f[:-1])  # space separator.
+    elapsed = _Widget(elapsed_run, config.elapsed, elapsed_default)
+    elapsed_end = _Widget(elapsed_end, config.elapsed_end, elapsed.f[:-1])  # space separator.
+    stats = _Widget(stats_run, config.stats, stats_default)
+    stats_end = _Widget(stats_end, config.stats_end, stats_end_default)
 
     set_text()
     set_title()
@@ -296,7 +298,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         term.flush()
 
 
-class _Fragment:
+class _Widget:  # pragma: no cover
     def __init__(self, func, value, default):
         self.func = func
         if isinstance(value, str):
@@ -305,6 +307,9 @@ class _Fragment:
             self.f = default
         else:
             self.f = ''
+
+        if self.f:
+            self.f += ' '  # space separator for print_cells.
 
     def __call__(self):
         return self.func(self.f)
@@ -350,17 +355,21 @@ class __AliveBarHandle:
 def _create_bars(config):
     bar = config.bar
     if bar is None:
-        obj = _noop
-        obj.unknown, obj.end = obj, obj
-        return obj
-    return bar(config.length, config.unknown)
+        def obj(*_args, **_kwargs):
+            pass
 
+        obj.unknown, obj.end = obj, obj
+        return obj, ''
+
+    return bar(config.length, config.unknown), ' '
 
 def _create_spinner_player(config):
+
     spinner = config.spinner
     if spinner is None:
         from itertools import repeat
         return repeat('')
+
     from ..animations.utils import spinner_player
     return spinner_player(spinner(config.spinner_length))
 
@@ -377,7 +386,7 @@ def _render_title(config, title=None):
         return combine_cells(title, (' ',) * (length - len_title))
 
     if length == 1:
-        return '…'
+        return ('…',)
 
     return combine_cells(fix_cells(title[:length - 1]), ('…',))
 
