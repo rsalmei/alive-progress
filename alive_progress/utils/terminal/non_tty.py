@@ -4,14 +4,14 @@ from types import SimpleNamespace
 from . import tty
 
 
-def get(tty):
+def get(original):
     def cols():
         return sys.maxsize  # do not truncate when there's no tty.
 
-    from .void import clear_end, clear_line, factory_cursor_up, hide_cursor, show_cursor  # noqa
+    from .void import clear_end_line, clear_end_screen, clear_line  # noqa
+    from .void import factory_cursor_up, hide_cursor, show_cursor  # noqa
 
-    flush, write = tty.flush, tty.write
-    carriage_return = ''
+    flush, write, carriage_return = original.flush, original.write, ''
 
     return SimpleNamespace(**locals())
 

@@ -3,8 +3,8 @@ from types import SimpleNamespace
 from . import tty
 
 
-def get(tty):
     _last_cols, _clear_line = -1, ''
+def get(original):
 
     def clear_line():
         c = cols()
@@ -15,15 +15,16 @@ def get(tty):
         write(_clear_line)
         flush()
 
-    def clear_end(available):
-        for _ in range(available):
+    def clear_end_line(available=None):
+        for _ in range(available or 0):
             write(' ')
         flush()
 
+    clear_end_screen = clear_end_line
+
     from .void import factory_cursor_up, hide_cursor, show_cursor  # noqa
 
-    flush, write = tty.flush, tty.write
-    carriage_return, cols = tty.carriage_return, tty.cols
+    flush, write, carriage_return = original.flush, original.write, original.carriage_return
 
     return SimpleNamespace(**locals())
 

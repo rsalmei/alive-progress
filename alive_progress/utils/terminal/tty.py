@@ -3,9 +3,9 @@ import sys
 from types import SimpleNamespace
 
 
-def get(original_stdout):
-    write = original_stdout.write
-    flush = original_stdout.flush
+def get(original):
+    write = original.write
+    flush = original.flush
 
     def cols():
         # more resilient one, although 7x slower than os' one.
@@ -22,7 +22,8 @@ def get(original_stdout):
         return _ansi_escape_sequence('A', num)  # sends cursor up: CSI {x}A.
 
     clear_line = _ansi_escape_sequence('2K\r')  # clears the entire line: CSI n K -> with n=2.
-    clear_end = _ansi_escape_sequence('K')  # clears line from cursor: CSI K.
+    clear_end_line = _ansi_escape_sequence('K')  # clears line from cursor: CSI K.
+    clear_end_screen = _ansi_escape_sequence('J')  # clears screen from cursor: CSI J.
     hide_cursor = _ansi_escape_sequence('?25l')  # hides the cursor: CSI ? 25 l.
     show_cursor = _ansi_escape_sequence('?25h')  # shows the cursor: CSI ? 25 h.
     carriage_return = '\r'
