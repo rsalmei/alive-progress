@@ -132,10 +132,14 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
                      monitor(), elapsed(), stats(), *run.text)
 
         run.last_len = print_cells(fragments, term.cols(), run.last_len, _term=term)
+        term.write(run.suffix)
         term.flush()
 
     def set_text(text=None):
-        run.text = to_cells(None if text is None else str(text))
+        if text and config.below_text:
+            run.text, run.suffix = ('\n', to_cells(str(text))), term.cursor_up_1.sequence
+        else:
+            run.text, run.suffix = (to_cells(None if text is None else str(text)),), ''  # 1-tuple.
 
     def set_title(title=None):
         run.title = _render_title(config, None if title is None else str(title))
@@ -286,9 +290,11 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             term.cursor_up_1()  # try to not duplicate last line when terminal prints "^C".
 
         if config.receipt:  # prints the nice but optional final receipt.
-            elapsed, stats, monitor, bar_repr = elapsed_end, stats_end, monitor_end, bar_repr.end
+            elapsed, stats, monitor = elapsed_end, stats_end, monitor_end
+            bar_repr, run.suffix = bar_repr.end, ''
             if not config.receipt_text:
                 set_text()
+            term.clear_end_screen()
             alive_repr()
             term.write('\n')
         else:
