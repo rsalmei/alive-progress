@@ -199,8 +199,8 @@ def _spinner_gen(name, spinner_factory, max_natural):
     unknown_gen = exhibit_spinner(spinner_factory(length))
     yield len(blanks) + spinner_factory.natural + len(name) + length + 4 + 2  # borders/spaces.
     while True:
-        yield (combine_cells(blanks, ('|',), next(spinner_gen), ('|',)),  # '{1}|{2}| {0} |{3}|'
-               name, combine_cells(('|',), next(unknown_gen), ('|',)))
+        yield (blanks, '|', next(spinner_gen), '| ',  # '{1}|{2}| {0} |{3}|'
+               name, ' |', next(unknown_gen), '|')
 
 
 def exhibit_spinner(spinner):
@@ -214,7 +214,7 @@ def _bar_gen(name, bar_factory):
     bar_gen = exhibit_bar(bar_factory(length), fps)
     yield len(name) + length + 2 + 1  # borders/spaces.
     while True:
-        yield name, next(bar_gen)[0]  # '{0} {1}'
+        yield name, ' ', next(bar_gen)[0]  # '{0} {1}'
 
 
 def exhibit_bar(bar, fps):
@@ -256,5 +256,5 @@ def _theme_gen(name, config, max_natural):
     spinner = exhibit_spinner(config.spinner())
     yield len(name) + 2 * length + config.spinner.natural + len(blanks) + 4 + 3  # borders/spaces.
     while True:
-        yield (name, next(bar_std)[0], combine_cells(next(spinner), blanks),  # '{0} {1} {2}{3} {4}'
-               next(bar_unknown)[0])
+        yield (name, ' ', next(bar_std)[0], ' ', next(spinner), blanks,  # '{0} {1} {2}{3} {4}'
+               ' ', next(bar_unknown)[0])
