@@ -117,11 +117,11 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         if total <= 0:
             total = None
 
-    def run(spinner_player):
+    def run(spinner_player, spinner_suffix):
         with cond_refresh:
             while thread:
                 event_renderer.wait()
-                alive_repr(next(spinner_player), ' ')
+                alive_repr(next(spinner_player), spinner_suffix)
                 cond_refresh.wait(1. / fps(run.rate))
 
     def alive_repr(spinner=None, spinner_suffix=None):
@@ -207,7 +207,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             header if config.enrich_print else '', current, cond_refresh, term)
 
     if term.interactive:
-        thread = threading.Thread(target=run, args=(_create_spinner_player(config),))
+        thread = threading.Thread(target=run, args=_create_spinner_player(config))
         thread.daemon = True
         thread.start()
 
@@ -372,10 +372,10 @@ def _create_spinner_player(config):  # pragma: no cover
     spinner = config.spinner
     if spinner is None:
         from itertools import repeat
-        return repeat('')
+        return repeat(''), ''
 
     from ..animations.utils import spinner_player
-    return spinner_player(spinner(config.spinner_length))
+    return spinner_player(spinner(config.spinner_length)), ' '
 
 
 def _render_title(config, title=None):
