@@ -2,10 +2,10 @@ import logging
 import time
 from typing import NamedTuple
 
+from .sampling import OVERHEAD_SAMPLING
 from .utils import toolkit
 from .. import alive_bar
 from ..styles import BARS
-from ..tools.sampling import OVERHEAD_SAMPLING
 from ..utils.colors import BOLD, ORANGE_IT
 
 

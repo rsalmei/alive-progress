@@ -107,7 +107,7 @@ def alive_bar(total=None, *, calibrate=None, **options):
 
 
 @contextmanager
-def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition):
+def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition, _sampling=False):
     """Actual alive_bar handler, that exposes internal functions for configuration of
     both normal operation and overhead estimation."""
 
@@ -188,7 +188,6 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     else:
         fps = calibrated_fps(calibrate or factor)
 
-    __alive_bar._alive_repr = alive_repr  # sampling mode.
     bar_repr, run.last_len, run.elapsed = _create_bars(config), 0, 0.
     run.count, run.percent, run.rate, run.init, run.text, run.title = 0, 0., 0., 0., None, None
     bar = __AliveBarHandle(pause_monitoring, current, set_title, set_text)
@@ -270,7 +269,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     set_title()
     start_monitoring()
     try:
-        yield bar
+        yield bar if not _sampling else locals()
     except KeyboardInterrupt:
         if config.ctrl_c:
             raise
