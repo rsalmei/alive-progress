@@ -343,7 +343,7 @@ def animate(spec):  # pragma: no cover
                 n = next(frames)
                 print(f'\r{CYAN(c, cf)}:{CYAN(i, lf)} -->{join_cells(f)}<-- {CYAN(n, tf)} ')
                 print(DIM('(press CTRL+C to stop)'), end='')
-                FULL.clear_end()
+                FULL.clear_end_line()
                 time.sleep(1 / 15)
                 FULL.cursor_up_1()
     except KeyboardInterrupt:

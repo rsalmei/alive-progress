@@ -169,12 +169,12 @@ def _showtime_gen(fps, gens, info, length):
 
             title = 'Welcome to alive-progress!', next(logo)
             print_cells(title, cols)  # line 1.
-            FULL.clear_end()
+            FULL.clear_end_line()
             print()
 
             info = fps_monitor.format(frame / (current - start)), next(info_player)
             print_cells(info, cols)  # line 2.
-            FULL.clear_end()
+            FULL.clear_end_line()
 
             content = [next(gen) for gen in gens]  # always consume gens, to maintain them in sync.
             for line_num, fragments in enumerate(content, 3):
@@ -182,7 +182,7 @@ def _showtime_gen(fps, gens, info, length):
                     break
                 print()
                 print_cells(fragments, cols)
-                FULL.clear_end()
+                FULL.clear_end_line()
 
             frame += 1
             current = time.perf_counter()
