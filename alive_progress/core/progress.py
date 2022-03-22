@@ -100,6 +100,7 @@ def alive_bar(total=None, *, calibrate=None, **options):
             spinner_length (int): forces the spinner length, or `0` for its natural one
             refresh_secs (int): forces the refresh period, `0` for the reactive visual feedback
             ctrl_c (bool): if False, disables CTRL+C (captures it)
+            dual_line (bool): if True, places the text below the bar
 
     """
     config = config_handler(**options)
