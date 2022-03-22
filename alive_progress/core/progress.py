@@ -399,7 +399,7 @@ def _render_title(config, title=None):
     return combine_cells(fix_cells(title[:length - 1]), ('…',))
 
 
-def alive_it(it, total=None, *, calibrate=None, **options):
+def alive_it(it, total=None, *, finalize=None, calibrate=None, **options):
     """New iterator adapter in 2.0, which makes it simpler to monitor any processing.
 
     Simply wrap your iterable with `alive_it`, and process your items normally!
@@ -417,7 +417,8 @@ def alive_it(it, total=None, *, calibrate=None, **options):
     To force unknown mode, even when the total would be available, send `total=0`.
 
     If you want to use other alive_bar's more advanced features, like for instance setting
-    situational text messages, you can assign it to a variable!
+    situational text messages, you can assign it to a variable! And send a `finalize` closure
+    to set the final receipt title and/or text!
 
     >>> from alive_progress import alive_it
     ... bar = alive_it(items):
@@ -428,6 +429,7 @@ def alive_it(it, total=None, *, calibrate=None, **options):
     Args:
         it (iterable): the input iterable to be processed
         total: same as alive_bar
+        finalize: a function to be called when the bar is going to finalize
         calibrate: same as alive_bar
         options: same as alive_bar
 
@@ -447,12 +449,12 @@ def alive_it(it, total=None, *, calibrate=None, **options):
     it = iter(it)
     if total is None and hasattr(it, '__length_hint__'):
         total = it.__length_hint__()
-    return __AliveBarIteratorAdapter(it, __alive_bar(config, total, calibrate=calibrate))
+    return __AliveBarIteratorAdapter(it, finalize, __alive_bar(config, total, calibrate=calibrate))
 
 
 class __AliveBarIteratorAdapter:
-    def __init__(self, it, inner_bar):
-        self._it, self._inner_bar = it, inner_bar
+    def __init__(self, it, finalize, inner_bar):
+        self._it, self._finalize, self._inner_bar = it, finalize, inner_bar
 
     def __iter__(self):
         if '_bar' in self.__dict__:  # this iterator has already initiated.
@@ -463,6 +465,8 @@ class __AliveBarIteratorAdapter:
             for item in self._it:
                 yield item
                 self._bar()
+            if self._finalize:
+                self._finalize(self._bar)
 
     def __call__(self, *args, **kwargs):
         raise UserWarning('The bar position is controlled automatically with `alive_it`.')
