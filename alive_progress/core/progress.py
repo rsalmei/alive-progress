@@ -455,7 +455,7 @@ class __AliveBarIteratorAdapter:
         self._it, self._inner_bar = it, inner_bar
 
     def __iter__(self):
-        if '_inner_bar' not in self.__dict__:  # this iterator has already exhausted.
+        if '_bar' in self.__dict__:  # this iterator has already initiated.
             return
 
         with self._inner_bar as self._bar:
@@ -470,3 +470,9 @@ class __AliveBarIteratorAdapter:
     def __getattr__(self, item):
         # makes this adapter work as the real bar.
         return getattr(self._bar, item)
+
+    def __setattr__(self, key, value):
+        # makes this adapter work as the real bar.
+        if '_bar' in self.__dict__:
+            return setattr(self._bar, key, value)
+        return super().__setattr__(key, value)
