@@ -356,6 +356,10 @@ class __AliveBarHandle:  # pragma: no cover
             self._handle(*args, **kwargs)
 
 
+def _noop(*_args, **_kwargs):  # pragma: no cover
+    pass
+
+
 def _create_bars(config):  # pragma: no cover
     bar = config.bar
     if bar is None:
@@ -393,10 +397,6 @@ def _render_title(config, title=None):
         return ('…',)
 
     return combine_cells(fix_cells(title[:length - 1]), ('…',))
-
-
-def _noop(*_args, **_kwargs):  # pragma: no cover
-    pass
 
 
 def alive_it(it, total=None, *, calibrate=None, **options):
