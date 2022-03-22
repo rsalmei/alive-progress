@@ -48,8 +48,8 @@ def show_spinners(*, fps=None, length=None, pattern=None):
 
     """
     selected = _filter(SPINNERS, pattern)
-    max_natural = max(s.natural for s in selected.values()) + 2
     max_name_length = max(len(s) for s in selected) + 2
+    max_natural = max(s.natural for s in selected.values()) + 2
     gens = [_spinner_gen(f'{k:^{max_name_length}}', s, max_natural) for k, s in selected.items()]
     info = Info(
         title=('Spinners', 'including their unknown bar performances'),
@@ -104,9 +104,9 @@ def show_themes(*, fps=None, length=None, pattern=None):
 
     """
     selected = _filter(THEMES, pattern)
+    max_name_length = max(len(s) for s in selected) + 2
     themes = {k: config_handler(**v) for k, v in selected.items()}
     max_natural = max(t.spinner.natural for t in themes.values())
-    max_name_length = max(len(s) for s in selected) + 2
     gens = [_theme_gen(f'{k:>{max_name_length}}', c, max_natural) for k, c in themes.items()]
     info = Info(
         title=('Themes', 'featuring their bar, spinner and unknown bar companions'),
@@ -137,11 +137,12 @@ def _showtime_gen(fps, gens, info, length):
     if not sys.stdout.isatty():
         raise UserWarning('This must be run on a tty connected terminal.')
 
-    logo = spinner_player(SPINNERS['waves']())
-    title = lambda t, r=False: (
-        scrolling_spinner_factory(t, right=r, wrap=False).pause(center=12),)
-    message = lambda m, s=None: (
-        scrolling_spinner_factory(f'{m} 👏 ({s})' if s else m, right=False),)
+    def title(t, r=False):
+        return scrolling_spinner_factory(t, right=r, wrap=False).pause(center=12),  # 1-tuple.
+
+    def message(m, s=None):
+        return scrolling_spinner_factory(f'{m} 👏 ({s})' if s else m, right=False),  # 1-tuple.
+
     info_spinners = sequential_spinner_factory(
         *(title('Now on stage...')
           + message(*info.title)
@@ -158,6 +159,7 @@ def _showtime_gen(fps, gens, info, length):
     fps_monitor = 'fps: {:.2f}'
     info_player = spinner_player(info_spinners(max(3, cols - len(fps_monitor.format(fps)) - 1)))
 
+    logo = spinner_player(SPINNERS['waves']())
     start, sleep, frame, line_num = time.perf_counter(), 1. / fps, 0, 0
     start, current = start - sleep, start  # simulates the first frame took exactly "sleep" ms.
     FULL.hide_cursor()
@@ -167,12 +169,12 @@ def _showtime_gen(fps, gens, info, length):
 
             title = 'Welcome to alive-progress!', next(logo)
             print_cells(title, cols)  # line 1.
-            FULL.clear_end()
+            FULL.clear_end_line()
             print()
 
             info = fps_monitor.format(frame / (current - start)), next(info_player)
             print_cells(info, cols)  # line 2.
-            FULL.clear_end()
+            FULL.clear_end_line()
 
             content = [next(gen) for gen in gens]  # always consume gens, to maintain them in sync.
             for line_num, fragments in enumerate(content, 3):
@@ -180,7 +182,7 @@ def _showtime_gen(fps, gens, info, length):
                     break
                 print()
                 print_cells(fragments, cols)
-                FULL.clear_end()
+                FULL.clear_end_line()
 
             frame += 1
             current = time.perf_counter()
@@ -199,8 +201,8 @@ def _spinner_gen(name, spinner_factory, max_natural):
     unknown_gen = exhibit_spinner(spinner_factory(length))
     yield len(blanks) + spinner_factory.natural + len(name) + length + 4 + 2  # borders/spaces.
     while True:
-        yield (combine_cells(blanks, ('|',), next(spinner_gen), ('|',)),  # '{1}|{2}| {0} |{3}|'
-               name, combine_cells(('|',), next(unknown_gen), ('|',)))
+        yield (blanks, '|', next(spinner_gen), '| ',  # '{1}|{2}| {0} |{3}|'
+               name, ' |', next(unknown_gen), '|')
 
 
 def exhibit_spinner(spinner):
@@ -214,7 +216,7 @@ def _bar_gen(name, bar_factory):
     bar_gen = exhibit_bar(bar_factory(length), fps)
     yield len(name) + length + 2 + 1  # borders/spaces.
     while True:
-        yield name, next(bar_gen)[0]  # '{0} {1}'
+        yield name, ' ', next(bar_gen)[0]  # '{0} {1}'
 
 
 def exhibit_bar(bar, fps):
@@ -256,5 +258,5 @@ def _theme_gen(name, config, max_natural):
     spinner = exhibit_spinner(config.spinner())
     yield len(name) + 2 * length + config.spinner.natural + len(blanks) + 4 + 3  # borders/spaces.
     while True:
-        yield (name, next(bar_std)[0], combine_cells(next(spinner), blanks),  # '{0} {1} {2}{3} {4}'
-               next(bar_unknown)[0])
+        yield (name, ' ', next(bar_std)[0], ' ', next(spinner), blanks,  # '{0} {1} {2}{3} {4}'
+               ' ', next(bar_unknown)[0])

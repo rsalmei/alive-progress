@@ -7,14 +7,15 @@ def flush():
 
 
 def _ansi_escape_sequence(_=''):
-    def inner(_=None):
+    def inner(_available=None):
         pass
 
     return inner
 
 
 clear_line = _ansi_escape_sequence()
-clear_end = _ansi_escape_sequence()
+clear_end_line = _ansi_escape_sequence()
+clear_end_screen = _ansi_escape_sequence()
 hide_cursor = _ansi_escape_sequence()
 show_cursor = _ansi_escape_sequence()
 factory_cursor_up = lambda _: _ansi_escape_sequence()

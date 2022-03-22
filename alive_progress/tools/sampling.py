@@ -12,11 +12,10 @@ def overhead(total=None, *, calibrate=None, **options):
     repeat = 300  # timeit how many times to repeat the whole test.
 
     config = config_handler(disable=True, **options)
-    with __alive_bar(config, total, calibrate=calibrate, _cond=__lock):
+    with __alive_bar(config, total, calibrate=calibrate, _cond=__lock, _sampling=True) as loc:
         # the timing of the print_cells function increases proportionately with the
         # number of columns in the terminal, so I want a baseline here `VOID.cols == 0`.
-        res = timeit.repeat('_alive_repr()', repeat=repeat, number=number,
-                            globals=__alive_bar.__dict__)
+        res = timeit.repeat('alive_repr()', repeat=repeat, number=number, globals=loc)
 
     return duration_human(min(res) / number).replace('us', 'µs')
 
@@ -30,14 +29,17 @@ OVERHEAD_SAMPLING_GROUP = [
 OVERHEAD_SAMPLING = [
     ('default', dict()),
     ('receipt', dict(receipt_text=True)),
-    ('no spinner', dict(spinner=None, receipt_text=True)),
-    ('no monitor', dict(monitor=False, receipt_text=True)),
-    ('no stats', dict(stats=False, receipt_text=True)),
-    ('no monitor/stats', dict(stats=False, monitor=False, receipt_text=True)),
-    ('only bar', dict(spinner=None, stats=False, monitor=False, elapsed=False, receipt_text=True)),
-    ('no bar', dict(bar=None, receipt_text=True)),
-    ('no bar/spinner', dict(bar=None, spinner=None, receipt_text=True)),
-    ('only spinner', dict(bar=None, stats=False, monitor=False, elapsed=False, receipt_text=True)),
+    ('no spinner', dict(spinner=None)),
+    ('no elapsed', dict(elapsed=False)),
+    ('no monitor', dict(monitor=False)),
+    ('no stats', dict(stats=False)),
+    ('no bar', dict(bar=None)),
+    ('only spinner', dict(bar=None, monitor=False, elapsed=False, stats=False)),
+    ('only elapsed', dict(bar=None, spinner=None, monitor=False, stats=False)),
+    ('only monitor', dict(bar=None, spinner=None, elapsed=False, stats=False)),
+    ('only stats', dict(bar=None, spinner=None, monitor=False, elapsed=False)),
+    ('only bar', dict(spinner=None, monitor=False, elapsed=False, stats=False)),
+    ('none', dict(bar=None, spinner=None, monitor=False, elapsed=False, stats=False)),
 ]
 
 

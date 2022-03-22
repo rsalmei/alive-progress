@@ -3,27 +3,28 @@ from types import SimpleNamespace
 from . import tty
 
 
-def get(tty):
-    _last_cols, _clear_line = -1, ''
+def get(original):
+    def cols():
+        # it seems both `jupyter notebook` and `jupyter-lab` do not return cols, only 80 default.
+        return 120
 
     def clear_line():
-        c = cols()
-        global _last_cols, _clear_line
-        if _last_cols != c:
-            _clear_line = f'\r{" " * cols()}\r'
-            _last_cols = c
         write(_clear_line)
         flush()
 
-    def clear_end(available):
-        for _ in range(available):
+    def clear_end_line(available=None):
+        for _ in range(available or 0):
             write(' ')
         flush()
 
+    clear_end_screen = clear_end_line
+
+    # it seems spaces are appropriately handled to not wrap lines.
+    _clear_line = f'\r{" " * cols()}\r'
+
     from .void import factory_cursor_up, hide_cursor, show_cursor  # noqa
 
-    flush, write = tty.flush, tty.write
-    carriage_return, cols = tty.carriage_return, tty.cols
+    flush, write, carriage_return = original.flush, original.write, original.carriage_return
 
     return SimpleNamespace(**locals())
 

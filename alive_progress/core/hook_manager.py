@@ -67,10 +67,14 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
                                isatty=sys.stdout.isatty)
 
     def install():
-        root = logging.root
+        def get_all_loggers():
+            yield logging.root
+            yield from (logging.getLogger(name) for name in logging.root.manager.loggerDict)
+
         # modify all stream handlers, including their subclasses.
         before_handlers.update({h: _set_stream(h, get_hook_for(h))  # noqa
-                                for h in root.handlers if isinstance(h, StreamHandler)})
+                                for logger in get_all_loggers()
+                                for h in logger.handlers if isinstance(h, StreamHandler)})
         sys.stdout, sys.stderr = (get_hook_for(SimpleNamespace(stream=x)) for x in base)
 
     def uninstall():

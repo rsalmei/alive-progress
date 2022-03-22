@@ -54,15 +54,18 @@ def test_sanitize_text_double(text, expected, show_marks):
     assert show_marks(result) == expected
 
 
-@pytest.mark.parametrize('fragments, cols, expected', [
-    (('ok', '1'), 10, '\rok 1'),
-    (('ok', '1'), 4, '\rok 1'),
-    (('ok', '1'), 3, '\rok '),
-    (('ok', '1'), 1, '\ro'),
+@pytest.mark.parametrize('fragments, cols, ret, expected', [
+    (('ok', ' ', '1'), 10, 4, '\rok 1'),
+    (('ok', ' ', '1'), 4, 4, '\rok 1'),
+    (('ok', ' ', '1'), 3, 3, '\rok '),
+    (('ok', '1'), 3, 3, '\rok1'),
+    (('ok', '1'), 1, 1, '\ro'),
+    (('rogerio', '\n', '1'), 3, 1, '\rrog\x1b[K\n1'),
+    (('rogerio', '\n', '12345'), 3, 3, '\rrog\x1b[K\n123'),
 ])
-def test_print_cells(fragments, cols, expected, capsys):
+def test_print_cells(fragments, cols, ret, expected, capsys):
     term = tty.get(sys.stdout)
-    assert print_cells(fragments, cols, _term=term) == len(expected) - 1
+    assert print_cells(fragments, cols, _term=term) == ret
     term.flush()
     assert capsys.readouterr().out == expected
 

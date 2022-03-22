@@ -228,7 +228,7 @@ def animate(bar):  # pragma: no cover
             rendition, percent = next(bar_gen)
             print(f'\r{join_cells(rendition)}', CYAN(max(0., percent), "6.1%"))
             print(DIM('(press CTRL+C to stop)'), end='')
-            FULL.clear_end()
+            FULL.clear_end_line()
             time.sleep(1 / 15)
             FULL.cursor_up_1()
     except KeyboardInterrupt:

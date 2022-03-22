@@ -15,13 +15,14 @@ def _create(mod, interactive):
         interactive=interactive,
         cursor_up_1=mod.factory_cursor_up(1),
 
-        # from mod terminal impl.
+        # directly from terminal impl.
         write=mod.write,
         flush=mod.flush,
         cols=mod.cols,
         carriage_return=mod.carriage_return,
         clear_line=mod.clear_line,
-        clear_end=mod.clear_end,
+        clear_end_line=mod.clear_end_line,
+        clear_end_screen=mod.clear_end_screen,
         hide_cursor=mod.hide_cursor,
         show_cursor=mod.show_cursor,
         factory_cursor_up=mod.factory_cursor_up,

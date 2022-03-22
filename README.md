@@ -34,6 +34,34 @@ I like to think of it as a new kind of progress bar for Python since it has amon
 - it is **customizable**, with a growing smorgasbord of bar and spinner styles, as well as several factories to easily generate yours! Now (📌 new in 2.0) we even have super powerful and cool `.check()` tools in both bars and spinners, to help you design your animations! You can see all the frames and cycles exploded on screen, with several verbosity levels, even including an **alive** rendition! 😜
 
 
+## 📌 NEW in 2.4 series!
+
+Now `alive_bar` support *Dual Line* text mode!
+
+If you ever wanted to include longer situational messages within the bar, you probably felt squeezed in one line. You had to shrink the beautiful animated bar or even worse, removing widgets (!), to be able to see what you needed...
+<br>Not anymore!! You can now make the bar *Dual Line*, and put text below it!
+
+Yes, there's a message below the whole bar, but any other messages scroll above it!
+
+```python
+letters = [chr(ord('A') + x) for x in range(26)]
+with alive_bar(26, dual_line=True, title='Alphabet') as bar:
+    for c in letters:
+        bar.text = f'-> Teaching the letter: {c}, please wait...'
+        if c in 'HKWZ':
+            print(f'fail "{c}", retry later')
+        time.sleep(0.3)
+        bar()
+
+on 7: fail "H", retry later
+on 10: fail "K", retry later
+Alphabet |███████████████████████████▊            | ▃▅▇ 18/26 [69%] in 6s (3.2/s, eta: 3s)
+-> Teaching the letter: S, please wait...
+```
+
+There's also a new `finalize` function parameter in `alive_it`, which enables you to set the title and/or text of the final receipt, improved logging support, which detects customized loggers, and some bug fixes.
+
+
 ## 📌 NEW in 2.3 series!
 
 This is all about customization, the core widgets can now be changed:
@@ -44,7 +72,7 @@ This is all about customization, the core widgets can now be changed:
 They can be further customized when on the **final receipt**!
 - new `monitor_end`, `elapsed_end`, and `stats_end`, with dynamic formats inherited from the standard ones!
 
-> If you've hidden some widgets before, just so they wouldn't appear on the receipt, now you can see them in all their running glory, and hide just the receipt one! Or the other way around 😜
+> If you've hidden some widgets before, just so they wouldn't appear on the receipt, now you can see them in all their running glory, and hide just the receipt ones! Or the other way around 😜
 
 Another addition, now `alive-progress` beautifully renders its cool final receipt whenever it is stopped, even if you CTRL+C it prematurely! I don't know why I haven't thought about that before...
 ```python
@@ -54,23 +82,23 @@ Download |██████████████████⚠︎          
 And finally, you can choose to disable CTRL+C at all! The default is the safer `ctrl_c=True`, which does make CTRL-C work as usual.
 <br>Disable it `ctrl_c=False`, to make your interactive `alive_bar` much smoother to use (there are no stacktraces if you stop it), and/or if it is at the top-level of your program!
 
-> If it is e.g. inside a for-loop, it will just continue to the next iteration, which may or may not be what you want... 😜
+> Beware: If it is e.g. inside a for-loop, it will just continue to the next iteration, which may or may not be what you want...
 ```python
-In [3]: for i in range(10):
-   ...:     with alive_bar(100, ctrl_c=False, title=f'Download{i}') as bar:
-   ...:         for i in range(100):
-   ...:             time.sleep(0.02)
-   ...:             bar()
-   ...:
-Download0 |████████▊⚠︎                              | (!) 22/100 [22%] in 0.6s (36.40/s)
-Download1 |████████████████▊⚠︎                      | (!) 42/100 [42%] in 1.0s (41.43/s)
-Download2 |██████▍⚠︎                                | (!) 16/100 [16%] in 0.4s (39.29/s)
-Download3 |█████▋⚠︎                                 | (!) 14/100 [14%] in 0.4s (33.68/s)
-Download4 |█████████████▎⚠︎                         | (!) 33/100 [33%] in 0.8s (39.48/s)
-Download5 |███████▎⚠︎                               | (!) 18/100 [18%] in 0.5s (37.69/s)
-Download6 |█████▎⚠︎                                 | (!) 13/100 [13%] in 0.3s (37.28/s)
-Download7 |████████████⚠︎                           | (!) 30/100 [30%] in 0.8s (38.43/s)
-Download8 |██████⚠︎                                 | (!) 15/100 [15%] in 0.4s (36.26/s)
+for i in range(10):
+    with alive_bar(100, ctrl_c=False, title=f'Download {i}') as bar:
+        for i in range(100):
+            time.sleep(0.02)
+            bar()
+
+Download 0 |████████▊⚠︎                              | (!) 22/100 [22%] in 0.6s (36.40/s)
+Download 1 |████████████████▊⚠︎                      | (!) 42/100 [42%] in 1.0s (41.43/s)
+Download 2 |██████▍⚠︎                                | (!) 16/100 [16%] in 0.4s (39.29/s)
+Download 3 |█████▋⚠︎                                 | (!) 14/100 [14%] in 0.4s (33.68/s)
+Download 4 |█████████████▎⚠︎                         | (!) 33/100 [33%] in 0.8s (39.48/s)
+Download 5 |███████▎⚠︎                               | (!) 18/100 [18%] in 0.5s (37.69/s)
+Download 6 |█████▎⚠︎                                 | (!) 13/100 [13%] in 0.3s (37.28/s)
+Download 7 |████████████⚠︎                           | (!) 30/100 [30%] in 0.8s (38.43/s)
+Download 8 |██████⚠︎                                 | (!) 15/100 [15%] in 0.4s (36.26/s)
 ...
 ```
 
@@ -134,15 +162,7 @@ Just install with pip:
 
 ## Try it
 
-Want to see it gloriously running in your system before anything?
-
-```sh
-❯ python -m alive_progress.tools.demo
-```
-
-![alive-progress demo-tool](img/alive-demo-tool.png)
-
-Wondering what styles are builtin? It's `showtime`! ;)
+If you're wondering what styles are builtin, it's `showtime`! ;)
 ```python
 from alive_progress.styles import showtime
 
@@ -151,12 +171,20 @@ showtime()
 
 ![alive-progress spinners](img/showtime-spinners.gif)
 
-I've made these styles just to try the factories I've created, but I think some of them ended up very very cool! Use them at will, mix them to your heart's content!
+I've made these styles just to try all the animation factories I've created, but I think some of them ended up very very cool! Use them at will, and mix them to your heart's content!
 
+
+Do you want to see actual `alive-progress` bars gloriously running in your system before trying them yourself?
+
+```sh
+❯ python -m alive_progress.tools.demo
+```
+
+![alive-progress demo-tool](img/alive-demo-tool.png)
 
 ## Awake it
 
-Cool huh?? Now enter an `ipython` REPL and try it yourself:
+Cool huh?? Now enter an `ipython` REPL and try this:
 
 ```python
 from alive_progress import alive_bar
@@ -206,14 +234,14 @@ So, in short: retrieve the items as always, enter the `alive_bar` context manage
 
 ### Displaying messages
 
-While inside an `alive_bar` context, you can effortlessly display messages with:
-- the cool `bar.text('message')` or `bar.text = 'message'`, which sets a situational message right within the bar, where you can display something about the current item, or the phase the processing is in;
-- the new dynamic title, which can be set at the start, but can still be changed anytime with `bar.title('Title')` or `bar.title = 'Title'` — mix with `title_length` to keep the bar from changing its length;
+While inside an `alive_bar` context, you can effortlessly display messages, tightly integrated with the current progress bar being displayed! It won't break in any way, and will even enrich your message!
+- the cool `bar.text('message')` and `bar.text = 'message'` set a situational message right within the bar, where you can display something about the current item or the phase the processing is in;
+- the (📌 new) dynamic title, which can be set right at the start, but also be changed anytime with `bar.title('Title')` and `bar.title = 'Title'` — mix with `title_length` to keep the bar from changing its length;
 - the usual Python `print()` statement, where `alive_bar` nicely cleans up the line, prints your message alongside the current bar position at the time, and continues the bar right below it;
 - the standard Python `logging` framework, including file outputs, are also enriched exactly like the previous one;
-- if your using click CLI lib, you can even `click.echo()` for printing styled text.
+- if you're using click CLI lib, you can even use `click.echo()` to print styled text.
 
-Isn't it awesome? And all of this works just the same in an actual terminal or a Jupyter notebook!
+Awesome humm? And all of these work just the same in a terminal or in a Jupyter notebook!
 
 ![alive-progress printing messages](img/print-hook.gif)
 
@@ -241,13 +269,18 @@ Note there isn't any `bar` handle at all in there. But what if you do want it, e
 <br>You can interact with the internal `alive_bar` by just assigning `alive_it` to a variable, like this:
 
 ```python
-bar = alive_it(items):         # <<-- bar with wrapped items
+bar = alive_it(items)          # <<-- bar with wrapped items
 for item in bar:               # <<-- iterate on bar
     print(item)                # process each item
     bar.text(f'ok: {item}')    # WOW, it works!
 ```
 
-Note that this is a slightly special `bar`, which does not support `bar()`, since the iterator adapter tracks items automatically for you.
+Note that this is a slightly special `bar`, which does not support `bar()`, since the iterator adapter tracks items automatically for you. Also, it supports `finalize`, which enables you to set the title and/or text of the final receipt:
+
+```python
+bar = alive_it(items, finalize=lambda bar: bar.text('Success!'))
+...
+```
 
 > Please do mind their differences:
 > - the full use is `with alive_bar() as bar`, where you iterate and call `bar()` whenever desired;
@@ -389,7 +422,8 @@ These are the options - default values in brackets:
 <br>   ↳ title will be truncated if longer, and a cool ellipsis "…" will appear at the end
 - `spinner_length`: [`0`] forces the spinner length, or `0` for its natural one
 - `refresh_secs`: [`0`] forces the refresh period to this, `0` is the reactive visual feedback
-- `ctrl_c`: [`True`]: if False, disables CTRL+C (captures it)
+- `ctrl_c`: [`True`] if False, disables CTRL+C (captures it)
+- `dual_line`: [`False`] if True, places the text below the bar
 
 And there's also one that can only be set locally in an `alive_bar` context:
 - `calibrate`: maximum theoretical throughput to calibrate animation speed (more details [here](#fps-calibration))
@@ -733,6 +767,7 @@ For Python 3.6:
 
 
 ## Changelog highlights (complete [here](CHANGELOG.md)):
+- 2.4.0: support dual line text mode; finalize function parameter in alive_it; improve logging support, detecting customized ones
 - 2.3.1: introduce ctrl_c config param; print the final receipt even when interrupted
 - 2.3.0: customizable `monitor`, `elapsed`, and `stats` core widgets, new `monitor_end`, `elapsed_end`, and `stats_end` core widgets, better support for CTRL+C, which makes `alive_bar` stop prematurely
 - 2.2.0: bar title can be dynamically set, changed or removed; customizable refresh rates; final receipt can be hidden; `click.echo()` support; faster performance; safer terminal columns detection; remove Python 3.6
