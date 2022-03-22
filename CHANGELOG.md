@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.4.0 - Mar 21, 2022
+- support dual line text mode
+- finalize function parameter in alive_it
+- improve logging support, detecting customized ones
+- fix final receipt and truncated bar in jupyter
+- fix default stats_end, which did not follow stats
+- fix bar.text assignment not working on alive_it
+
+
 ## 2.3.1 - Feb 11, 2022
 - introduce ctrl_c config param
 - print the final receipt even when interrupted
