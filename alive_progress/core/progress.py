@@ -268,7 +268,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     elapsed = _Widget(elapsed_run, config.elapsed, elapsed_default)
     elapsed_end = _Widget(elapsed_end, config.elapsed_end, elapsed.f[:-1])  # space separator.
     stats = _Widget(stats_run, config.stats, stats_default)
-    stats_end = _Widget(stats_end, config.stats_end, stats_end_default)
+    stats_end = _Widget(stats_end, config.stats_end, stats_end_default if stats.f[:-1] else '')
 
     ctrl_c, bar = False, __AliveBarHandle(pause_monitoring, current, set_title, set_text)
     set_text(), set_title()
