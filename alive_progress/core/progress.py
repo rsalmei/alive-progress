@@ -136,7 +136,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         term.flush()
 
     def set_text(text=None):
-        if text and config.below_text:
+        if text and config.dual_line:
             run.text, run.suffix = ('\n', to_cells(str(text))), term.cursor_up_1.sequence
         else:
             run.text, run.suffix = (to_cells(None if text is None else str(text)),), ''  # 1-tuple.

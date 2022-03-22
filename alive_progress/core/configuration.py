@@ -105,7 +105,7 @@ def _format_input_factory(allowed):
 Config = namedtuple('Config', 'title length spinner bar unknown force_tty disable manual '
                               'enrich_print receipt receipt_text monitor elapsed stats '
                               'title_length spinner_length refresh_secs monitor_end '
-                              'elapsed_end stats_end ctrl_c below_text')
+                              'elapsed_end stats_end ctrl_c dual_line')
 
 
 def create_config():
@@ -131,7 +131,7 @@ def create_config():
             spinner_length=0,
             refresh_secs=0,
             ctrl_c=True,
-            below_text=False,
+            dual_line=False,
         )
 
     def set_global(theme=None, **options):
@@ -199,7 +199,7 @@ def create_config():
             spinner_length=_int_input_factory(0, 100),
             refresh_secs=_int_input_factory(0, 60 * 60 * 24),  # maximum 24 hours.
             ctrl_c=_bool_input_factory(),
-            below_text=_bool_input_factory(),
+            dual_line=_bool_input_factory(),
             # title_effect=_enum_input_factory(),  # TODO someday.
         )
         assert all(k in validations for k in Config._fields)  # ensures all fields have validations.
