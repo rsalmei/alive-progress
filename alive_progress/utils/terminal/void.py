@@ -10,6 +10,7 @@ def _ansi_escape_sequence(_=''):
     def inner(_available=None):
         pass
 
+    inner.sequence = ''
     return inner
 
 
