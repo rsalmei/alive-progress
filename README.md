@@ -767,6 +767,7 @@ For Python 3.6:
 
 
 ## Changelog highlights (complete [here](CHANGELOG.md)):
+- 2.4.1: fix a crash when dual-line and disabled
 - 2.4.0: support dual line text mode; finalize function parameter in alive_it; improve logging support, detecting customized ones
 - 2.3.1: introduce ctrl_c config param; print the final receipt even when interrupted
 - 2.3.0: customizable `monitor`, `elapsed`, and `stats` core widgets, new `monitor_end`, `elapsed_end`, and `stats_end` core widgets, better support for CTRL+C, which makes `alive_bar` stop prematurely

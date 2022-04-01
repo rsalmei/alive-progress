@@ -1,7 +1,10 @@
 # Changelog
 
+## 2.4.1 - Apr 01, 2022
+- fix a crash when dual-line and disabled
+
 ## 2.4.0 - Mar 21, 2022
-- support dual line text mode
+- support dual-line text mode
 - finalize function parameter in alive_it
 - improve logging support, detecting customized ones
 - fix final receipt and truncated bar in jupyter
