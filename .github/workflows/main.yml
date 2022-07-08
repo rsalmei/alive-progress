@@ -1,0 +1,30 @@
+name: main
+
+on: [push]
+
+jobs:
+  main:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache things
+      uses: actions/cache@v2
+      with:
+        key: ${{ runner.os }}
+        path: |
+          ~/.cache
+          ~/.poetry
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements/test.txt
+        pip install -e .
+    - name: Run pytest
+      run: |
+        pytest -vv
