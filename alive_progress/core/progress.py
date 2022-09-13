@@ -216,7 +216,10 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         return f.format(count=run.count, total=total, percent=run.percent)
 
     def monitor_end(f):
-        warning = '(!) ' if current() != logic_total else ''
+        if current() != logic_total and total is not None:
+            warning = '(!)'
+        else:
+            warning = ''
         return f'{warning}{monitor_run(f)}'
 
     def elapsed_run(f):
@@ -254,6 +257,8 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
                 run.percent = run.count / total
 
         monitor_default = '{count}/{total} [{percent:.0%}]'
+        elapsed_default = 'in {elapsed}'
+
     else:
         def update_hook():
             pass
@@ -262,7 +267,8 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             monitor_default = '{percent:.0%}'
         else:
             monitor_default = '{count}'
-    elapsed_default = 'in {elapsed}'
+
+        elapsed_default = '{elapsed}'
 
     monitor = _Widget(monitor_run, config.monitor, monitor_default)
     monitor_end = _Widget(monitor_end, config.monitor_end, monitor.f[:-1])  # space separator.
