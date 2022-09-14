@@ -217,7 +217,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
 
     def monitor_end(f):
         if current() != logic_total and total is not None:
-            warning = '(!)'
+            warning = '(!) '
         else:
             warning = ''
         return f'{warning}{monitor_run(f)}'
