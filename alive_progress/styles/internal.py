@@ -21,6 +21,7 @@ def __create_spinners():
     dots = frame_spinner_factory('⠁⠈⠐⠠⢀⡀⠄⠂')
     dots_waves = delayed_spinner_factory(dots, 5)
     dots_waves2 = delayed_spinner_factory(dots, 5, 2)
+    three_dots = frame_spinner_factory(("   ", ".  ", ".. ", "..."))
 
     _balloon = bouncing_spinner_factory('🎈', 12, background='⠁⠈⠐⠠⢀⡀⠄⠂', overlay=True)
     it = sequential_spinner_factory(  # do not use block mode, so that they doesn't grow.
