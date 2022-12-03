@@ -164,7 +164,7 @@ Just install with pip:
 
 If you're wondering what styles are builtin, it's `showtime`! ;)
 ```python
-from alive_progress.styles import showtime
+from alive_progress import showtime
 
 showtime()
 ```
