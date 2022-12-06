@@ -50,12 +50,12 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
                 spacer = ' ' * len(header)
                 nested = ''.join(line or spacer for line in buffer)
                 text = f'{header}{nested.rstrip()}\n'
-                # handle all streams, both screen and logging.
                 # write line by line so we can clear each line beforehand as needed
                 for line in text.splitlines(True):
                     if stream in base:  # pragma: no cover
                         # use the current terminal abstraction for preparing the screen.
                         term.clear_line()
+                    # handle all streams, both screen and logging.
                     stream.write(line)
                     stream.flush()
                 cond_refresh.notify()
