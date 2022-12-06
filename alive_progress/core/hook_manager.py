@@ -54,8 +54,13 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
                     # use the current terminal abstraction for preparing the screen.
                     term.clear_line()
                 # handle all streams, both screen and logging.
-                stream.write(text)
-                stream.flush()
+                # write line by line so we can clear each line beforehand as needed
+                for line in text.splitlines(True):
+                    if stream in base:  # pragma: no cover
+                        # use the current terminal abstraction for preparing the screen.
+                        term.clear_line()
+                    stream.write(line)
+                    stream.flush()
                 cond_refresh.notify()
                 buffer[:] = []
 
