@@ -34,8 +34,10 @@ def bordered(borders, default):
 
 def extract_fill_graphemes(text, default):
     """Extract the exact same number of graphemes as default, filling missing ones."""
-    text, default = (tuple(split_graphemes(c or '') for c in p) for p in (text or default, default))
-    return (mark_graphemes(t or d) for t, d in zip(chain(text, repeat('')), default))
+    text, default = (
+        tuple(split_graphemes(c or "") for c in p) for p in (text or default, default)
+    )
+    return (mark_graphemes(t or d) for t, d in zip(chain(text, repeat("")), default))
 
 
 def static_sliding_window(sep, gap, contents, length, right, initial):
@@ -55,13 +57,17 @@ def static_sliding_window(sep, gap, contents, length, right, initial):
                 pos += original
             elif pos >= original:
                 pos -= original
-            yield content[pos:pos + length]
+            yield content[pos : pos + length]
             pos += step
 
-    adjusted_sep = fix_cells((sep * math.ceil(gap / len(sep)))[:gap]) if gap else ''
-    content = tuple(chain.from_iterable(chain.from_iterable(zip(repeat(adjusted_sep), contents))))
+    adjusted_sep = fix_cells((sep * math.ceil(gap / len(sep)))[:gap]) if gap else ""
+    content = tuple(
+        chain.from_iterable(chain.from_iterable(zip(repeat(adjusted_sep), contents)))
+    )
     original, step = len(content), -1 if right else 1
-    assert length <= original, f'window slides inside content, {length} must be <= {original}'
+    assert (
+        length <= original
+    ), f"window slides inside content, {length} must be <= {original}"
     content += content[:length]
     return sliding_window()
 
@@ -75,10 +81,10 @@ def overlay_sliding_window(background, gap, contents, length, right, initial):
 
     def overlay_window():
         for cells in window:  # pragma: no cover
-            yield tuple(b if c == '\0' else c for c, b in zip(cells, background))
+            yield tuple(b if c == "\0" else c for c, b in zip(cells, background))
 
     background = (background * math.ceil(length / len(background)))[:length]
-    window = static_sliding_window('\0', gap, contents, length, right, initial)
+    window = static_sliding_window("\0", gap, contents, length, right, initial)
     return overlay_window()
 
 
@@ -113,7 +119,7 @@ def fix_signature(func: Callable, source: Callable, skip_n_params: int):
     original_doc = func.__doc__
     update_wrapper(func, source)
     if original_doc:
-        func.__doc__ = f'{original_doc}\n{func.__doc__}'
+        func.__doc__ = f"{original_doc}\n{func.__doc__}"
     sig = signature(func)
     sig = sig.replace(parameters=tuple(sig.parameters.values())[skip_n_params:])
     func.__signature__ = sig

@@ -2,7 +2,14 @@ from .exhibit import Show, show_bars, show_spinners, show_themes, showtime
 from .internal import BARS, SPINNERS, THEMES
 
 __all__ = (
-    'BARS', 'SPINNERS', 'THEMES', 'Show', 'showtime', 'show_spinners', 'show_bars', 'show_themes',
+    "BARS",
+    "SPINNERS",
+    "THEMES",
+    "Show",
+    "showtime",
+    "show_spinners",
+    "show_bars",
+    "show_themes",
 )
 
 # I want to create some kind of extension point here. Then users would be able to create

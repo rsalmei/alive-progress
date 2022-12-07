@@ -22,16 +22,18 @@ def calibrated_fps(calibrate):
         a callable to calculate the fps
 
     """
-    min_fps, max_fps = 2., 60.
+    min_fps, max_fps = 2.0, 60.0
     calibrate = max(1e-6, calibrate)
-    adjust_log_curve = 100. / min(calibrate, 100.)  # adjust the curve for small numbers
-    factor = (max_fps - min_fps) / math.log10((calibrate * adjust_log_curve) + 1.)
+    adjust_log_curve = 100.0 / min(
+        calibrate, 100.0
+    )  # adjust the curve for small numbers
+    factor = (max_fps - min_fps) / math.log10((calibrate * adjust_log_curve) + 1.0)
 
     def fps(rate):
         if rate <= 0:
-            return 10.  # bootstrap speed
+            return 10.0  # bootstrap speed
         if rate < calibrate:
-            return math.log10((rate * adjust_log_curve) + 1.) * factor + min_fps
+            return math.log10((rate * adjust_log_curve) + 1.0) * factor + min_fps
         return max_fps
 
     return fps

@@ -1,19 +1,21 @@
 def elapsed_text(seconds, precise):
     seconds = round(seconds, 1 if precise else 0)
-    if seconds < 60.:
-        return '{:{}f}s'.format(seconds, .1 if precise else .0)
+    if seconds < 60.0:
+        return "{:{}f}s".format(seconds, 0.1 if precise else 0.0)
 
-    minutes, seconds = divmod(seconds, 60.)
-    if minutes < 60.:
-        return '{:.0f}:{:0{}f}'.format(minutes, seconds, 4.1 if precise else 2.0)
+    minutes, seconds = divmod(seconds, 60.0)
+    if minutes < 60.0:
+        return "{:.0f}:{:0{}f}".format(minutes, seconds, 4.1 if precise else 2.0)
 
-    hours, minutes = divmod(minutes, 60.)
-    return '{:.0f}:{:02.0f}:{:0{}f}'.format(hours, minutes, seconds, 4.1 if precise else 2.0)
+    hours, minutes = divmod(minutes, 60.0)
+    return "{:.0f}:{:02.0f}:{:0{}f}".format(
+        hours, minutes, seconds, 4.1 if precise else 2.0
+    )
 
 
 def eta_text(eta):
-    if eta is None or eta < 0.:
-        return '-'
+    if eta is None or eta < 0.0:
+        return "-"
     return elapsed_text(eta, False)
 
 

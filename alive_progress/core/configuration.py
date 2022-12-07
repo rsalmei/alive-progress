@@ -12,14 +12,17 @@ ERROR = object()  # represents a config value not accepted.
 def _spinner_input_factory(default):
     from ..animations import spinner_compiler
     from ..styles.internal import SPINNERS
-    return __style_input_factory(SPINNERS, spinner_compiler,
-                                 'spinner_compiler_dispatcher_factory', default)
+
+    return __style_input_factory(
+        SPINNERS, spinner_compiler, "spinner_compiler_dispatcher_factory", default
+    )
 
 
 def _bar_input_factory():
     from ..animations import bars
     from ..styles.internal import BARS
-    return __style_input_factory(BARS, bars, 'bar_assembler_factory', None)
+
+    return __style_input_factory(BARS, bars, "bar_assembler_factory", None)
 
 
 def __style_input_factory(name_lookup, module_lookup, inner_name, default):
@@ -43,8 +46,10 @@ def __func_lookup_factory(module_lookup, inner_name):
     def _input(x):
         if isinstance(x, FunctionType):
             func_file, _ = os.path.splitext(module_lookup.__file__)
-            if x.__code__.co_name == inner_name \
-                    and os.path.splitext(x.__code__.co_filename)[0] == func_file:
+            if (
+                x.__code__.co_name == inner_name
+                and os.path.splitext(x.__code__.co_filename)[0] == func_file
+            ):
                 return x
             return ERROR
 
@@ -102,10 +107,13 @@ def _format_input_factory(allowed):
     return _input
 
 
-Config = namedtuple('Config', 'title length spinner bar unknown force_tty disable manual '
-                              'enrich_print receipt receipt_text monitor elapsed stats '
-                              'title_length spinner_length refresh_secs monitor_end '
-                              'elapsed_end stats_end ctrl_c dual_line')
+Config = namedtuple(
+    "Config",
+    "title length spinner bar unknown force_tty disable manual "
+    "enrich_print receipt receipt_text monitor elapsed stats "
+    "title_length spinner_length refresh_secs monitor_end "
+    "elapsed_end stats_end ctrl_c dual_line",
+)
 
 
 def create_config():
@@ -114,7 +122,7 @@ def create_config():
         set_global(  # this must have all available config vars.
             title=None,
             length=40,
-            theme='smooth',  # includes spinner, bar and unknown.
+            theme="smooth",  # includes spinner, bar and unknown.
             force_tty=None,
             disable=False,
             manual=False,
@@ -160,14 +168,15 @@ def create_config():
                     raise ValueError
                 return result
             except KeyError:
-                raise ValueError(f'invalid config name: {key}')
+                raise ValueError(f"invalid config name: {key}")
             except Exception:
-                raise ValueError(f'invalid config value: {key}={value!r}')
+                raise ValueError(f"invalid config value: {key}={value!r}")
 
         from ..styles.internal import THEMES
+
         if theme:
             if theme not in THEMES:
-                raise ValueError(f'invalid theme name={theme}')
+                raise ValueError(f"invalid theme name={theme}")
             swap = options
             options = dict(THEMES[theme])
             options.update(swap)
@@ -189,12 +198,12 @@ def create_config():
             enrich_print=_bool_input_factory(),
             receipt=_bool_input_factory(),
             receipt_text=_bool_input_factory(),
-            monitor=_format_input_factory('count total percent'),
-            monitor_end=_format_input_factory('count total percent'),
-            elapsed=_format_input_factory('elapsed'),
-            elapsed_end=_format_input_factory('elapsed'),
-            stats=_format_input_factory('rate eta'),
-            stats_end=_format_input_factory('rate'),
+            monitor=_format_input_factory("count total percent"),
+            monitor_end=_format_input_factory("count total percent"),
+            elapsed=_format_input_factory("elapsed"),
+            elapsed_end=_format_input_factory("elapsed"),
+            stats=_format_input_factory("rate eta"),
+            stats_end=_format_input_factory("rate"),
             title_length=_int_input_factory(0, 100),
             spinner_length=_int_input_factory(0, 100),
             refresh_secs=_int_input_factory(0, 60 * 60 * 24),  # maximum 24 hours.
@@ -202,10 +211,14 @@ def create_config():
             dual_line=_bool_input_factory(),
             # title_effect=_enum_input_factory(),  # TODO someday.
         )
-        assert all(k in validations for k in Config._fields)  # ensures all fields have validations.
+        assert all(
+            k in validations for k in Config._fields
+        )  # ensures all fields have validations.
 
         reset()
-        assert all(k in global_config for k in Config._fields)  # ensures all fields have been set.
+        assert all(
+            k in global_config for k in Config._fields
+        )  # ensures all fields have been set.
 
     global_config, validations = {}, {}
     create_context.set_global, create_context.reset = set_global, reset

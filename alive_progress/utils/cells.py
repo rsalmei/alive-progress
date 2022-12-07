@@ -53,8 +53,8 @@ import unicodedata
 
 from .terminal import FULL
 
-PATTERN_SANITIZE = re.compile(r'[\r\n]')
-VS_15 = '\ufe0e'
+PATTERN_SANITIZE = re.compile(r"[\r\n]")
+VS_15 = "\ufe0e"
 
 
 def print_cells(fragments, cols, last_line_len=0, _term=FULL):
@@ -76,7 +76,7 @@ def print_cells(fragments, cols, last_line_len=0, _term=FULL):
     available = cols
     _term.write(_term.carriage_return)
     for fragment in filter(None, fragments):
-        if fragment == '\n':
+        if fragment == "\n":
             _term.clear_end_line(available)
             available = cols
         elif available == 0:
@@ -99,7 +99,7 @@ def print_cells(fragments, cols, last_line_len=0, _term=FULL):
 def join_cells(fragment):
     """Beware, this looses the cell information, converting to a simple string again.
     Don't use unless it is a special case."""
-    return ''.join(strip_marks(fragment))
+    return "".join(strip_marks(fragment))
 
 
 def combine_cells(*fragments):
@@ -127,7 +127,9 @@ def is_wide(g):
         g (str): the grapheme sequence to be tested
 
     """
-    return g[-1] != VS_15 and (len(g) > 1 or unicodedata.east_asian_width(g) in ('W', 'F'))
+    return g[-1] != VS_15 and (
+        len(g) > 1 or unicodedata.east_asian_width(g) in ("W", "F")
+    )
 
 
 def fix_cells(chars):
@@ -135,18 +137,19 @@ def fix_cells(chars):
     if not chars:
         return chars
 
-    start = (' ',) if chars[0] is None else ()
-    end = (' ',) if chars[-1] is not None and is_wide(chars[-1]) else ()
-    return (*start, *chars[bool(start):-1 if end else None], *end)  # noqa
+    start = (" ",) if chars[0] is None else ()
+    end = (" ",) if chars[-1] is not None and is_wide(chars[-1]) else ()
+    return (*start, *chars[bool(start) : -1 if end else None], *end)  # noqa
 
 
 def to_cells(text):
-    text = ' '.join(PATTERN_SANITIZE.split(text or ''))
+    text = " ".join(PATTERN_SANITIZE.split(text or ""))
     return mark_graphemes(split_graphemes(text))
 
 
 def split_graphemes(text):
     from grapheme import graphemes
+
     return tuple(graphemes(text))
 
 

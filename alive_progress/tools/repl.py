@@ -14,14 +14,14 @@ def print_chars(line_length=32, max_char=0x20000):
             only question marks, increase it if would like to see more.
 
     """
-    max_char = min(0x10ffff, max(0, max_char))
+    max_char = min(0x10FFFF, max(0, max_char))
     for i in range(0x20, max_char + line_length, line_length):
-        print(f'0x{i:05x}', end=': ')
+        print(f"0x{i:05x}", end=": ")
         for j in range(line_length):
-            if j & 0xf == 0:
-                print(' ', end='')
+            if j & 0xF == 0:
+                print(" ", end="")
             try:
-                print(chr(i + j), end=' ')
+                print(chr(i + j), end=" ")
             except UnicodeEncodeError:
-                print('?', end=' ')
+                print("?", end=" ")
         print()

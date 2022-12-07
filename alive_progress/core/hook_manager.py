@@ -31,7 +31,7 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
 
     def flush(stream):
         if buffers[stream]:
-            write(stream, '\n')
+            write(stream, "\n")
             stream.flush()
 
     def write(stream, part):
@@ -39,7 +39,7 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
             part = part.decode(ENCODING)
 
         buffer = buffers[stream]
-        if part != '\n':
+        if part != "\n":
             # this will generate a sequence of lines interspersed with None, which will later
             # be rendered as the indent filler to align additional lines under the same header.
             gen = chain.from_iterable(zip(repeat(None), part.splitlines(True)))
@@ -47,9 +47,9 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
         else:
             header = get_header()
             with cond_refresh:
-                spacer = ' ' * len(header)
-                nested = ''.join(line or spacer for line in buffer)
-                text = f'{header}{nested.rstrip()}\n'
+                spacer = " " * len(header)
+                nested = "".join(line or spacer for line in buffer)
+                text = f"{header}{nested.rstrip()}\n"
                 if stream in base:  # pragma: no cover
                     # use the current terminal abstraction for preparing the screen.
                     term.clear_line()
@@ -62,19 +62,28 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
     def get_hook_for(handler):
         if handler.stream:  # supports FileHandlers with delay=true.
             handler.stream.flush()
-        return SimpleNamespace(write=partial(write, handler.stream),
-                               flush=partial(flush, handler.stream),
-                               isatty=sys.stdout.isatty)
+        return SimpleNamespace(
+            write=partial(write, handler.stream),
+            flush=partial(flush, handler.stream),
+            isatty=sys.stdout.isatty,
+        )
 
     def install():
         def get_all_loggers():
             yield logging.root
-            yield from (logging.getLogger(name) for name in logging.root.manager.loggerDict)
+            yield from (
+                logging.getLogger(name) for name in logging.root.manager.loggerDict
+            )
 
         # modify all stream handlers, including their subclasses.
-        before_handlers.update({h: _set_stream(h, get_hook_for(h))  # noqa
-                                for logger in get_all_loggers()
-                                for h in logger.handlers if isinstance(h, StreamHandler)})
+        before_handlers.update(
+            {
+                h: _set_stream(h, get_hook_for(h))  # noqa
+                for logger in get_all_loggers()
+                for h in logger.handlers
+                if isinstance(h, StreamHandler)
+            }
+        )
         sys.stdout, sys.stderr = (get_hook_for(SimpleNamespace(stream=x)) for x in base)
 
     def uninstall():
@@ -82,8 +91,10 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
         buffers.clear()
         sys.stdout, sys.stderr = base
 
-        [_set_stream(handler, original_stream)
-         for handler, original_stream in before_handlers.items()]
+        [
+            _set_stream(handler, original_stream)
+            for handler, original_stream in before_handlers.items()
+        ]
         before_handlers.clear()
 
         # does the number of logging handlers changed??
@@ -93,7 +104,9 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
 
     # internal data.
     buffers = defaultdict(list)
-    get_header = gen_header(header_template, get_pos) if header_template else null_header
+    get_header = (
+        gen_header(header_template, get_pos) if header_template else null_header
+    )
     base = sys.stdout, sys.stderr  # needed for tests.
     before_handlers = {}
 
@@ -126,13 +139,16 @@ def gen_header(header_template, get_pos):  # pragma: no cover
 
 
 def null_header():  # pragma: no cover
-    return ''
+    return ""
 
 
 if sys.version_info >= (3, 7):  # pragma: no cover
+
     def _set_stream(handler, stream):
         return handler.setStream(stream)
+
 else:  # pragma: no cover
+
     def _set_stream(handler, stream):
         # from python 3.7 implementation.
         result = handler.stream

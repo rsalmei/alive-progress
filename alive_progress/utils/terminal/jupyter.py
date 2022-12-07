@@ -14,7 +14,7 @@ def get(original):
 
     def clear_end_line(available=None):
         for _ in range(available or 0):
-            write(' ')
+            write(" ")
         flush()
 
     clear_end_screen = clear_end_line
@@ -24,7 +24,11 @@ def get(original):
 
     from .void import factory_cursor_up, hide_cursor, show_cursor  # noqa
 
-    flush, write, carriage_return = original.flush, original.write, original.carriage_return
+    flush, write, carriage_return = (
+        original.flush,
+        original.write,
+        original.carriage_return,
+    )
 
     return SimpleNamespace(**locals())
 

@@ -3,11 +3,31 @@ import time
 
 from about_time import about_time
 
-from .utils import bordered, extract_fill_graphemes, fix_signature, spinner_player
-from ..utils.cells import VS_15, combine_cells, fix_cells, has_wide, is_wide, join_cells, \
-    mark_graphemes, split_graphemes, strip_marks, to_cells
-from ..utils.colors import BLUE, BLUE_BOLD, CYAN, DIM, GREEN, ORANGE, ORANGE_BOLD, RED, YELLOW_BOLD
+from ..utils.cells import (
+    VS_15,
+    combine_cells,
+    fix_cells,
+    has_wide,
+    is_wide,
+    join_cells,
+    mark_graphemes,
+    split_graphemes,
+    strip_marks,
+    to_cells,
+)
+from ..utils.colors import (
+    BLUE,
+    BLUE_BOLD,
+    CYAN,
+    DIM,
+    GREEN,
+    ORANGE,
+    ORANGE_BOLD,
+    RED,
+    YELLOW_BOLD,
+)
 from ..utils.terminal import FULL
+from .utils import bordered, extract_fill_graphemes, fix_signature, spinner_player
 
 
 def bar_factory(chars=None, *, tip=None, background=None, borders=None, errors=None):
@@ -39,41 +59,54 @@ def bar_factory(chars=None, *, tip=None, background=None, borders=None, errors=N
     def inner_bar_factory(length, spinner_factory=None):
         if chars:
             if is_wide(chars[-1]):  # previous chars can be anything.
+
                 def fill_style(complete, filling):  # wide chars fill.
                     odd = bool(complete % 2)
                     fill = (None,) if odd != bool(filling) else ()  # odd XOR filling.
-                    fill += (chars[-1], None) * int(complete / 2)  # already marked wide chars.
+                    fill += (chars[-1], None) * int(
+                        complete / 2
+                    )  # already marked wide chars.
                     if filling and odd:
                         fill += mark_graphemes((chars[filling - 1],))
                     return fill
+
             else:  # previous chars cannot be wide.
+
                 def fill_style(complete, filling):  # narrow chars fill.
                     fill = (chars[-1],) * complete  # unneeded marks here.
                     if filling:
                         fill += (chars[filling - 1],)  # no widies here.
                     return fill
+
         else:
+
             def fill_style(complete, filling):  # invisible fill.
-                return fix_cells(padding[:complete + bool(filling)])
+                return fix_cells(padding[: complete + bool(filling)])
 
         def running(fill):
-            return None, (fix_cells(padding[len(fill) + len_tip:]),)  # this is a 1-tuple.
+            return None, (
+                fix_cells(padding[len(fill) + len_tip :]),
+            )  # this is a 1-tuple.
 
         def ended(fill):
             border = None if len(fill) + len(underflow) <= length else underflow
             texts = *(() if border else (underflow,)), blanks
             return border, texts
 
-        @bordered(borders, '||')
+        @bordered(borders, "||")
         def draw_known(apply_state, percent):
-            virtual_fill = round(virtual_length * max(0., min(1., percent)))
+            virtual_fill = round(virtual_length * max(0.0, min(1.0, percent)))
             fill = fill_style(*divmod(virtual_fill, num_graphemes))
             border, texts = apply_state(fill)
-            border = overflow if percent > 1. else None if percent == 1. else border
-            return fix_cells(combine_cells(fill, tip, *texts)[len_tip:length + len_tip]), border
+            border = overflow if percent > 1.0 else None if percent == 1.0 else border
+            return (
+                fix_cells(combine_cells(fill, tip, *texts)[len_tip : length + len_tip]),
+                border,
+            )
 
         if spinner_factory:
-            @bordered(borders, '||')
+
+            @bordered(borders, "||")
             def draw_unknown(_percent=None):
                 return next(player), None
 
@@ -81,17 +114,20 @@ def bar_factory(chars=None, *, tip=None, background=None, borders=None, errors=N
         else:
             draw_unknown = None
 
-        padding = (' ',) * len_tip + background * math.ceil((length + len_tip) / len(background))
-        virtual_length, blanks = num_graphemes * (length + len_tip), (' ',) * length
+        padding = (" ",) * len_tip + background * math.ceil(
+            (length + len_tip) / len(background)
+        )
+        virtual_length, blanks = num_graphemes * (length + len_tip), (" ",) * length
         return draw_known, running, ended, draw_unknown
 
-    assert chars or tip, 'tip is mandatory for transparent bars'
-    assert not (chars and not is_wide(chars[-1]) and has_wide(chars)), \
-        'cannot use grapheme with a narrow last char'
+    assert chars or tip, "tip is mandatory for transparent bars"
+    assert not (
+        chars and not is_wide(chars[-1]) and has_wide(chars)
+    ), "cannot use grapheme with a narrow last char"
 
-    chars = split_graphemes(chars or '')  # the only one not yet marked.
-    tip, background = (to_cells(x) for x in (tip, background or ' '))
-    underflow, overflow = extract_fill_graphemes(errors, (f'⚠{VS_15}', f'✗{VS_15}'))
+    chars = split_graphemes(chars or "")  # the only one not yet marked.
+    tip, background = (to_cells(x) for x in (tip, background or " "))
+    underflow, overflow = extract_fill_graphemes(errors, (f"⚠{VS_15}", f"✗{VS_15}"))
     num_graphemes, len_tip = len(chars) or 1, len(tip)
     return inner_bar_factory
 
@@ -109,7 +145,9 @@ def bar_controller(inner_bar_factory):
 
         """
         with about_time() as t_compile:
-            draw_known, running, ended, draw_unknown = inner_bar_factory(length, spinner_factory)
+            draw_known, running, ended, draw_unknown = inner_bar_factory(
+                length, spinner_factory
+            )
 
         def draw(percent):
             return draw_known(running, percent)
@@ -121,13 +159,15 @@ def bar_controller(inner_bar_factory):
             return check(draw, t_compile, *args, **kwargs)
 
         draw.__dict__.update(
-            end=draw_end, unknown=draw_unknown,
+            end=draw_end,
+            unknown=draw_unknown,
             check=fix_signature(bar_check, check, 2),
         )
 
         if draw_unknown:
+
             def draw_unknown_end(_percent=None):
-                return draw_known(ended, 1.)
+                return draw_known(ended, 1.0)
 
             draw_unknown.end = draw_unknown_end
 
@@ -164,11 +204,13 @@ def check(bar, t_compile, verbosity=0, *, steps=20):  # noqa  # pragma: no cover
     if verbosity in (1, 2, 4, 5):
         render_data(bar, verbosity in (2, 5), steps)
     else:
-        spec_data(bar)  # spec_data here displays only brief data, shown only if not full.
+        spec_data(
+            bar
+        )  # spec_data here displays only brief data, shown only if not full.
 
-    duration = t_compile.duration_human.replace('us', 'µs')
-    print(f'\nBar style compiled in: {GREEN(duration)}')
-    print(f'(call {HELP_MSG[verbosity]})')
+    duration = t_compile.duration_human.replace("us", "µs")
+    print(f"\nBar style compiled in: {GREEN(duration)}")
+    print(f"(call {HELP_MSG[verbosity]})")
 
     if verbosity in (3, 4, 5):
         animate(bar)
@@ -177,37 +219,51 @@ def check(bar, t_compile, verbosity=0, *, steps=20):  # noqa  # pragma: no cover
 SECTION = ORANGE_BOLD
 CHECK = lambda p: f'{BLUE(f".{check.__name__}(")}{BLUE_BOLD(p)}{BLUE(")")}'
 HELP_MSG = {
-    0: f'{CHECK(1)} to unfold bar data, or {CHECK(3)} to include animation',
-    1: f'{CHECK(2)} to reveal codepoints, or {CHECK(4)} to include animation,'
-       f' or {CHECK(0)} to fold up bar data',
-    2: f'{CHECK(5)} to include animation, or {CHECK(1)} to hide codepoints',
-    3: f'{CHECK(4)} to unfold bar data, or {CHECK(0)} to omit animation',
-    4: f'{CHECK(5)} to reveal codepoints, or {CHECK(1)} to omit animation,'
-       f' or {CHECK(3)} to fold up bar data',
-    5: f'{CHECK(2)} to omit animation, or {CHECK(4)} to hide codepoints',
+    0: f"{CHECK(1)} to unfold bar data, or {CHECK(3)} to include animation",
+    1: f"{CHECK(2)} to reveal codepoints, or {CHECK(4)} to include animation,"
+    f" or {CHECK(0)} to fold up bar data",
+    2: f"{CHECK(5)} to include animation, or {CHECK(1)} to hide codepoints",
+    3: f"{CHECK(4)} to unfold bar data, or {CHECK(0)} to omit animation",
+    4: f"{CHECK(5)} to reveal codepoints, or {CHECK(1)} to omit animation,"
+    f" or {CHECK(3)} to fold up bar data",
+    5: f"{CHECK(2)} to omit animation, or {CHECK(4)} to hide codepoints",
 }
 
 
 def spec_data(bar):  # pragma: no cover
     print(f'\n{SECTION("Brief bar data")}')
-    info = lambda field, p, b: f'{YELLOW_BOLD(field, "<11")}: {" ".join(bar_repr(b, p)[1:])}'
-    print('\n'.join(info(n, p, bar) for n, p in (
-        ('starting', 0.), ('in progress', .5), ('completed', 1.), ('overflow', 1.2)
-    )))
-    print(info('underflow', .5, bar.end))
+    info = (
+        lambda field, p, b: f'{YELLOW_BOLD(field, "<11")}: {" ".join(bar_repr(b, p)[1:])}'
+    )
+    print(
+        "\n".join(
+            info(n, p, bar)
+            for n, p in (
+                ("starting", 0.0),
+                ("in progress", 0.5),
+                ("completed", 1.0),
+                ("overflow", 1.2),
+            )
+        )
+    )
+    print(info("underflow", 0.5, bar.end))
 
 
 def format_codepoints(frame):  # pragma: no cover
-    codes = '|'.join((ORANGE if is_wide(g) else BLUE)(
-        ' '.join(hex(ord(c)).replace('0x', '') for c in g)) for g in frame)
+    codes = "|".join(
+        (ORANGE if is_wide(g) else BLUE)(
+            " ".join(hex(ord(c)).replace("0x", "") for c in g)
+        )
+        for g in frame
+    )
     return f" -> {RED(sum(len(fragment) for fragment in frame))}:[{codes}]"
 
 
 def render_data(bar, show_codepoints, steps):  # pragma: no cover
-    print(f'\n{SECTION("Full bar data")}', end='')
-    codepoints = format_codepoints if show_codepoints else lambda _: ''
-    for name, b in ('in progress', bar), ('completed', bar.end):
-        print(f'\n{name}')
+    print(f'\n{SECTION("Full bar data")}', end="")
+    codepoints = format_codepoints if show_codepoints else lambda _: ""
+    for name, b in ("in progress", bar), ("completed", bar.end):
+        print(f"\n{name}")
         for p in (x / steps for x in range(steps + 2)):
             frame, joined, perc = bar_repr(b, p)
             print(joined, perc, codepoints(frame))
@@ -215,19 +271,20 @@ def render_data(bar, show_codepoints, steps):  # pragma: no cover
 
 def bar_repr(bar, p):  # pragma: no cover
     frame = tuple(strip_marks(bar(p)))
-    return frame, ''.join(frame), DIM(f'{p:6.1%}')
+    return frame, "".join(frame), DIM(f"{p:6.1%}")
 
 
 def animate(bar):  # pragma: no cover
     print(f'\n{SECTION("Animation")}')
     from ..styles.exhibit import exhibit_bar
+
     bar_gen = exhibit_bar(bar, 15)
     FULL.hide_cursor()
     try:
         while True:
             rendition, percent = next(bar_gen)
-            print(f'\r{join_cells(rendition)}', CYAN(max(0., percent), "6.1%"))
-            print(DIM('(press CTRL+C to stop)'), end='')
+            print(f"\r{join_cells(rendition)}", CYAN(max(0.0, percent), "6.1%"))
+            print(DIM("(press CTRL+C to stop)"), end="")
             FULL.clear_end_line()
             time.sleep(1 / 15)
             FULL.cursor_up_1()

@@ -6,11 +6,11 @@ def flush():
     pass
 
 
-def _ansi_escape_sequence(_=''):
+def _ansi_escape_sequence(_=""):
     def inner(_available=None):
         pass
 
-    inner.sequence = ''
+    inner.sequence = ""
     return inner
 
 
@@ -26,4 +26,4 @@ def cols():
     return 0  # more details in `alive_progress.tools.sampling#overhead`.
 
 
-carriage_return = ''
+carriage_return = ""

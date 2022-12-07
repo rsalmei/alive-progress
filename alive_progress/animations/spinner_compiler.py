@@ -7,10 +7,20 @@ from types import SimpleNamespace
 
 from about_time import about_time
 
-from .utils import fix_signature
 from ..utils.cells import fix_cells, is_wide, join_cells, strip_marks, to_cells
-from ..utils.colors import BLUE, BLUE_BOLD, CYAN, DIM, GREEN, ORANGE, ORANGE_BOLD, RED, YELLOW_BOLD
+from ..utils.colors import (
+    BLUE,
+    BLUE_BOLD,
+    CYAN,
+    DIM,
+    GREEN,
+    ORANGE,
+    ORANGE_BOLD,
+    RED,
+    YELLOW_BOLD,
+)
 from ..utils.terminal import FULL
+from .utils import fix_signature
 
 
 def spinner_controller(*, natural, skip_compiler=False):
@@ -34,19 +44,25 @@ def spinner_controller(*, natural, skip_compiler=False):
             with about_time() as t_compile:
                 gen = spinner_inner_factory(actual_length, **op_params)
                 spec = spinner_compiler(gen, natural, extra_commands.get(True, ()))
-            return spinner_runner_factory(spec, t_compile, extra_commands.get(False, ()))
+            return spinner_runner_factory(
+                spec, t_compile, extra_commands.get(False, ())
+            )
 
         def compile_and_check(*args, **kwargs):  # pragma: no cover
             """Compile this spinner factory at its natural length, and..."""
             spinner_compiler_dispatcher_factory().check(*args, **kwargs)
 
         def set_operational(**params):
-            signature(spinner_inner_factory).bind(1, **params)  # test arguments (one is provided).
+            signature(spinner_inner_factory).bind(
+                1, **params
+            )  # test arguments (one is provided).
             return inner_controller(spinner_inner_factory, params, extra_commands)
 
         def schedule_command(command):
             def inner_schedule(*args, **kwargs):
-                signature(command).bind(1, *args, **kwargs)  # test arguments (one is provided).
+                signature(command).bind(
+                    1, *args, **kwargs
+                )  # test arguments (one is provided).
                 extra, cmd_type = dict(extra_commands), EXTRA_COMMANDS[command]
                 extra[cmd_type] = extra.get(cmd_type, ()) + ((command, args, kwargs),)
                 return inner_controller(spinner_inner_factory, op_params, extra)
@@ -54,11 +70,14 @@ def spinner_controller(*, natural, skip_compiler=False):
             return fix_signature(inner_schedule, command, 1)
 
         spinner_compiler_dispatcher_factory.__dict__.update(
-            check=fix_signature(compile_and_check, check, 1), op=set_operational,
+            check=fix_signature(compile_and_check, check, 1),
+            op=set_operational,
             **{c.__name__: schedule_command(c) for c in EXTRA_COMMANDS},
         )
         op_params, extra_commands = op_params or {}, extra_commands or {}
-        spinner_compiler_dispatcher_factory.natural = natural  # share with the spinner code.
+        spinner_compiler_dispatcher_factory.natural = (
+            natural  # share with the spinner code.
+        )
         return spinner_compiler_dispatcher_factory
 
     return inner_controller
@@ -98,9 +117,10 @@ def replace(spec, old, new):  # noqa
 
     """
     # different lengths could lead to broken frames, but they will be verified afterwards.
-    spec.data = tuple(tuple(
-        to_cells(join_cells(frame).replace(old, new)) for frame in cycle
-    ) for cycle in spec.data)
+    spec.data = tuple(
+        tuple(to_cells(join_cells(frame).replace(old, new)) for frame in cycle)
+        for cycle in spec.data
+    )
 
 
 @compiler_command
@@ -133,9 +153,14 @@ def pause(spec, edges=None, center=None, other=None):  # noqa
         length - 1: edges,
         round(length / 2): center,
     }
-    spec.data = tuple(tuple(chain.from_iterable(
-        repeat(frame, repeats.get(i) or other) for i, frame in enumerate(cycle)
-    )) for cycle, repeats in ((cycle, repeats_func(len(cycle))) for cycle in spec.data))
+    spec.data = tuple(
+        tuple(
+            chain.from_iterable(
+                repeat(frame, repeats.get(i) or other) for i, frame in enumerate(cycle)
+            )
+        )
+        for cycle, repeats in ((cycle, repeats_func(len(cycle))) for cycle in spec.data)
+    )
 
 
 @compiler_command
@@ -172,7 +197,7 @@ def sequential(spec):
         while True:
             yield from data
 
-    cycle_data.name = 'sequential'
+    cycle_data.name = "sequential"
     spec.__dict__.update(strategy=cycle_data, cycles=len(spec.data))
 
 
@@ -189,7 +214,7 @@ def randomize(spec, cycles=None):  # noqa
         while True:
             yield random.choice(data)
 
-    cycle_data.name = 'randomized'
+    cycle_data.name = "randomized"
     spec.__dict__.update(strategy=cycle_data, cycles=max(0, cycles or 0) or spec.cycles)
 
 
@@ -211,19 +236,24 @@ def spinner_compiler(gen, natural, extra_commands):
         the spec of a compiled animation
 
     """
-
     spec = SimpleNamespace(
-        data=tuple(tuple(fix_cells(frame) for frame in cycle) for cycle in gen), natural=natural)
+        data=tuple(tuple(fix_cells(frame) for frame in cycle) for cycle in gen),
+        natural=natural,
+    )
     apply_extra_commands(spec, extra_commands)
 
     # generate spec info.
     frames = tuple(len(cycle) for cycle in spec.data)
-    spec.__dict__.update(cycles=len(spec.data), length=len(spec.data[0][0]),
-                         frames=frames, total_frames=sum(frames))
+    spec.__dict__.update(
+        cycles=len(spec.data),
+        length=len(spec.data[0][0]),
+        frames=frames,
+        total_frames=sum(frames),
+    )
 
-    assert (max(len(frame) for cycle in spec.data for frame in cycle) ==
-            min(len(frame) for cycle in spec.data for frame in cycle)), \
-        render_data(spec, True) or 'Different cell lengths detected in frame data.'
+    assert max(len(frame) for cycle in spec.data for frame in cycle) == min(
+        len(frame) for cycle in spec.data for frame in cycle
+    ), (render_data(spec, True) or "Different cell lengths detected in frame data.")
     return spec
 
 
@@ -247,14 +277,17 @@ def spinner_runner_factory(spec, t_compile, extra_commands):
         """Wow, you are really deep! This is the runner of a compiled spinner.
         Every time you call this function, a different generator will kick in,
         which yields the frames of the current animation cycle. Enjoy!"""
-
         yield from next(cycle_gen)  # I love generators!
 
     def runner_check(*args, **kwargs):  # pragma: no cover
         return check(spec, *args, **kwargs)
 
-    spinner_runner.__dict__.update(spec.__dict__, check=fix_signature(runner_check, check, 1))
-    spec.__dict__.update(t_compile=t_compile, runner=spinner_runner)  # set after the update above.
+    spinner_runner.__dict__.update(
+        spec.__dict__, check=fix_signature(runner_check, check, 1)
+    )
+    spec.__dict__.update(
+        t_compile=t_compile, runner=spinner_runner
+    )  # set after the update above.
 
     sequential(spec)
     apply_extra_commands(spec, extra_commands)
@@ -264,7 +297,7 @@ def spinner_runner_factory(spec, t_compile, extra_commands):
 
 def check(spec, verbosity=0):  # noqa  # pragma: no cover
     """Check the specs, contents, codepoints, and even the animation of this compiled spinner.
-    
+
     Args:
         verbosity (int): change the verbosity level
                              0 for specs only (default)
@@ -281,9 +314,9 @@ def check(spec, verbosity=0):  # noqa  # pragma: no cover
         render_data(spec, verbosity in (2, 5))
     spec_data(spec)  # spec_data here displays calculated frame data, always shown.
 
-    duration = spec.t_compile.duration_human.replace('us', 'µs')
-    print(f'\nSpinner frames compiled in: {GREEN(duration)}')
-    print(f'(call {HELP_MSG[verbosity]})')
+    duration = spec.t_compile.duration_human.replace("us", "µs")
+    print(f"\nSpinner frames compiled in: {GREEN(duration)}")
+    print(f"(call {HELP_MSG[verbosity]})")
 
     if verbosity in (3, 4, 5):
         animate(spec)
@@ -292,57 +325,73 @@ def check(spec, verbosity=0):  # noqa  # pragma: no cover
 SECTION = ORANGE_BOLD
 CHECK = lambda p: f'{BLUE(f".{check.__name__}(")}{BLUE_BOLD(p)}{BLUE(")")}'
 HELP_MSG = {
-    0: f'{CHECK(1)} to unfold frame data, or {CHECK(3)} to include animation',
-    1: f'{CHECK(2)} to reveal codepoints, or {CHECK(4)} to include animation,'
-       f' or {CHECK(0)} to fold up frame data',
-    2: f'{CHECK(5)} to include animation, or {CHECK(1)} to hide codepoints',
-    3: f'{CHECK(4)} to unfold frame data, or {CHECK(0)} to omit animation',
-    4: f'{CHECK(5)} to reveal codepoints, or {CHECK(1)} to omit animation,'
-       f' or {CHECK(3)} to fold up frame data',
-    5: f'{CHECK(2)} to omit animation, or {CHECK(4)} to hide codepoints',
+    0: f"{CHECK(1)} to unfold frame data, or {CHECK(3)} to include animation",
+    1: f"{CHECK(2)} to reveal codepoints, or {CHECK(4)} to include animation,"
+    f" or {CHECK(0)} to fold up frame data",
+    2: f"{CHECK(5)} to include animation, or {CHECK(1)} to hide codepoints",
+    3: f"{CHECK(4)} to unfold frame data, or {CHECK(0)} to omit animation",
+    4: f"{CHECK(5)} to reveal codepoints, or {CHECK(1)} to omit animation,"
+    f" or {CHECK(3)} to fold up frame data",
+    5: f"{CHECK(2)} to omit animation, or {CHECK(4)} to hide codepoints",
 }
 
 
 def spec_data(spec):  # pragma: no cover
     print(f'\n{SECTION("Specs")}')
-    info = lambda field: f'{YELLOW_BOLD(field.split(".")[0])}: {operator.attrgetter(field)(spec)}'
-    print(info('length'), f'({info("natural")})')
-    print(info('cycles'), f'({info("strategy.name")})')
-    print('\n'.join(info(field) for field in ('frames', 'total_frames')))
+    info = (
+        lambda field: f'{YELLOW_BOLD(field.split(".")[0])}: {operator.attrgetter(field)(spec)}'
+    )
+    print(info("length"), f'({info("natural")})')
+    print(info("cycles"), f'({info("strategy.name")})')
+    print("\n".join(info(field) for field in ("frames", "total_frames")))
 
 
 def format_codepoints(frame):  # pragma: no cover
-    codes = '|'.join((ORANGE if is_wide(g) else BLUE)(
-        ' '.join(hex(ord(c)).replace('0x', '') for c in g)) for g in frame)
+    codes = "|".join(
+        (ORANGE if is_wide(g) else BLUE)(
+            " ".join(hex(ord(c)).replace("0x", "") for c in g)
+        )
+        for g in frame
+    )
     return f" -> {RED(sum(len(fragment) for fragment in frame))}:[{codes}]"
 
 
 def render_data(spec, show_codepoints):  # pragma: no cover
-    print(f'\n{SECTION("Frame data")}', end='')
+    print(f'\n{SECTION("Frame data")}', end="")
     whole_index = count(1)
-    lf, wf = f'>{1 + len(str(max(spec.frames)))}', f'<{len(str(spec.total_frames))}'
-    codepoints = format_codepoints if show_codepoints else lambda _: ''
+    lf, wf = f">{1 + len(str(max(spec.frames)))}", f"<{len(str(spec.total_frames))}"
+    codepoints = format_codepoints if show_codepoints else lambda _: ""
     for i, cycle in enumerate(spec.data, 1):
         frames = map(lambda fragment: tuple(strip_marks(fragment)), cycle)
-        print(f'\ncycle {i}\n' + '\n'.join(
-            DIM(li, lf) + f' |{"".join(frame)}| {DIM(wi, wf)}' + codepoints(frame)
-            for li, frame, wi in zip(count(1), frames, whole_index)
-        ))
+        print(
+            f"\ncycle {i}\n"
+            + "\n".join(
+                DIM(li, lf) + f' |{"".join(frame)}| {DIM(wi, wf)}' + codepoints(frame)
+                for li, frame, wi in zip(count(1), frames, whole_index)
+            )
+        )
 
 
 def animate(spec):  # pragma: no cover
     print(f'\n{SECTION("Animation")}')
-    cf, lf, tf = (f'>{len(str(x))}' for x in (spec.cycles, max(spec.frames), spec.total_frames))
+    cf, lf, tf = (
+        f">{len(str(x))}" for x in (spec.cycles, max(spec.frames), spec.total_frames)
+    )
     from itertools import cycle
-    cycles, frames = cycle(range(1, spec.cycles + 1)), cycle(range(1, spec.total_frames + 1))
+
+    cycles, frames = cycle(range(1, spec.cycles + 1)), cycle(
+        range(1, spec.total_frames + 1)
+    )
     FULL.hide_cursor()
     try:
         while True:
             c = next(cycles)
             for i, f in enumerate(spec.runner(), 1):
                 n = next(frames)
-                print(f'\r{CYAN(c, cf)}:{CYAN(i, lf)} -->{join_cells(f)}<-- {CYAN(n, tf)} ')
-                print(DIM('(press CTRL+C to stop)'), end='')
+                print(
+                    f"\r{CYAN(c, cf)}:{CYAN(i, lf)} -->{join_cells(f)}<-- {CYAN(n, tf)} "
+                )
+                print(DIM("(press CTRL+C to stop)"), end="")
                 FULL.clear_end_line()
                 time.sleep(1 / 15)
                 FULL.cursor_up_1()
