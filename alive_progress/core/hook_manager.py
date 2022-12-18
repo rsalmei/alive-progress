@@ -53,6 +53,7 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
                 if stream in base:  # pragma: no cover
                     # use the current terminal abstraction for preparing the screen.
                     term.clear_line()
+                    term.clear_end_screen()
                 # handle all streams, both screen and logging.
                 stream.write(text)
                 stream.flush()
