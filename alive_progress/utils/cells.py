@@ -51,13 +51,11 @@ Support for these cool chars, like Emojis 😃, was so damn hard to implement be
 import re
 import unicodedata
 
-from .terminal import FULL
-
-PATTERN_SANITIZE = re.compile(r'[\r\n]')
+PATTERN_SANITIZE = re.compile(r'[\r\n]+')
 VS_15 = '\ufe0e'
 
 
-def print_cells(fragments, cols, last_line_len=0, _term=FULL):
+def print_cells(fragments, cols, term, last_line_len=0):
     """Print a tuple of fragments of tuples of cells on the terminal, until a given number of
     cols is achieved, slicing over cells when needed.
 
@@ -67,17 +65,17 @@ def print_cells(fragments, cols, last_line_len=0, _term=FULL):
         cols (int): maximum columns to use
         last_line_len (int): if the size of these fragments are smaller than this, the line is
             cleared before printing anything
-        _term: the terminal to be used
+        term: the terminal to be used
 
     Returns:
         the number of actually used cols.
 
     """
     available = cols
-    _term.write(_term.carriage_return)
+    term.write(term.carriage_return)
     for fragment in filter(None, fragments):
         if fragment == '\n':
-            _term.clear_end_line(available)
+            term.clear_end_line(available)
             available = cols
         elif available == 0:
             continue
@@ -91,7 +89,7 @@ def print_cells(fragments, cols, last_line_len=0, _term=FULL):
         _term.write(join_cells(fragment))
 
     if last_line_len and cols - available < last_line_len:
-        _term.clear_end_line(available)
+        term.clear_end_line(available)
 
     return cols - available
 

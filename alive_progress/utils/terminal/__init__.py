@@ -1,3 +1,4 @@
+# This implements a terminal abstraction, regardless of the actual file object being used.
 import sys
 from types import SimpleNamespace
 
@@ -48,6 +49,11 @@ def _is_notebook():
     return class_ != 'TerminalInteractiveShell'
 
 
-FULL = _create(jupyter.BASE if _is_notebook() else tty.BASE, True)
-NON_TTY = _create(non_tty.BASE, False)
-VOID = _create(void, False)
+def get_term(file, force_tty=None):
+    if file is None:
+        return _create(void, False)
+
+    base = tty.new(file)
+    if hasattr(file, 'isatty') and file.isatty() if force_tty is None else force_tty:
+        return _create(jupyter.get_from(base) if _is_notebook() else base, True)
+    return _create(non_tty.get_from(base), False)

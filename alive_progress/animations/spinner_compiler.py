@@ -1,5 +1,6 @@
 import operator
 import random
+import sys
 import time
 from inspect import signature
 from itertools import chain, count, islice, repeat
@@ -8,9 +9,9 @@ from types import SimpleNamespace
 from about_time import about_time
 
 from .utils import fix_signature
+from ..utils import terminal
 from ..utils.cells import fix_cells, is_wide, join_cells, strip_marks, to_cells
 from ..utils.colors import BLUE, BLUE_BOLD, CYAN, DIM, GREEN, ORANGE, ORANGE_BOLD, RED, YELLOW_BOLD
-from ..utils.terminal import FULL
 
 
 def spinner_controller(*, natural, skip_compiler=False):
@@ -335,7 +336,8 @@ def animate(spec):  # pragma: no cover
     cf, lf, tf = (f'>{len(str(x))}' for x in (spec.cycles, max(spec.frames), spec.total_frames))
     from itertools import cycle
     cycles, frames = cycle(range(1, spec.cycles + 1)), cycle(range(1, spec.total_frames + 1))
-    FULL.hide_cursor()
+    term = terminal.get_term(sys.stdout)
+    term.hide_cursor()
     try:
         while True:
             c = next(cycles)
@@ -343,10 +345,10 @@ def animate(spec):  # pragma: no cover
                 n = next(frames)
                 print(f'\r{CYAN(c, cf)}:{CYAN(i, lf)} -->{join_cells(f)}<-- {CYAN(n, tf)} ')
                 print(DIM('(press CTRL+C to stop)'), end='')
-                FULL.clear_end_line()
+                term.clear_end_line()
                 time.sleep(1 / 15)
-                FULL.cursor_up_1()
+                term.cursor_up_1()
     except KeyboardInterrupt:
         pass
     finally:
-        FULL.show_cursor()
+        term.show_cursor()

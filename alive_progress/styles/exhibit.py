@@ -10,8 +10,8 @@ from .internal import BARS, SPINNERS, THEMES
 from ..animations.spinners import scrolling_spinner_factory, sequential_spinner_factory
 from ..animations.utils import spinner_player
 from ..core.configuration import config_handler
-from ..utils.cells import combine_cells, print_cells
-from ..utils.terminal import FULL
+from ..utils.cells import  print_cells
+from ..utils import terminal
 
 Show = Enum('Show', 'SPINNERS BARS THEMES')
 
@@ -162,27 +162,28 @@ def _showtime_gen(fps, gens, info, length):
     logo = spinner_player(SPINNERS['waves']())
     start, sleep, frame, line_num = time.perf_counter(), 1. / fps, 0, 0
     start, current = start - sleep, start  # simulates the first frame took exactly "sleep" ms.
-    FULL.hide_cursor()
+    term = terminal.get_term(sys.stdout)
+    term.hide_cursor()
     try:
         while True:
             cols, lines = os.get_terminal_size()
 
             title = 'Welcome to alive-progress!', next(logo)
-            print_cells(title, cols)  # line 1.
-            FULL.clear_end_line()
+            print_cells(title, cols, term)  # line 1.
+            term.clear_end_line()
             print()
 
             info = fps_monitor.format(frame / (current - start)), next(info_player)
-            print_cells(info, cols)  # line 2.
-            FULL.clear_end_line()
+            print_cells(info, cols, term)  # line 2.
+            term.clear_end_line()
 
             content = [next(gen) for gen in gens]  # always consume gens, to maintain them in sync.
             for line_num, fragments in enumerate(content, 3):
                 if line_num > lines:
                     break
                 print()
-                print_cells(fragments, cols)
-                FULL.clear_end_line()
+                print_cells(fragments, cols, term)
+                term.clear_end_line()
 
             frame += 1
             current = time.perf_counter()
@@ -191,7 +192,7 @@ def _showtime_gen(fps, gens, info, length):
     except KeyboardInterrupt:
         pass
     finally:
-        FULL.show_cursor()
+        term.show_cursor()
 
 
 def _spinner_gen(name, spinner_factory, max_natural):

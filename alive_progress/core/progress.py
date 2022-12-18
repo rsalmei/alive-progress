@@ -132,7 +132,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         fragments = (run.title, bar_repr(run.percent), bar_suffix, spinner, spinner_suffix,
                      monitor(), elapsed(), stats(), *run.text)
 
-        run.last_len = print_cells(fragments, term.cols(), run.last_len, _term=term)
+        run.last_len = print_cells(fragments, term.cols(), term, run.last_len)
         term.write(run.suffix)
         term.flush()
 
@@ -201,9 +201,9 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     bar_repr, bar_suffix = _create_bars(config)
 
     if config.disable:
-        term, hook_manager = terminal.VOID, passthrough_hook_manager()
+        term, hook_manager = terminal.get_term(None), passthrough_hook_manager()
     else:
-        term = config.force_tty
+        term = terminal.get_term(config.file, config.force_tty)
         hook_manager = buffered_hook_manager(
             header if config.enrich_print else '', current, cond_refresh, term)
 

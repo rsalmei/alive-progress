@@ -1,13 +1,14 @@
 import math
+import sys
 import time
 
 from about_time import about_time
 
 from .utils import bordered, extract_fill_graphemes, fix_signature, spinner_player
+from ..utils import terminal
 from ..utils.cells import VS_15, combine_cells, fix_cells, has_wide, is_wide, join_cells, \
     mark_graphemes, split_graphemes, strip_marks, to_cells
 from ..utils.colors import BLUE, BLUE_BOLD, CYAN, DIM, GREEN, ORANGE, ORANGE_BOLD, RED, YELLOW_BOLD
-from ..utils.terminal import FULL
 
 
 def bar_factory(chars=None, *, tip=None, background=None, borders=None, errors=None):
@@ -222,16 +223,17 @@ def animate(bar):  # pragma: no cover
     print(f'\n{SECTION("Animation")}')
     from ..styles.exhibit import exhibit_bar
     bar_gen = exhibit_bar(bar, 15)
-    FULL.hide_cursor()
+    term = terminal.get_term(sys.stdout)
+    term.hide_cursor()
     try:
         while True:
             rendition, percent = next(bar_gen)
             print(f'\r{join_cells(rendition)}', CYAN(max(0., percent), "6.1%"))
             print(DIM('(press CTRL+C to stop)'), end='')
-            FULL.clear_end_line()
+            term.clear_end_line()
             time.sleep(1 / 15)
-            FULL.cursor_up_1()
+            term.cursor_up_1()
     except KeyboardInterrupt:
         pass
     finally:
-        FULL.show_cursor()
+        term.show_cursor()

@@ -4,8 +4,6 @@ from collections import namedtuple
 from string import Formatter
 from types import FunctionType
 
-from ..utils.terminal import FULL, NON_TTY
-
 ERROR = object()  # represents a config value not accepted.
 
 
@@ -102,10 +100,18 @@ def _format_input_factory(allowed):
     return _input
 
 
+def _file_input_factory():
+    def _input(x):
+        return x if all(hasattr(x, m) for m in ('write', 'flush')) else ERROR
+
+    _input.err_help = 'Expected sys.stdout, sys.stderr, or a similar TextIOWrapper object'
+    return _input
+
+
 Config = namedtuple('Config', 'title length spinner bar unknown force_tty disable manual '
                               'enrich_print receipt receipt_text monitor elapsed stats '
                               'title_length spinner_length refresh_secs monitor_end '
-                              'elapsed_end stats_end ctrl_c dual_line')
+                              'elapsed_end stats_end ctrl_c dual_line file')
 
 
 def create_config():
@@ -116,6 +122,7 @@ def create_config():
             length=40,
             theme='smooth',  # includes spinner, bar and unknown.
             force_tty=None,
+            file=sys.stdout,
             disable=False,
             manual=False,
             enrich_print=True,
@@ -184,6 +191,7 @@ def create_config():
             bar=_bar_input_factory(),
             unknown=_spinner_input_factory(ERROR),  # do not accept empty.
             force_tty=_force_tty_input_factory(),
+            file=_file_input_factory(),
             disable=_bool_input_factory(),
             manual=_bool_input_factory(),
             enrich_print=_bool_input_factory(),
