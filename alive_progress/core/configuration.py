@@ -236,7 +236,7 @@ def create_config():
             # title_effect=_enum_input_factory(),  # TODO someday.
             unit=_text_input_factory(),
             scale=_options_input_factory((None, 'SI', 'IEC', 'SI2'),
-                                         {False: None, True: 'SI',
+                                         {'': None, False: None, True: 'SI',
                                           10: 'SI', '10': 'SI',
                                           2: 'IEC', '2': 'IEC'}),
         )
