@@ -76,15 +76,10 @@ def _bool_input_factory():
     return _input
 
 
-def _force_tty_input_factory():
+def _tri_state_input_factory():
     def _input(x):
-        return table.get(x, ERROR)
+        return None if x is None else bool(x)
 
-    table = {
-        None: FULL if sys.stdout.isatty() else NON_TTY,
-        False: NON_TTY,
-        True: FULL,
-    }
     return _input
 
 
@@ -219,7 +214,7 @@ def create_config():
             spinner=_spinner_input_factory(None),  # accept empty.
             bar=_bar_input_factory(),
             unknown=_spinner_input_factory(ERROR),  # do not accept empty.
-            force_tty=_force_tty_input_factory(),
+            force_tty=_tri_state_input_factory(),
             file=_file_input_factory(),
             disable=_bool_input_factory(),
             manual=_bool_input_factory(),
