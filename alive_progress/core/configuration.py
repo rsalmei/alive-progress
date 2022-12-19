@@ -12,26 +12,26 @@ PATTERN_SANITIZE = re.compile(r'[\r\n]+')
 def _spinner_input_factory(default):
     from ..animations import spinner_compiler
     from ..styles.internal import SPINNERS
-    return __style_input_factory(SPINNERS, spinner_compiler,
-                                 'spinner_compiler_dispatcher_factory', default)
+    return __style_input(SPINNERS, spinner_compiler, 'spinner_compiler_dispatcher_factory', default)
 
 
 def _bar_input_factory():
     from ..animations import bars
     from ..styles.internal import BARS
-    return __style_input_factory(BARS, bars, 'bar_assembler_factory', None)
+    return __style_input(BARS, bars, 'bar_assembler_factory', None)
 
 
-def __style_input_factory(name_lookup, module_lookup, inner_name, default):
+def __style_input(key_lookup, module_lookup, inner_name, default):
     def _input(x):
         return name_lookup(x) or func_lookup(x) or default
 
-    name_lookup = __name_lookup_factory(name_lookup)
-    func_lookup = __func_lookup_factory(module_lookup, inner_name)
+    name_lookup = __name_lookup(key_lookup)
+    func_lookup = __func_lookup(module_lookup, inner_name)
+    _input.err_help = f'Expected a custom factory or one of: {tuple(key_lookup)}'
     return _input
 
 
-def __name_lookup_factory(name_lookup):
+def __name_lookup(name_lookup):
     def _input(x):
         if isinstance(x, str):
             return name_lookup.get(x) or ERROR
@@ -39,7 +39,7 @@ def __name_lookup_factory(name_lookup):
     return _input
 
 
-def __func_lookup_factory(module_lookup, inner_name):
+def __func_lookup(module_lookup, inner_name):
     def _input(x):
         if isinstance(x, FunctionType):
             func_file, _ = os.path.splitext(module_lookup.__file__)
@@ -53,10 +53,10 @@ def __func_lookup_factory(module_lookup, inner_name):
 
 def _int_input_factory(lower, upper):
     def _input(x):
-        if isinstance(x, int) and lower <= x <= upper:
-            return int(x)
-        return ERROR
+        x = int(x)
+        return x if lower <= x <= upper else ERROR
 
+    _input.err_help = f'Expected an int between {lower} and {upper}'
     return _input
 
 
@@ -100,14 +100,16 @@ def _format_input_factory(allowed):
         if not isinstance(x, str):
             return bool(x)
         fvars = parser.parse(x)
-        if any(f[1] not in allowed for f in fvars):
+        if any(f[1] not in allowed_all for f in fvars):
             # f is a tuple (literal_text, field_name, format_spec, conversion)
             return ERROR
         return x
 
+    allowed = allowed.split()
     # I want to accept only some field names, and pure text.
-    allowed = set(allowed.split() + [None])
+    allowed_all = set(allowed + [None])
     parser = Formatter()
+    _input.err_help = f'Expected only the fields: {tuple(allowed)}'
     return _input
 
 
@@ -175,14 +177,19 @@ def create_config():
 
         def validator(key, value):
             try:
-                result = validations[key](value)
-                if result is ERROR:
-                    raise ValueError
-                return result
+                validation = validations[key]
             except KeyError:
-                raise ValueError(f'invalid config name: {key}')
-            except Exception:
-                raise ValueError(f'invalid config value: {key}={value!r}')
+                raise ValueError(f'Invalid config key: {key!r}')
+
+            try:
+                result = validation(value)
+                if result is ERROR:
+                    raise UserWarning(validation.err_help)
+                return result
+            except UserWarning as e:
+                raise ValueError(f'Invalid config value: {key}={value!r}\n{e}') from None
+            except Exception as e:
+                raise ValueError(f'Error in config value: {key}={value!r}\nCause: {e!r}') from None
 
         from ..styles.internal import THEMES
         if theme:
