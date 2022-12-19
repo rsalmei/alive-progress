@@ -82,7 +82,16 @@ def _force_tty_input_factory():
 def _text_input_factory():
     def _input(x):
         return None if x is None else ' '.join(PATTERN_SANITIZE.split(str(x)))
+    return _input
 
+
+def _options_input_factory(valid: tuple, alias: dict):
+    def _input(x):
+        x = alias.get(x, x)
+        return x if x in valid else ERROR
+
+    assert all(v in valid for v in alias.values()), f'invalid aliases: {alias.values()}'
+    _input.err_help = f'Expected one of: {valid + tuple(alias)}'
     return _input
 
 
