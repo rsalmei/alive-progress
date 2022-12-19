@@ -8,14 +8,20 @@ import click
 import pytest
 
 from alive_progress.core.hook_manager import buffered_hook_manager
-from alive_progress.utils.terminal import FULL, VOID
+from alive_progress.utils.terminal import get_term
 
 
 @contextmanager
-def hook(hook_manager):
+def install_hook(hook_manager=None):
+    if hook_manager is None:
+        hook_manager = hook('nice {}! ')
     hook_manager.install()
     yield
     hook_manager.uninstall()
+
+
+def hook(header):
+    return buffered_hook_manager(header, lambda: 35, Condition(), get_term(sys.stdout))
 
 
 @pytest.fixture(params=[
@@ -30,16 +36,14 @@ def print_data(request):
 
 def test_hook_manager_captures_stdout(print_data, capsys):
     out, expected = print_data
-    hook_manager = buffered_hook_manager('nice {}! ', lambda: 35, Condition(), FULL)
-    with hook(hook_manager):
+    with install_hook():
         print(out)
     assert capsys.readouterr().out == expected
 
 
 def test_hook_manager_captures_bytes_stdout(print_data, capsys):
     out, expected = print_data
-    hook_manager = buffered_hook_manager('nice {}! ', lambda: 35, Condition(), FULL)
-    with hook(hook_manager):
+    with install_hook():
         click.echo(out)
     assert capsys.readouterr().out == expected
 
@@ -51,29 +55,26 @@ def _hook_manager_captures_logging(capsys):
     logging.basicConfig(stream=sys.stderr)
     logger = logging.getLogger('?name?')
 
-    hook_manager = buffered_hook_manager('nice {}! ', lambda: 35, Condition(), FULL)
-    with hook(hook_manager):
+    with install_hook():
         logger.error('oops')
-    assert capsys.readouterr().err == 'nice 35! ERROR:?name?:oops\n'
+    assert capsys.readouterr().err == 'nice! ERROR:?name?:oops\n'
 
 
 def test_hook_manager_captures_multiple_lines(capsys):
-    hook_manager = buffered_hook_manager('nice {}! ', lambda: 35, Condition(), FULL)
-    with hook(hook_manager):
+    with install_hook():
         print('ok1\nok2')
     assert capsys.readouterr().out == 'nice 35! ok1\n         ok2\n'
 
 
 def test_hook_manager_can_be_disabled(capsys):
-    hook_manager = buffered_hook_manager('', None, Condition(), FULL)
-    with hook(hook_manager):
+    with install_hook(hook('')):
         print('ok')
     assert capsys.readouterr().out == 'ok\n'
 
 
 def test_hook_manager_flush(capsys):
-    hook_manager = buffered_hook_manager('', None, Condition(), FULL)
-    with hook(hook_manager):
+    hook_manager = hook('')
+    with install_hook(hook_manager):
         print('ok', end='')
         assert capsys.readouterr().out == ''
         hook_manager.flush_buffers()
@@ -85,9 +86,10 @@ def test_hook_manager_flush(capsys):
 
 
 def test_hook_manager_do_clear_line_on_stdout():
-    hook_manager = buffered_hook_manager('', None, Condition(), VOID)
+    term = get_term(sys.stdout)
+    hook_manager = buffered_hook_manager('', None, Condition(), term)
     m_clear = mock.Mock()
-    with hook(hook_manager), mock.patch.dict(VOID.__dict__, clear_line=m_clear):
+    with install_hook(hook_manager), mock.patch.dict(term.__dict__, clear_line=m_clear):
         print('some')
     m_clear.assert_called()
 
@@ -96,9 +98,10 @@ def test_hook_manager_do_not_flicker_screen_when_logging():
     logging.basicConfig()
     logger = logging.getLogger()
 
-    hook_manager = buffered_hook_manager('', None, Condition(), VOID)
+    term = get_term(sys.stdout)
+    hook_manager = buffered_hook_manager('', None, Condition(), term)
     m_clear = mock.Mock()
-    with hook(hook_manager), mock.patch.dict(VOID.__dict__, clear_line=m_clear):
+    with install_hook(hook_manager), mock.patch.dict(term.__dict__, clear_line=m_clear):
         logger.error('oops')
     m_clear.assert_not_called()
 
@@ -114,15 +117,15 @@ def handlers():
 
 
 def test_install(handlers):
-    hook_manager = buffered_hook_manager('', None, Condition(), FULL)
-    with mock.patch('alive_progress.core.hook_manager._set_stream') as mock_set_stream:
+    hook_manager = hook('')
+    with mock.patch('logging.StreamHandler.setStream') as mock_set_stream:
         hook_manager.install()
-    mock_set_stream.assert_has_calls(tuple(mock.call(h, mock.ANY) for h in handlers))
+    mock_set_stream.assert_has_calls(tuple(mock.call(mock.ANY) for _ in handlers))
 
 
 def test_uninstall(handlers):
-    hook_manager = buffered_hook_manager('', None, Condition(), FULL)
-    with mock.patch('alive_progress.core.hook_manager._set_stream') as mock_set_stream:
-        hook_manager.install()
+    hook_manager = hook('')
+    hook_manager.install()
+    with mock.patch('logging.StreamHandler.setStream') as mock_set_stream:
         hook_manager.uninstall()
-    mock_set_stream.assert_has_calls(tuple(mock.call(h, mock.ANY) for h in handlers))
+    mock_set_stream.assert_has_calls(tuple(mock.call(mock.ANY) for _ in handlers))
