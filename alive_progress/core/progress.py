@@ -127,6 +127,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
                 alive_repr(next(spinner_player), spinner_suffix)
                 cond_refresh.wait(1. / fps(run.rate))
 
+    run.monitor_text, run.eta_text, run.rate_text = '?', '?', '?'
     def alive_repr(spinner=None, spinner_suffix=None):
         run.elapsed = time.perf_counter() - run.init
         run.rate = current() / run.elapsed
@@ -237,7 +238,8 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             return fn_human_throughput(run.rate, unit)
 
     def monitor_run(f):
-        return f.format(count=human_count(run.count), total=total_human, percent=run.percent)
+        run.monitor_text = human_count(run.count)
+        return f.format(count=run.monitor_text, total=total_human, percent=run.percent)
 
     def monitor_end(f):
         warning = '(!) ' if current() != logic_total else ''
@@ -250,19 +252,22 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         return f.format(elapsed=elapsed_text(run.elapsed, True))
 
     def stats_end(f):
-        return f.format(rate=rate_text(2), unit=unit)
+        run.rate_text = rate_text(2)
+        return f.format(rate=run.rate_text, unit=unit)
 
     if total or config.manual:  # we can track progress and therefore eta.
         def stats_run(f):
-            eta = eta_text(gen_eta.send((current(), run.rate)))
-            return f.format(rate=run.rate, rate_spec=rate_spec, eta=eta)
+            run.rate_text = rate_text(1)
+            run.eta_text = eta_text(gen_eta.send((current(), run.rate)))
+            return f.format(rate=run.rate_text, unit=unit, eta=run.eta_text)
 
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
         gen_eta.send(None)
         stats_default = '({eta}, {rate})'
     else:  # unknown progress.
         def stats_run(f):
-            return f.format(rate=rate_text(1), eta='?')
+            run.rate_text = rate_text(1)
+            return f.format(rate=run.rate_text, eta='?')
 
         bar_repr = bar_repr.unknown
         stats_default = '({rate})'
@@ -295,7 +300,8 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     stats = _Widget(stats_run, config.stats, stats_default)
     stats_end = _Widget(stats_end, config.stats_end, stats_end_default if stats.f[:-1] else '')
 
-    ctrl_c, bar = False, __AliveBarHandle(pause_monitoring, current, set_title, set_text)
+    bar = __AliveBarHandle(pause_monitoring, current, set_title, set_text,
+                           lambda: run.monitor_text, lambda: run.rate_text, lambda: run.eta_text)
     set_text(), set_title()
     start_monitoring()
     try:
@@ -344,7 +350,7 @@ class _Widget:  # pragma: no cover
         return self.func(self.f)
 
 
-class _GatedProperty:  # pragma: no cover
+class _GatedFunction:  # pragma: no cover
     def __set_name__(self, owner, name):
         self.prop = f'_{name}'
 
@@ -358,22 +364,31 @@ class _GatedProperty:  # pragma: no cover
         raise AttributeError(f"Can't set {self.prop}")
 
 
-class _GatedAssignProperty(_GatedProperty):  # pragma: no cover
+class _GatedProperty(_GatedFunction):  # pragma: no cover
+    # noinspection PyProtectedMember
+    def __get__(self, obj, objtype=None):
+        return getattr(obj, self.prop)()
+
+
+class _GatedAssignFunction(_GatedFunction):  # pragma: no cover
     # noinspection PyProtectedMember
     def __set__(self, obj, value):
-        if obj._handle:
-            getattr(obj, self.prop)(value)
+        self.__get__(obj)(value)
 
 
-class __AliveBarHandle:  # pragma: no cover
-    pause = _GatedProperty()
+class __AliveBarHandle:
+    pause = _GatedFunction()
     current = _GatedProperty()
-    text = _GatedAssignProperty()
-    title = _GatedAssignProperty()
+    text = _GatedAssignFunction()
+    title = _GatedAssignFunction()
+    monitor = _GatedProperty()
+    rate = _GatedProperty()
+    eta = _GatedProperty()
 
-    def __init__(self, pause, get_current, set_title, set_text):
+    def __init__(self, pause, get_current, set_title, set_text, get_monitor, get_rate, get_eta):
         self._handle, self._pause, self._current = None, pause, get_current
         self._title, self._text = set_title, set_text
+        self._monitor, self._rate, self._eta = get_monitor, get_rate, get_eta
 
     # this enables to exchange the __call__ implementation.
     def __call__(self, *args, **kwargs):
