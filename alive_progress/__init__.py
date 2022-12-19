@@ -1,7 +1,7 @@
 from .core.configuration import config_handler
 from .core.progress import alive_bar, alive_it
 
-VERSION = (2, 4, 1)
+VERSION = (3, 0, 0)
 
 __author__ = 'Rogério Sampaio de Almeida'
 __email__ = 'rsalmei@gmail.com'
