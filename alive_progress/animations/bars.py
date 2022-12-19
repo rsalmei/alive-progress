@@ -167,7 +167,7 @@ def check(bar, t_compile, verbosity=0, *, steps=20):  # noqa  # pragma: no cover
     else:
         spec_data(bar)  # spec_data here displays only brief data, shown only if not full.
 
-    duration = t_compile.duration_human.replace('us', 'µs')
+    duration = t_compile.duration_human
     print(f'\nBar style compiled in: {GREEN(duration)}')
     print(f'(call {HELP_MSG[verbosity]})')
 
