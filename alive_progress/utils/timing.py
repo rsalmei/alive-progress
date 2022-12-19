@@ -17,13 +17,15 @@ def eta_text(eta):
     return elapsed_text(eta, False)
 
 
-def simple_eta(logic_total, pos, rate):
-    return (logic_total - pos) / rate
+def fn_simple_eta(logic_total):
+    def simple_eta(pos, rate):
+        return (logic_total - pos) / rate
+
+    return simple_eta
 
 
-def gen_simple_exponential_smoothing_eta(alfa, logic_total):
-    """Implements a generator with a simple exponential smoothing of the
-    eta time series.
+def gen_simple_exponential_smoothing(alfa, fn):
+    """Implements a generator with a simple exponential smoothing of some function.
     Given alfa and y_hat (t-1), we can calculate the next y_hat:
         y_hat = alfa * y + (1 - alfa) * y_hat
         y_hat = alfa * y + y_hat - alfa * y_hat
@@ -31,19 +33,16 @@ def gen_simple_exponential_smoothing_eta(alfa, logic_total):
 
     Args:
         alfa (float): the smoothing coefficient
-        logic_total (float):
+        fn (Callable): the function
 
     Returns:
 
     """
-    pos = rate = None
-    while not rate:
-        pos, rate = yield
-    y_hat = simple_eta(logic_total, pos, rate)
+    p = (0.,)
+    while any(x == 0. for x in p):
+        p = yield 0.
+    y_hat = fn(*p)
     while True:
-        temp, rate = yield y_hat
-        if temp == pos:  # reduce numbers bouncing around.
-            continue
-        pos = temp
-        y = simple_eta(logic_total, pos, rate)
+        p = yield y_hat
+        y = fn(*p)
         y_hat += alfa * (y - y_hat)

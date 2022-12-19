@@ -8,7 +8,8 @@ from .configuration import config_handler
 from .hook_manager import buffered_hook_manager, passthrough_hook_manager
 from ..utils import terminal
 from ..utils.cells import combine_cells, fix_cells, print_cells, to_cells
-from ..utils.timing import elapsed_text, eta_text, gen_simple_exponential_smoothing_eta
+from ..utils.timing import elapsed_text, eta_text, fn_simple_eta, \
+    gen_simple_exponential_smoothing
 
 
 def alive_bar(total=None, *, calibrate=None, **options):
@@ -128,9 +129,9 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
                 cond_refresh.wait(1. / fps(run.rate))
 
     run.monitor_text, run.eta_text, run.rate_text = '?', '?', '?'
+            run.rate = gen_rate.send((current(), run.elapsed))
     def alive_repr(spinner=None, spinner_suffix=None):
         run.elapsed = time.perf_counter() - run.init
-        run.rate = current() / run.elapsed
 
         fragments = (run.title, bar_repr(run.percent), bar_suffix, spinner, spinner_suffix,
                      monitor(), elapsed(), stats(), *run.text)
@@ -202,6 +203,8 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     run.rate, run.init, run.text, run.title, run.suffix = 0., 0., None, None, None
     thread, event_renderer, cond_refresh = None, threading.Event(), _cond()
     bar_repr, bar_suffix = _create_bars(config)
+    gen_rate = gen_simple_exponential_smoothing(.3, lambda a, b: a / b)
+    gen_rate.send(None)
 
     if config.disable:
         term, hook_manager = terminal.get_term(None), passthrough_hook_manager()
@@ -261,7 +264,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             run.eta_text = eta_text(gen_eta.send((current(), run.rate)))
             return f.format(rate=run.rate_text, unit=unit, eta=run.eta_text)
 
-        gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
+        gen_eta = gen_simple_exponential_smoothing(.5, fn_simple_eta(logic_total))
         gen_eta.send(None)
         stats_default = '({eta}, {rate})'
     else:  # unknown progress.
