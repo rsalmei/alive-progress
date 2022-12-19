@@ -119,9 +119,10 @@ def alive_bar(total=None, *, calibrate=None, **options):
 
 
 @contextmanager
-def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition, _sampling=False):
+def __alive_bar(config, total=None, *, calibrate=None,
+                _cond=threading.Condition, _sampling=False, _testing=None):
     """Actual alive_bar handler, that exposes internal functions for configuration of
-    both normal operation and overhead estimation."""
+    both normal operation and sampling overhead."""
 
     if total is not None:
         if not isinstance(total, int):
@@ -139,9 +140,20 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     run.rate, run.init, run.elapsed, run.percent, run.count, run.last_len = 0., 0., 0., 0., 0, 0
     run.text, run.title, run.suffix, ctrl_c = None, None, None, False
     run.monitor_text, run.eta_text, run.rate_text = '?', '?', '?'
+
+    if _testing:  # it's easier than trying to mock these values.
+        run.elapsed = 1.23
+        run.rate = 9876.54
+
+        def main_update_hook():
+            pass
+    else:
+        def main_update_hook():
+            run.elapsed = time.perf_counter() - run.init
             run.rate = gen_rate.send((current(), run.elapsed))
+
     def alive_repr(spinner=None, spinner_suffix=None):
-        run.elapsed = time.perf_counter() - run.init
+        main_update_hook()
 
         fragments = (run.title, bar_repr(run.percent), bar_suffix, spinner, spinner_suffix,
                      monitor(), elapsed(), stats(), *run.text)
@@ -165,12 +177,12 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         def bar_handle(percent):  # for manual progress modes.
             hook_manager.flush_buffers()
             run.percent = max(0., float(percent))
-            update_hook()
+            bar_update_hook()
     else:
         def bar_handle(count=1):  # for counting progress modes.
             hook_manager.flush_buffers()
             run.count += max(1, int(count))
-            update_hook()
+            bar_update_hook()
 
     def start_monitoring(offset=0.):
         term.hide_cursor()
@@ -282,15 +294,19 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
 
     if total:
         if config.manual:
-            def update_hook():
+            monitor_default = '{percent:.0%} [{count}/{total}]'
+
+            def bar_update_hook():
                 run.count = math.ceil(run.percent * total)
         else:
-            def update_hook():
+            monitor_default = '{count}/{total} [{percent:.0%}]'
+
+            def bar_update_hook():
                 run.percent = run.count / total
 
         total_human = human_count(total)  # this is fixed, no point converting on all refreshes.
     else:
-        def update_hook():
+        def bar_update_hook():
             pass
 
         if config.manual:
