@@ -1,7 +1,6 @@
 import logging
 import sys
 from collections import defaultdict
-from functools import partial
 from itertools import chain, islice, repeat
 from logging import StreamHandler
 from types import SimpleNamespace
@@ -46,15 +45,13 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
             buffer.extend(islice(gen, 1, None))
         else:
             header = get_header()
+            spacer = ' ' * len(header)
+            nested = ''.join(line or spacer for line in buffer)
+            text = f'{header}{nested.rstrip()}\n'
             with cond_refresh:
-                spacer = ' ' * len(header)
-                nested = ''.join(line or spacer for line in buffer)
-                text = f'{header}{nested.rstrip()}\n'
                 if stream in base:  # pragma: no cover
-                    # use the current terminal abstraction for preparing the screen.
                     term.clear_line()
                     term.clear_end_screen()
-                # handle all streams, both screen and logging.
                 stream.write(text)
                 stream.flush()
                 cond_refresh.notify()
@@ -96,7 +93,7 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
         buffers.clear()
         sys.stdout, sys.stderr = base
 
-        [_set_stream(handler, original_stream)
+        [handler.setStream(original_stream)
          for handler, original_stream in before_handlers.items()]
         before_handlers.clear()
 
@@ -142,19 +139,3 @@ def gen_header(header_template, get_pos):  # pragma: no cover
 
 def null_header():  # pragma: no cover
     return ''
-
-
-if sys.version_info >= (3, 7):  # pragma: no cover
-    def _set_stream(handler, stream):
-        return handler.setStream(stream)
-else:  # pragma: no cover
-    def _set_stream(handler, stream):
-        # from python 3.7 implementation.
-        result = handler.stream
-        handler.acquire()
-        try:
-            handler.flush()
-            handler.stream = stream
-        finally:
-            handler.release()
-        return result
