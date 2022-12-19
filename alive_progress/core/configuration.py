@@ -60,6 +60,15 @@ def _int_input_factory(lower, upper):
     return _input
 
 
+def _float_input_factory(lower, upper):
+    def _input(x):
+        x = float(x)
+        return x if lower <= x <= upper else ERROR
+
+    _input.err_help = f'Expected a float between {lower} and {upper}'
+    return _input
+
+
 def _bool_input_factory():
     def _input(x):
         return bool(x)
@@ -225,7 +234,7 @@ def create_config():
             stats_end=_format_input_factory('rate'),
             title_length=_int_input_factory(0, 100),
             spinner_length=_int_input_factory(0, 100),
-            refresh_secs=_int_input_factory(0, 60 * 60 * 24),  # maximum 24 hours.
+            refresh_secs=_float_input_factory(0, 60 * 60 * 24),  # maximum 24 hours.
             ctrl_c=_bool_input_factory(),
             dual_line=_bool_input_factory(),
             # title_effect=_enum_input_factory(),  # TODO someday.
