@@ -60,22 +60,35 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
                 cond_refresh.notify()
                 buffer[:] = []
 
+    # better hook impl, which works even when nested, since __hash__ will be forwarded.
+    class Hook:
+        def __init__(self, stream):
+            self.__stream = stream
+
+        def write(self, part):
+            return write(self.__stream, part)
+
+        def flush(self):
+            return flush(self.__stream)
+
+        def __getattr__(self, item):
+            return getattr(self.__stream, item)
+
     def get_hook_for(handler):
         if handler.stream:  # supports FileHandlers with delay=true.
             handler.stream.flush()
-        return SimpleNamespace(write=partial(write, handler.stream),
-                               flush=partial(flush, handler.stream),
-                               isatty=sys.stdout.isatty)
+        return Hook(handler.stream)
 
     def install():
         def get_all_loggers():
             yield logging.root
             yield from (logging.getLogger(name) for name in logging.root.manager.loggerDict)
 
+        # account for reused handlers within loggers.
+        handlers = set(h for logger in get_all_loggers()
+                       for h in logger.handlers if isinstance(h, StreamHandler))
         # modify all stream handlers, including their subclasses.
-        before_handlers.update({h: _set_stream(h, get_hook_for(h))  # noqa
-                                for logger in get_all_loggers()
-                                for h in logger.handlers if isinstance(h, StreamHandler)})
+        before_handlers.update({h: h.setStream(get_hook_for(h)) for h in handlers})
         sys.stdout, sys.stderr = (get_hook_for(SimpleNamespace(stream=x)) for x in base)
 
     def uninstall():
@@ -87,10 +100,11 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
          for handler, original_stream in before_handlers.items()]
         before_handlers.clear()
 
-        # does the number of logging handlers changed??
+        # did the number of logging handlers change??
         # if yes, it probably means logging was initialized within alive_bar context,
         # and thus there can be an instrumented stdout or stderr within handlers,
         # which causes a TypeError: unhashable type: 'types.SimpleNamespace'...
+        # or simply a logger **reuses** a handler...
 
     # internal data.
     buffers = defaultdict(list)
