@@ -217,6 +217,9 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     if not config.scale:
         def human_count(value):
             return f'{value}{config.unit}'
+
+        def rate_text(precision):
+            return f'{run.rate:.{precision}f}{unit}/s'
     else:
         import about_time  # must not be on top.
         d1024, iec = {
@@ -229,6 +232,10 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
 
         def human_count(value):
             return fn_human_count(value, unit)
+
+        def rate_text(_precision):
+            return fn_human_throughput(run.rate, unit)
+
     def monitor_run(f):
         return f.format(count=human_count(run.count), total=total_human, percent=run.percent)
 
@@ -242,6 +249,9 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
     def elapsed_end(f):
         return f.format(elapsed=elapsed_text(run.elapsed, True))
 
+    def stats_end(f):
+        return f.format(rate=rate_text(2), unit=unit)
+
     if total or config.manual:  # we can track progress and therefore eta.
         def stats_run(f):
             eta = eta_text(gen_eta.send((current(), run.rate)))
@@ -249,18 +259,13 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
 
         gen_eta = gen_simple_exponential_smoothing_eta(.5, logic_total)
         gen_eta.send(None)
-        stats_default = '({rate:.1{rate_spec}}/s, eta: {eta})'
+        stats_default = '({eta}, {rate})'
     else:  # unknown progress.
         def stats_run(f):
-            return f.format(rate=run.rate, eta='?')
+            return f.format(rate=rate_text(1), eta='?')
 
         bar_repr = bar_repr.unknown
-        stats_default = '({rate:.1f}/s)'
-
-    def stats_end(f):
-        return f.format(rate=run.rate, rate_spec=rate_spec)
-
-    stats_end_default = '({rate:.2{rate_spec}}/s)'
+        stats_default = '({rate})'
 
     if total:
         if config.manual:
