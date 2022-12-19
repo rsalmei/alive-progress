@@ -1,10 +1,12 @@
 import os
+import re
 import sys
 from collections import namedtuple
 from string import Formatter
 from types import FunctionType
 
 ERROR = object()  # represents a config value not accepted.
+PATTERN_SANITIZE = re.compile(r'[\r\n]+')
 
 
 def _spinner_input_factory(default):
@@ -79,7 +81,7 @@ def _force_tty_input_factory():
 
 def _text_input_factory():
     def _input(x):
-        return None if x is None else str(x)
+        return None if x is None else ' '.join(PATTERN_SANITIZE.split(str(x)))
 
     return _input
 
@@ -111,7 +113,7 @@ def _file_input_factory():
 Config = namedtuple('Config', 'title length spinner bar unknown force_tty disable manual '
                               'enrich_print receipt receipt_text monitor elapsed stats '
                               'title_length spinner_length refresh_secs monitor_end '
-                              'elapsed_end stats_end ctrl_c dual_line file')
+                              'elapsed_end stats_end ctrl_c dual_line unit scale file')
 
 
 def create_config():
@@ -139,6 +141,8 @@ def create_config():
             refresh_secs=0,
             ctrl_c=True,
             dual_line=False,
+            unit='',
+            scale=None,
         )
 
     def set_global(theme=None, **options):
@@ -209,6 +213,11 @@ def create_config():
             ctrl_c=_bool_input_factory(),
             dual_line=_bool_input_factory(),
             # title_effect=_enum_input_factory(),  # TODO someday.
+            unit=_text_input_factory(),
+            scale=_options_input_factory((None, 'SI', 'IEC', 'SI2'),
+                                         {False: None, True: 'SI',
+                                          10: 'SI', '10': 'SI',
+                                          2: 'IEC', '2': 'IEC'}),
         )
         assert all(k in validations for k in Config._fields)  # ensures all fields have validations.
 

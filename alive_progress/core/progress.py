@@ -101,6 +101,8 @@ def alive_bar(total=None, *, calibrate=None, **options):
             refresh_secs (int): forces the refresh period, `0` for the reactive visual feedback
             ctrl_c (bool): if False, disables CTRL+C (captures it)
             dual_line (bool): if True, places the text below the bar
+            unit (str): any text that labels your entities
+            scale (any): the scaling to apply to units: 'SI', 'IEC', 'SI2'
 
     """
     config = config_handler(**options)
@@ -185,10 +187,10 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
 
     if total or not config.manual:  # we can count items.
         logic_total, current = total, lambda: run.count
-        rate_spec, factor, header = 'f', 1.e6, 'on {:d}: '
+        unit, factor, header = config.unit, 1.e6, 'on {:d}: '
     else:  # there's only a manual percentage.
         logic_total, current = 1., lambda: run.percent
-        rate_spec, factor, header = '%', 1., 'on {:.1%}: '
+        unit, factor, header = f'%{config.unit}', 1., 'on {:.1%}: '
 
     if config.refresh_secs:
         fps = custom_fps(config.refresh_secs)
@@ -212,8 +214,23 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         thread.daemon = True
         thread.start()
 
+    if not config.scale:
+        def human_count(value):
+            return f'{value}{config.unit}'
+    else:
+        import about_time  # must not be on top.
+        d1024, iec = {
+            'SI': (False, False),
+            'SI2': (True, False),
+            'IEC': (True, True),
+        }[config.scale]
+        fn_human_count = about_time.human_count.fn_human_count(False, d1024, iec)
+        fn_human_throughput = about_time.human_throughput.fn_human_throughput(False, d1024, iec)
+
+        def human_count(value):
+            return fn_human_count(value, unit)
     def monitor_run(f):
-        return f.format(count=run.count, total=total, percent=run.percent)
+        return f.format(count=human_count(run.count), total=total_human, percent=run.percent)
 
     def monitor_end(f):
         warning = '(!) ' if current() != logic_total else ''
@@ -254,6 +271,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
                 run.percent = run.count / total
 
         monitor_default = '{count}/{total} [{percent:.0%}]'
+        total_human = human_count(total)  # this is fixed, no point converting on all refreshes.
     else:
         def update_hook():
             pass
@@ -263,6 +281,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         else:
             monitor_default = '{count}'
     elapsed_default = 'in {elapsed}'
+        total_human = None
 
     monitor = _Widget(monitor_run, config.monitor, monitor_default)
     monitor_end = _Widget(monitor_end, config.monitor_end, monitor.f[:-1])  # space separator.
