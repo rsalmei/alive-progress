@@ -1,3 +1,7 @@
+"""
+This module must always be importable, even without the required libs for install!
+It's because I import metadata from main init, directly in setup.py, which imports this.
+"""
 import math
 import threading
 import time
@@ -79,6 +83,7 @@ def alive_bar(total=None, *, calibrate=None, **options):
                 False -> disables animations, keeping only the the final receipt
                 True -> enables animations, and auto-detects Jupyter Notebooks!
                 None (default) -> auto select, according to the terminal/Jupyter
+            file (object): the file object to use: `sys.stdout`, `sys.stderr`, or a similar `TextIOWrapper`
             disable (bool): if True, completely disables all output, do not install hooks
             manual (bool): set to manually control the bar position
             enrich_print (bool): enriches print() and logging messages with the bar position
@@ -106,7 +111,10 @@ def alive_bar(total=None, *, calibrate=None, **options):
             scale (any): the scaling to apply to units: 'SI', 'IEC', 'SI2'
 
     """
-    config = config_handler(**options)
+    try:
+        config = config_handler(**options)
+    except Exception as e:
+        raise type(e)(str(e)) from None
     return __alive_bar(config, total, calibrate=calibrate)
 
 
@@ -128,6 +136,8 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
                 alive_repr(next(spinner_player), spinner_suffix)
                 cond_refresh.wait(1. / fps(run.rate))
 
+    run.rate, run.init, run.elapsed, run.percent, run.count, run.last_len = 0., 0., 0., 0., 0, 0
+    run.text, run.title, run.suffix, ctrl_c = None, None, None, False
     run.monitor_text, run.eta_text, run.rate_text = '?', '?', '?'
             run.rate = gen_rate.send((current(), run.elapsed))
     def alive_repr(spinner=None, spinner_suffix=None):
@@ -194,15 +204,10 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         logic_total, current = 1., lambda: run.percent
         unit, factor, header = f'%{config.unit}', 1., 'on {:.1%}: '
 
-    if config.refresh_secs:
-        fps = custom_fps(config.refresh_secs)
-    else:
-        fps = calibrated_fps(calibrate or factor)
-
-    run.last_len, run.elapsed, run.count, run.percent = 0, 0., 0, 0.
-    run.rate, run.init, run.text, run.title, run.suffix = 0., 0., None, None, None
     thread, event_renderer, cond_refresh = None, threading.Event(), _cond()
     bar_repr, bar_suffix = _create_bars(config)
+    fps = (custom_fps(config.refresh_secs) if config.refresh_secs
+           else calibrated_fps(calibrate or factor))
     gen_rate = gen_simple_exponential_smoothing(.3, lambda a, b: a / b)
     gen_rate.send(None)
 
@@ -283,7 +288,6 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             def update_hook():
                 run.percent = run.count / total
 
-        monitor_default = '{count}/{total} [{percent:.0%}]'
         total_human = human_count(total)  # this is fixed, no point converting on all refreshes.
     else:
         def update_hook():
@@ -293,15 +297,14 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
             monitor_default = '{percent:.0%}'
         else:
             monitor_default = '{count}'
-    elapsed_default = 'in {elapsed}'
         total_human = None
 
     monitor = _Widget(monitor_run, config.monitor, monitor_default)
     monitor_end = _Widget(monitor_end, config.monitor_end, monitor.f[:-1])  # space separator.
-    elapsed = _Widget(elapsed_run, config.elapsed, elapsed_default)
+    elapsed = _Widget(elapsed_run, config.elapsed, 'in {elapsed}')
     elapsed_end = _Widget(elapsed_end, config.elapsed_end, elapsed.f[:-1])  # space separator.
     stats = _Widget(stats_run, config.stats, stats_default)
-    stats_end = _Widget(stats_end, config.stats_end, stats_end_default if stats.f[:-1] else '')
+    stats_end = _Widget(stats_end, config.stats_end, '({rate})' if stats.f[:-1] else '')
 
     bar = __AliveBarHandle(pause_monitoring, current, set_title, set_text,
                            lambda: run.monitor_text, lambda: run.rate_text, lambda: run.eta_text)
@@ -364,7 +367,7 @@ class _GatedFunction:  # pragma: no cover
         return _noop
 
     def __set__(self, obj, value):
-        raise AttributeError(f"Can't set {self.prop}")
+        raise AttributeError(f'Can\'t set "{self.prop[1:]}"')
 
 
 class _GatedProperty(_GatedFunction):  # pragma: no cover
@@ -403,7 +406,7 @@ def _noop(*_args, **_kwargs):  # pragma: no cover
     pass
 
 
-def _create_bars(config):  # pragma: no cover
+def _create_bars(config):
     bar = config.bar
     if bar is None:
         def obj(*_args, **_kwargs):
@@ -415,7 +418,7 @@ def _create_bars(config):  # pragma: no cover
     return bar(config.length, config.unknown), ' '
 
 
-def _create_spinner_player(config):  # pragma: no cover
+def _create_spinner_player(config):
     spinner = config.spinner
     if spinner is None:
         from itertools import repeat
@@ -459,15 +462,24 @@ def alive_it(it, total=None, *, finalize=None, calibrate=None, **options):
     be used in this mode at all).
     To force unknown mode, even when the total would be available, send `total=0`.
 
-    If you want to use other alive_bar's more advanced features, like for instance setting
-    situational text messages, you can assign it to a variable! And send a `finalize` closure
-    to set the final receipt title and/or text!
+    If you want to use other alive_bar's more advanced features, like for example setting
+    situational messages, you can assign it to a variable, and just use it as always.
+    You can also send a `finalize` function to set the final receipt title and text!
 
     >>> from alive_progress import alive_it
-    ... bar = alive_it(items):
+    ...
+    ... def process_end(bar):
+    ...     bar.title = 'DB updated'
+    ...     bar.text = f'{bar.current} entries changed'
+    ...
+    ... items = range(100000)
+    ... bar = alive_it(items, finalize=process_end, length=20, receipt_text=True)
     ... for item in bar:
     ...     bar.text(f'Wow, it works! Item: {item}')
     ...     # process item.
+
+    This prints:
+DB updated |████████████████████| 100k/100k [100%] in 2.6s (38.7k/s) 100000 entries changed
 
     Args:
         it (iterable): the input iterable to be processed
@@ -483,7 +495,10 @@ def alive_it(it, total=None, *, finalize=None, calibrate=None, **options):
         Generator
 
     """
-    config = config_handler(**options)
+    try:
+        config = config_handler(**options)
+    except Exception as e:
+        raise type(e)(str(e)) from None
     if config.manual:
         raise UserWarning("Manual mode can't be used in iterator adapter.")
 

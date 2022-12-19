@@ -7,44 +7,64 @@ These graphemes may occupy one or two cells on screen, depending on their glyph 
 Support for these cool chars, like Emojis 😃, was so damn hard to implement because:
 1. Python don't know chars that occupy two columns on screen, nor grapheme clusters that are
     rendered as a single char (wide or not), it only understands codepoints;
-2. Alive-progress needs to visually align all frames, to keep its progress bars' length from
-    popping up and down while running. For this I must somehow know which chars are wide and
-    counterbalance that;
-3. Alive-progress also has all kinds of animations, which to be generated needs several operations,
-    namely len, iterating, indexing, slicing, concatenating and reversing, which now must support
-    graphemes and cells! Argh.
-4. For that I needed to parse them myself, which I tried but soon realized it was tricky and
-    finicky, in addition to changing every year;
+2. Alive-progress needs to visually align all frames, to keep its progress bars' lengths from
+    spiking up and down while running. For this I must somehow know which chars are wide and
+    counterbalance them;
+3. To generate all those cool animations, I need several basic operations, like len, iterating,
+    indexing, slicing, concatenating and reversing, which suddenly don't work anymore, since they
+    do not know anything about these new concepts of graphemes and cells! Argh.
+4. As the first step, I needed to parse the codepoints into Unicode graphemes. I tried to parse them
+    myself, but soon realized it was tricky and finicky, in addition to changing every year...
 5. Then I looked into some lib dependencies, tested several, created the validate tool to help me
     test some Unicode versions, and chose one lib to use;
 6. I finally implemented the operations I needed, to the best of my current knowledge, but it
     still wouldn't work. So I tried several spinners to check their alignments, until I finally
     realized what was wrong: I actually needed to align cells, not lengths nor even graphemes!
 
-    For example:
+    Look this for example: Note that in your editor both strings below are perfectly aligned,
+    although they have 6 and 16 as their Python lengths!!! How come?
+    Graphemes didn't help either, 6 and 3 respectively... Then how does the editor know that they
+    align? I'm not sure exactly, but I created this "cell" concept to map this into, and finally
+    they both have the same: 6 cells!! 💡😜
+
         string \\ length  python  graphemes  cells
              nonono          6        6        6
              🏴󠁧󠁢󠁥󠁮󠁧󠁿👉🏾🏴󠁧󠁢󠁥󠁮󠁧󠁿          16       3        6
 
-7. With that knowledge, I implemented "wide" marks on graphemes, and refactored all operations,
-    but it still didn't work. I realized that animations would make these wide chars dynamically
-    enter and leave the stage at will, so the frames would end up with different sizes!
-    I needed something that could "see" all the frames at once, so I could equalize their sizes...
-    So I created the cool spinner compiler, including a light and rocket fast runner;
-8. Then I refactored the frame spinner factory, the first and simplest one, and WOW, it worked!
-9. To make the others work too, I created the check tool to help me see a spinner's contents,
-    directly from the compiled data;
-10. The spinner compiler has enabled several improvements in the spinners code, since it ended up
-    being a central command center with a lot of functionality, like reshaping and transposing
-    the cycle data, or randomizing its playing. The concept of styling parameters and operational
-    parameters got stronger with new operational commands, which enabled simpler compound
-    animations, without any code duplication. That has enabled me to create the new sequential and
-    alongside spinners, way more advanced than before, with intermix and pivot control of cycles;
-11. After all of them was working, it was time for the bars, title, exhibit and alive_bar rendering
-    itself, which needed to learn how to use the new architecture: change ordinary strings for
-    tuples of cells (marked graphemes). All of them needed this same support for the soft wrap to
-    keep working;
-12. Profit! Only no... But what a ride! 😅
+7. With that knowledge, I implemented "wide" marks on graphemes (so I could know whether a grapheme
+    glyph would occupy 1 or 2 cells on screen), and refactored all needed operations. It seemed fine
+    but still didn't work... I then realized that my animations made those wide chars dynamically
+    enter and leave the frame, which can split strings AT ANY POINT, even between the two cells of
+    wide-graphemes, yikes!!! To make the animations as fluid as always, I had to continue moving
+    only one cell per tick time, so somehow I would have to draw "half" flags and "half" smiling-
+    face-with-smiling-eyes!!
+8. So, I had to support printing "half-graphemes", so I could produce frames in an animation with
+    always the same sizes!! This has led me to implement a fixer for dynamically broken graphemes,
+    which detects whether the head or tail cells were missing, and inserted a space in its place!
+9. It worked! But I would have to run that algorithm throughout the whole animation, in any and all
+    displayed frame, in real time... I feared for the performance.
+    I needed something that could cache and "see" all the frames at once, so I could equalize their
+    sizes only once!! So I created the cool spinner compiler, an ingenious piece of software that
+    generates the entire animation ahead of time, fixes all the frames, and leverages a super light
+    and fast runner, which is able to "play" this compiled artifact!!
+10. Finally, I refactored the frame spinner factory, the simplest one to test the idea, and WOW...
+    It worked!!! The joy of success filled me..........
+11. To make the others work, I created the check tool, another ingenious software, which allowed me
+    to "see" a spinner's contents, in a tabular way, directly from the compiled data! Then I could
+    visually ensure whether ALL generated frames of ALL animations I could think of, had the exact
+    same size;
+12. A lot of time later, everything was working! But look at that, the spinner compiler has enabled
+    me to make several improvements in the spinners' codes themselves, since it ended up gaining
+    other cool functionalities like reshaping and transposing data, or randomizing anything playing!
+    The concepts of "styling" and "operational" parameters got stronger with new commands, which
+    enabled simpler compound animations, without any code duplication!
+    And this has culminated in the creation of the newer sequential and alongside spinners, way more
+    advanced than before, with configurations like intermixing and pivoting of cycles!
+13. Then, it was time I moved on to the missing components in this new Cell Architecture: the bar,
+    title, exhibit, and of course the alive_bar rendering itself... All of them needed to learn this
+    new architecture: mainly change ordinary strings into tuples of cells (marked graphemes)...
+14. And finally... Profit!!! Only no, this project only feels my soul, not my pocket...
+    But what a ride! 😅
 
 """
 
@@ -59,13 +79,13 @@ def print_cells(fragments, cols, term, last_line_len=0):
     """Print a tuple of fragments of tuples of cells on the terminal, until a given number of
     cols is achieved, slicing over cells when needed.
 
+    Spaces used to be inserted automatically between fragments, but not anymore.
+
     Args:
-        fragments (Tuple[Union[str, Tuple[str, ...]]): the fragments of message, which are
-            joined and gain spaces between them
+        fragments (Tuple[Union[str, Tuple[str, ...]]): the fragments of message
         cols (int): maximum columns to use
-        last_line_len (int): if the size of these fragments are smaller than this, the line is
-            cleared before printing anything
         term: the terminal to be used
+        last_line_len (int): if the fragments fit within the last line, send a clear end line
 
     Returns:
         the number of actually used cols.
@@ -86,7 +106,7 @@ def print_cells(fragments, cols, term, last_line_len=0):
             else:
                 available, fragment = 0, fix_cells(fragment[:available])
 
-        _term.write(join_cells(fragment))
+        term.write(join_cells(fragment))
 
     if last_line_len and cols - available < last_line_len:
         term.clear_end_line(available)

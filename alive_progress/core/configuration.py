@@ -1,3 +1,7 @@
+"""
+This module must always be importable, even without the required libs for install!
+It's because I import metadata from main init, directly in setup.py, which imports this.
+"""
 import os
 import re
 import sys

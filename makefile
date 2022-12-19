@@ -13,7 +13,7 @@ install:
 clean: clean-build clean-pyc
 
 clean-build:
-	rm -rf build dist
+	rm -rf build dist alive_progress.egg-info
 
 clean-pyc:
 	find . -type f -name *.pyc -delete
