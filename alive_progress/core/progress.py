@@ -315,7 +315,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
             monitor_default = '{count}'
         total_human = None
 
-    monitor = _Widget(monitor_run, config.monitor, monitor_default)
+    monitor = _WidgetMax(monitor_run, config.monitor, monitor_default)
     monitor_end = _Widget(monitor_end, config.monitor_end, monitor.f[:-1])  # space separator.
     elapsed = _Widget(elapsed_run, config.elapsed, 'in {elapsed}')
     elapsed_end = _Widget(elapsed_end, config.elapsed_end, elapsed.f[:-1])  # space separator.
@@ -370,6 +370,23 @@ class _Widget:  # pragma: no cover
 
     def __call__(self):
         return self.func(self.f)
+
+
+class _WidgetMax(_Widget):  # pragma: no cover
+    """Avoid jiggling the right hand of alive-bar, when the unit scaling
+    cuts the zero decimal, and delivers a smaller repr than previous ones."""
+    def __init__(self, func, value, default):
+        super().__init__(func, value, default)
+        self.last_len = 0
+
+    def __call__(self):
+        info = self.func(self.f)
+        if len(info) == self.last_len:  # far most common.
+            return info
+        elif len(info) < self.last_len:  # on exact decimals
+            return f'{info:>{self.last_len}}'
+        self.last_len = len(info)  # only when getting a new digit.
+        return info
 
 
 class _GatedFunction:  # pragma: no cover
