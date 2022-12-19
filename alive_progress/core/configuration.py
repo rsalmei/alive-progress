@@ -85,7 +85,8 @@ def _tri_state_input_factory():
 
 def _text_input_factory():
     def _input(x):
-        return None if x is None else ' '.join(PATTERN_SANITIZE.split(str(x)))
+        return None if x is None else ' '.join(PATTERN_SANITIZE.split(str(x))).strip()
+
     return _input
 
 
