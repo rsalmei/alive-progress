@@ -242,7 +242,7 @@ def __alive_bar(config, total=None, *, calibrate=None, _cond=threading.Condition
         return f.format(count=run.monitor_text, total=total_human, percent=run.percent)
 
     def monitor_end(f):
-        warning = '(!) ' if current() != logic_total else ''
+        warning = '(!) ' if total is not None and current() != logic_total else ''
         return f'{warning}{monitor_run(f)}'
 
     def elapsed_run(f):
