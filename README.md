@@ -40,11 +40,12 @@ Yep, I could finally get this version out! These are the new goodies:
 
 - Units support! You can now label the data you're processing, like `B`, `bytes`, or even `°C`!
 - Automatic scaling! With support for SI (base 1000), IEC (base 1024), and even an alternate SI with base 1024, you'll be well served!
-- Automatic stats scaling for slow throughputs! If your processing takes minutes, now you'll see units per minute, per hour, or even per day! It is enabled together with the above.
+- Configurable precision! When your numbers are scaled, you get to choose how many decimals they display!
+- Automatic stats scaling for slow throughputs! If your processing takes minutes or more, now you'll see rates per minute, per hour, and even per day! (It works within the auto-scaling system!)
 - Support for using `sys.stderr` and other files instead of `sys.stdout`!
-- Smooth out the rate estimation with the same Exponential Smoothing Algorithm that powers the ETA.
+- Smoothed out the rate estimation with the same Exponential Smoothing Algorithm that powers the ETA, so the bar returns a more realistic ETA!
 - Query the currently running widgets' data, like the monitor, rate, and ETA!
-- New help system in configuration, which explains errors and shows the expected values. 
+- New help system on configuration errors, which explains why a value was not accepted, and what were the expected ones!
 
 ### Highly anticipated fixes
 
@@ -795,7 +796,7 @@ For Python 3.6:
 
 
 ## Changelog highlights (complete [here](CHANGELOG.md)):
-- 3.0.0: units support with automatic scaling, automatic stats scaling for slow throughputs, support for using `sys.stderr` and other files instead of `sys.stdout`, smooth out the rate estimation, more queries into the currently running widgets' data, help system in configuration
+- 3.0.0: units support with automatic and configurable scaling and precision, automatic stats scaling for slow throughputs, support for using `sys.stderr` and other files instead of `sys.stdout`, smoothed out the rate estimation, more queries into the currently running widgets' data, help system in configuration errors
 - 2.4.1: fix a crash when dual-line and disabled are set
 - 2.4.0: support dual line text mode; finalize function parameter in alive_it; improve logging support, detecting customized ones
 - 2.3.1: introduce ctrl_c config param; print the final receipt even when interrupted
