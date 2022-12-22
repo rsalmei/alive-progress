@@ -49,6 +49,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ],
     keywords='progress bar progress-bar progressbar spinner eta monitoring python terminal '
              'multi-threaded REPL alive animated visual feedback simple live efficient monitor '
