@@ -457,7 +457,7 @@ def _render_title(config, title=None):
         return combine_cells(title, (' ',) * (length - len_title))
 
     if length == 1:
-        return ('…',)
+        return '…',  # 1-tuple
 
     return combine_cells(fix_cells(title[:length - 1]), ('…',))
 
