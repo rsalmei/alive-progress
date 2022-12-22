@@ -7,21 +7,21 @@ from alive_progress.core.configuration import config_handler
 
 DATA = {
     # enrich_print, total, manual, scale
-    (True, True, False, True): 'on 1234: half\n[===] 2.5kU/2.5kU [100%] in 1.2s (9.9kU/s)',
+    (True, True, False, True): 'on 1234: half\n[===] 2.5kU/2.5kU [100%] in 1.2s (9.88kU/s)',
     (True, True, False, False): 'on 1234: half\n[===] 2468U/2468U [100%] in 1.2s (9876.54U/s)',
-    (True, True, True, True): 'on 1234: half\n[===] 100% [2.5kU/2.5kU] in 1.2s (9.9kU/s)',
+    (True, True, True, True): 'on 1234: half\n[===] 100% [2.5kU/2.5kU] in 1.2s (9.88kU/s)',
     (True, True, True, False): 'on 1234: half\n[===] 100% [2468U/2468U] in 1.2s (9876.54U/s)',
-    (True, False, False, True): 'on 1234: half\n[===] 2.5kU in 1.2s (9.9kU/s)',
+    (True, False, False, True): 'on 1234: half\n[===] 2.5kU in 1.2s (9.88kU/s)',
     (True, False, False, False): 'on 1234: half\n[===] 2468U in 1.2s (9876.54U/s)',
-    (True, False, True, True): 'on 50.0%: half\n[===] 100% in 1.2s (9.9k%U/s)',
+    (True, False, True, True): 'on 50.0%: half\n[===] 100% in 1.2s (9.88k%U/s)',
     (True, False, True, False): 'on 50.0%: half\n[===] 100% in 1.2s (9876.54%U/s)',
-    (False, True, False, True): 'half\n[===] 2.5kU/2.5kU [100%] in 1.2s (9.9kU/s)',
+    (False, True, False, True): 'half\n[===] 2.5kU/2.5kU [100%] in 1.2s (9.88kU/s)',
     (False, True, False, False): 'half\n[===] 2468U/2468U [100%] in 1.2s (9876.54U/s)',
-    (False, True, True, True): 'half\n[===] 100% [2.5kU/2.5kU] in 1.2s (9.9kU/s)',
+    (False, True, True, True): 'half\n[===] 100% [2.5kU/2.5kU] in 1.2s (9.88kU/s)',
     (False, True, True, False): 'half\n[===] 100% [2468U/2468U] in 1.2s (9876.54U/s)',
-    (False, False, False, True): 'half\n[===] 2.5kU in 1.2s (9.9kU/s)',
+    (False, False, False, True): 'half\n[===] 2.5kU in 1.2s (9.88kU/s)',
     (False, False, False, False): 'half\n[===] 2468U in 1.2s (9876.54U/s)',
-    (False, False, True, True): 'half\n[===] 100% in 1.2s (9.9k%U/s)',
+    (False, False, True, True): 'half\n[===] 100% in 1.2s (9.88k%U/s)',
     (False, False, True, False): 'half\n[===] 100% in 1.2s (9876.54%U/s)',
 }
 
