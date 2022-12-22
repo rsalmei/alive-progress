@@ -47,11 +47,14 @@ Yep, I could finally get this version out! These are the new goodies:
 - Query the currently running widgets' data, like the monitor, rate, and ETA!
 - New help system on configuration errors, which explains why a value was not accepted, and what were the expected ones!
 
-### Highly anticipated fixes
+#### Highly anticipated fixes
 
 - Support for reusing logging handlers! No more `TypeError: unhashable type: 'types.SimpleNamespace'`.
 - Support for logging when using `RotatingFileHandler`s! Yep, seek support is here.
 - Fix unknown mode always ending with a warning (!)
+
+And last but not least, a more polished layout for you to enjoy your progress!
+![alive-progress 3.0](img/alive3.0.png)
 
 
 ## 📌 NEW in 2.4 series!
