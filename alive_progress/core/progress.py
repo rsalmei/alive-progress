@@ -83,7 +83,7 @@ def alive_bar(total=None, *, calibrate=None, **options):
                 False -> disables animations, keeping only the the final receipt
                 True -> enables animations, and auto-detects Jupyter Notebooks!
                 None (default) -> auto select, according to the terminal/Jupyter
-            file (object): the file object to use: `sys.stdout`, `sys.stderr`, or a similar `TextIOWrapper`
+            file (object): use `sys.stdout`, `sys.stderr`, or a similar `TextIOWrapper` object
             disable (bool): if True, completely disables all output, do not install hooks
             manual (bool): set to manually control the bar position
             enrich_print (bool): enriches print() and logging messages with the bar position
@@ -109,6 +109,7 @@ def alive_bar(total=None, *, calibrate=None, **options):
             dual_line (bool): if True, places the text below the bar
             unit (str): any text that labels your entities
             scale (any): the scaling to apply to units: 'SI', 'IEC', 'SI2'
+            precision (int): how many decimals do display when scaling
 
     """
     try:
