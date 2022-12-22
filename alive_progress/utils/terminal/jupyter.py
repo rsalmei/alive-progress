@@ -1,9 +1,7 @@
 from types import SimpleNamespace
 
-from . import tty
 
-
-def get(original):
+def get_from(parent):
     def cols():
         # it seems both `jupyter notebook` and `jupyter-lab` do not return cols, only 80 default.
         return 120
@@ -24,9 +22,8 @@ def get(original):
 
     from .void import factory_cursor_up, hide_cursor, show_cursor  # noqa
 
-    flush, write, carriage_return = original.flush, original.write, original.carriage_return
+    flush = parent.flush
+    write = parent.write
+    carriage_return = parent.carriage_return
 
     return SimpleNamespace(**locals())
-
-
-BASE = get(tty.BASE)  # support for jupyter notebooks.

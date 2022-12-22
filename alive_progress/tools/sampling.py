@@ -1,10 +1,12 @@
 import timeit
 
-from about_time import duration_human
+from about_time.human_duration import fn_human_duration
 
 from .utils import toolkit
 from ..core.configuration import config_handler
 from ..core.progress import __alive_bar
+
+human_duration = fn_human_duration(False)
 
 
 def overhead(total=None, *, calibrate=None, **options):
@@ -17,7 +19,7 @@ def overhead(total=None, *, calibrate=None, **options):
         # number of columns in the terminal, so I want a baseline here `VOID.cols == 0`.
         res = timeit.repeat('alive_repr()', repeat=repeat, number=number, globals=loc)
 
-    return duration_human(min(res) / number).replace('us', 'µs')
+    return human_duration(min(res) / number)
 
 
 OVERHEAD_SAMPLING_GROUP = [

@@ -3,7 +3,7 @@ import sys
 import pytest
 
 from alive_progress.utils.cells import to_cells, print_cells
-from alive_progress.utils.terminal import tty
+from alive_progress.utils.terminal import get_term
 
 
 @pytest.mark.parametrize('text, expected', [
@@ -20,7 +20,7 @@ from alive_progress.utils.terminal import tty
     ('\nasd', ' asd'),
     ('asd1\nasd2', 'asd1 asd2'),
     ('asd1 \nasd2', 'asd1  asd2'),
-    ('asd1 \r\nasd2', 'asd1   asd2'),
+    ('asd1 \r\nasd2', 'asd1  asd2'),
     ('\nasd1\n \r \nasd2\r', ' asd1     asd2 '),
 ])
 def test_sanitize_text_normal_chars(text, expected, show_marks):
@@ -36,7 +36,7 @@ def test_sanitize_text_normal_chars(text, expected, show_marks):
     ('asd😺\n', 'asd😺X '),
     ('😺\nasd', '😺X asd'),
     ('asd1\rasd2😺', 'asd1 asd2😺X'),
-    ('\nasd1😺\n😺\n\rasd2\r', ' asd1😺X 😺X  asd2 '),
+    ('\nasd1😺\n😺\n\n\rasd2\r', ' asd1😺X 😺X asd2 '),
 ])
 def test_sanitize_text_wide_chars(text, expected, show_marks):
     result = to_cells(text)
@@ -64,15 +64,15 @@ def test_sanitize_text_double(text, expected, show_marks):
     (('rogerio', '\n', '12345'), 3, 3, '\rrog\x1b[K\n123'),
 ])
 def test_print_cells(fragments, cols, ret, expected, capsys):
-    term = tty.get(sys.stdout)
-    assert print_cells(fragments, cols, _term=term) == ret
+    term = get_term(sys.stdout, True)
+    assert print_cells(fragments, cols, term) == ret
     term.flush()
     assert capsys.readouterr().out == expected
 
 
 def test_print_cells_clear(capsys):
-    term = tty.get(sys.stdout)
+    term = get_term(sys.stdout, True)
     msg = 'loooong'
-    assert print_cells((msg,), 100, 8, _term=term) == len(msg)
+    assert print_cells((msg,), 100, term, 8) == len(msg)
     term.flush()
     assert capsys.readouterr().out == f'\r{msg}\x1b[K'

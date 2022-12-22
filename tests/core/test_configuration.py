@@ -3,10 +3,9 @@ from unittest import mock
 import pytest
 
 # noinspection PyProtectedMember
-from alive_progress.core.configuration import Config, ERROR, __style_input_factory, \
+from alive_progress.core.configuration import Config, ERROR, __style_input, \
     _bool_input_factory, _int_input_factory, create_config, _format_input_factory
 from alive_progress.styles.internal import BARS, SPINNERS, THEMES
-from alive_progress.utils.terminal import NON_TTY, FULL
 
 
 @pytest.mark.parametrize('lower, upper, num, expected', [
@@ -82,8 +81,8 @@ NAMES = dict(name_1=STYLE_1, name_2=STYLE_2)
 def test_style_input_factory(param, expected):
     test_style_input_factory.__file__ = __file__
 
-    func = __style_input_factory(NAMES, test_style_input_factory,
-                                 'artifact_super_cool_compiler_assembler_factory', None)
+    func = __style_input(NAMES, test_style_input_factory,
+                         'artifact_super_cool_compiler_assembler_factory', None)
     assert func(param) == expected
 
 
@@ -93,8 +92,8 @@ def test_style_input_factory(param, expected):
 def test_style_input_factory_error(param):
     test_style_input_factory_error.__file__ = ''  # simulates a func_style declared elsewhere.
 
-    func = __style_input_factory(NAMES, test_style_input_factory_error,
-                                 'artifact_super_cool_compiler_assembler_factory', None)
+    func = __style_input(NAMES, test_style_input_factory_error,
+                         'artifact_super_cool_compiler_assembler_factory', None)
     assert func(param) is ERROR
 
 
@@ -114,12 +113,13 @@ def test_config_creation(handler):
     (dict(spinner=SPINNERS['pulse']), {}),
     (dict(bar='solid'), dict(bar=BARS['solid'])),
     (dict(bar=BARS['solid']), {}),
-    (dict(force_tty=False), dict(force_tty=NON_TTY)),
+    (dict(force_tty=False), {}),
     (dict(manual=True), {}),
     (dict(enrich_print=False), {}),
     (dict(title_length=20), {}),
-    (dict(force_tty=True, manual=True, enrich_print=False, title_length=10), dict(force_tty=FULL)),
+    (dict(scale=False, manual=True, enrich_print=False, title_length=10), dict(scale=None)),
     (dict(spinner=None, manual=None), dict(manual=False)),
+    (dict(scale=10), dict(scale='SI')),
 ])
 def config_params(request):
     yield request.param

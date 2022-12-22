@@ -1,9 +1,8 @@
 import shutil
-import sys
 from types import SimpleNamespace
 
 
-def get(original):
+def new(original):
     write = original.write
     flush = original.flush
 
@@ -29,6 +28,3 @@ def get(original):
     carriage_return = '\r'
 
     return SimpleNamespace(**locals())
-
-
-BASE = get(sys.stdout)  # support for jupyter notebooks.

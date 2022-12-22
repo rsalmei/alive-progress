@@ -1,7 +1,21 @@
 # Changelog
 
+## 3.0.0 - Dec 22, 2022
+- units with automatic scaling and configurable precision
+- automatic scaling for slow throughputs
+- support for using `sys.stderr` and other files instead of `sys.stdout`
+- smooth out the rate estimation
+- more queries into the currently running widgets' data, including monitor, rate, and ETA
+- new help system on configuration errors
+- support for reusing logging handlers
+- seek support for logging `RotatingFileHandler`
+- fix unknown mode always ending with a warning (!)
+- improved test branch coverage to 89%
+
+
 ## 2.4.1 - Apr 01, 2022
-- fix a crash when dual-line and disabled
+- fix a crash when dual-line and disabled are set
+
 
 ## 2.4.0 - Mar 21, 2022
 - support dual-line text mode

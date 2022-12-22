@@ -1,37 +1,41 @@
+"""
+This module must always be importable, even without the required libs for install!
+It's because I import metadata from main init, directly in setup.py, which imports this.
+"""
 import os
+import re
 import sys
 from collections import namedtuple
 from string import Formatter
 from types import FunctionType
 
-from ..utils.terminal import FULL, NON_TTY
-
 ERROR = object()  # represents a config value not accepted.
+PATTERN_SANITIZE = re.compile(r'[\r\n]+')
 
 
 def _spinner_input_factory(default):
     from ..animations import spinner_compiler
     from ..styles.internal import SPINNERS
-    return __style_input_factory(SPINNERS, spinner_compiler,
-                                 'spinner_compiler_dispatcher_factory', default)
+    return __style_input(SPINNERS, spinner_compiler, 'spinner_compiler_dispatcher_factory', default)
 
 
 def _bar_input_factory():
     from ..animations import bars
     from ..styles.internal import BARS
-    return __style_input_factory(BARS, bars, 'bar_assembler_factory', None)
+    return __style_input(BARS, bars, 'bar_assembler_factory', None)
 
 
-def __style_input_factory(name_lookup, module_lookup, inner_name, default):
+def __style_input(key_lookup, module_lookup, inner_name, default):
     def _input(x):
         return name_lookup(x) or func_lookup(x) or default
 
-    name_lookup = __name_lookup_factory(name_lookup)
-    func_lookup = __func_lookup_factory(module_lookup, inner_name)
+    name_lookup = __name_lookup(key_lookup)
+    func_lookup = __func_lookup(module_lookup, inner_name)
+    _input.err_help = f'Expected a custom factory or one of: {tuple(key_lookup)}'
     return _input
 
 
-def __name_lookup_factory(name_lookup):
+def __name_lookup(name_lookup):
     def _input(x):
         if isinstance(x, str):
             return name_lookup.get(x) or ERROR
@@ -39,7 +43,7 @@ def __name_lookup_factory(name_lookup):
     return _input
 
 
-def __func_lookup_factory(module_lookup, inner_name):
+def __func_lookup(module_lookup, inner_name):
     def _input(x):
         if isinstance(x, FunctionType):
             func_file, _ = os.path.splitext(module_lookup.__file__)
@@ -53,10 +57,25 @@ def __func_lookup_factory(module_lookup, inner_name):
 
 def _int_input_factory(lower, upper):
     def _input(x):
-        if isinstance(x, int) and lower <= x <= upper:
-            return int(x)
-        return ERROR
+        try:
+            x = int(x)
+            return x if lower <= x <= upper else ERROR
+        except TypeError:
+            return ERROR
 
+    _input.err_help = f'Expected an int between {lower} and {upper}'
+    return _input
+
+
+def _float_input_factory(lower, upper):
+    def _input(x):
+        try:
+            x = float(x)
+            return x if lower <= x <= upper else ERROR
+        except TypeError:
+            return ERROR
+
+    _input.err_help = f'Expected a float between {lower} and {upper}'
     return _input
 
 
@@ -67,22 +86,27 @@ def _bool_input_factory():
     return _input
 
 
-def _force_tty_input_factory():
+def _tri_state_input_factory():
     def _input(x):
-        return table.get(x, ERROR)
+        return None if x is None else bool(x)
 
-    table = {
-        None: FULL if sys.stdout.isatty() else NON_TTY,
-        False: NON_TTY,
-        True: FULL,
-    }
     return _input
 
 
 def _text_input_factory():
     def _input(x):
-        return None if x is None else str(x)
+        return None if x is None else ' '.join(PATTERN_SANITIZE.split(str(x))).strip()
 
+    return _input
+
+
+def _options_input_factory(valid: tuple, alias: dict):
+    def _input(x):
+        x = alias.get(x, x)
+        return x if x in valid else ERROR
+
+    assert all(v in valid for v in alias.values()), f'invalid aliases: {alias.values()}'
+    _input.err_help = f'Expected one of: {valid + tuple(alias)}'
     return _input
 
 
@@ -91,21 +115,31 @@ def _format_input_factory(allowed):
         if not isinstance(x, str):
             return bool(x)
         fvars = parser.parse(x)
-        if any(f[1] not in allowed for f in fvars):
+        if any(f[1] not in allowed_all for f in fvars):
             # f is a tuple (literal_text, field_name, format_spec, conversion)
             return ERROR
         return x
 
+    allowed = allowed.split()
     # I want to accept only some field names, and pure text.
-    allowed = set(allowed.split() + [None])
+    allowed_all = set(allowed + [None])
     parser = Formatter()
+    _input.err_help = f'Expected only the fields: {tuple(allowed)}'
+    return _input
+
+
+def _file_input_factory():
+    def _input(x):
+        return x if all(hasattr(x, m) for m in ('write', 'flush')) else ERROR
+
+    _input.err_help = 'Expected sys.stdout, sys.stderr, or a similar TextIOWrapper object'
     return _input
 
 
 Config = namedtuple('Config', 'title length spinner bar unknown force_tty disable manual '
                               'enrich_print receipt receipt_text monitor elapsed stats '
                               'title_length spinner_length refresh_secs monitor_end '
-                              'elapsed_end stats_end ctrl_c dual_line')
+                              'elapsed_end stats_end ctrl_c dual_line unit scale precision file')
 
 
 def create_config():
@@ -116,6 +150,7 @@ def create_config():
             length=40,
             theme='smooth',  # includes spinner, bar and unknown.
             force_tty=None,
+            file=sys.stdout,
             disable=False,
             manual=False,
             enrich_print=True,
@@ -132,6 +167,9 @@ def create_config():
             refresh_secs=0,
             ctrl_c=True,
             dual_line=False,
+            unit='',
+            scale=None,
+            precision=1,
         )
 
     def set_global(theme=None, **options):
@@ -155,14 +193,19 @@ def create_config():
 
         def validator(key, value):
             try:
-                result = validations[key](value)
-                if result is ERROR:
-                    raise ValueError
-                return result
+                validation = validations[key]
             except KeyError:
-                raise ValueError(f'invalid config name: {key}')
-            except Exception:
-                raise ValueError(f'invalid config value: {key}={value!r}')
+                raise ValueError(f'Invalid config key: {key!r}')
+
+            try:
+                result = validation(value)
+                if result is ERROR:
+                    raise UserWarning(validation.err_help)
+                return result
+            except UserWarning as e:
+                raise ValueError(f'Invalid config value: {key}={value!r}\n{e}') from None
+            except Exception as e:
+                raise ValueError(f'Error in config value: {key}={value!r}\nCause: {e!r}') from None
 
         from ..styles.internal import THEMES
         if theme:
@@ -183,7 +226,8 @@ def create_config():
             spinner=_spinner_input_factory(None),  # accept empty.
             bar=_bar_input_factory(),
             unknown=_spinner_input_factory(ERROR),  # do not accept empty.
-            force_tty=_force_tty_input_factory(),
+            force_tty=_tri_state_input_factory(),
+            file=_file_input_factory(),
             disable=_bool_input_factory(),
             manual=_bool_input_factory(),
             enrich_print=_bool_input_factory(),
@@ -197,10 +241,16 @@ def create_config():
             stats_end=_format_input_factory('rate'),
             title_length=_int_input_factory(0, 100),
             spinner_length=_int_input_factory(0, 100),
-            refresh_secs=_int_input_factory(0, 60 * 60 * 24),  # maximum 24 hours.
+            refresh_secs=_float_input_factory(0, 60 * 60 * 24),  # maximum 24 hours.
             ctrl_c=_bool_input_factory(),
             dual_line=_bool_input_factory(),
             # title_effect=_enum_input_factory(),  # TODO someday.
+            unit=_text_input_factory(),
+            scale=_options_input_factory((None, 'SI', 'IEC', 'SI2'),
+                                         {'': None, False: None, True: 'SI',
+                                          10: 'SI', '10': 'SI',
+                                          2: 'IEC', '2': 'IEC'}),
+            precision=_int_input_factory(0, 2),
         )
         assert all(k in validations for k in Config._fields)  # ensures all fields have validations.
 

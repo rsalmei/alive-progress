@@ -34,6 +34,29 @@ I like to think of it as a new kind of progress bar for Python since it has, amo
 - it is **customizable**, with a growing smorgasbord of bar and spinner styles, as well as several factories to quickly generate yours! Now (📌 new in 2.0), we even have super powerful and cool `.check()` tools in both bars and spinners to help you design your animations! You can see all the frames and cycles exploded on screen, with several verbosity levels, even including an **alive** rendition! 😜
 
 
+## 📌 NEW in 3.0 series!
+
+Yep, I could finally get this version out! These are the new goodies:
+
+- Units support! You can now label the data you're processing, like `B`, `bytes`, or even `°C`!
+- Automatic scaling! With support for SI (base 1000), IEC (base 1024), and even an alternate SI with base 1024, you'll be well served!
+- Configurable precision! When your numbers are scaled, you get to choose how many decimals they display!
+- Automatic stats scaling for slow throughputs! If your processing takes minutes or more, now you'll see rates per minute, per hour, and even per day! (It works within the auto-scaling system!)
+- Support for using `sys.stderr` and other files instead of `sys.stdout`!
+- Smoothed out the rate estimation with the same Exponential Smoothing Algorithm that powers the ETA, so the bar returns a more realistic ETA!
+- Query the currently running widgets' data, like the monitor, rate, and ETA!
+- New help system on configuration errors, which explains why a value was not accepted, and what were the expected ones!
+
+#### Highly anticipated fixes
+
+- Support for reusing logging handlers! No more `TypeError: unhashable type: 'types.SimpleNamespace'`.
+- Support for logging when using `RotatingFileHandler`s! Yep, seek support is here.
+- Fix unknown mode always ending with a warning (!)
+
+And last but not least, a more polished layout for you to enjoy your progress!
+![alive-progress 3.0](img/alive3.0.png)
+
+
 ## 📌 NEW in 2.4 series!
 
 Now, `alive_bar` supports *Dual Line* text mode!
@@ -41,7 +64,7 @@ Now, `alive_bar` supports *Dual Line* text mode!
 If you ever wanted to include longer situational messages within the bar, you probably felt squeezed into one line. You had to shrink the beautifully animated bar or, even worse, remove widgets (!) to be able to see what you needed...
 <br>Not anymore!! You can now make the bar *Dual Line*, and put text below it!
 
-Yes, there's a message below the whole bar, but any other messages scroll above it!
+Yes, there's a message below the whole bar, and any other print/logging messages scroll above it!
 
 ```python
 letters = [chr(ord('A') + x) for x in range(26)]
@@ -59,7 +82,7 @@ Alphabet |███████████████████████�
 -> Teaching the letter: S, please wait...
 ```
 
-There's also a new `finalize` function parameter in `alive_it`, which enables you to set the title and/or text of the final receipt, improved logging support, which detects customized loggers, and some bug fixes.
+There's also a new `finalize` function parameter in `alive_it` which enables you to set the title and/or text of the final receipt, and improved logging support which detects customized loggers.
 
 
 ## 📌 NEW in 2.3 series!
@@ -292,10 +315,10 @@ bar = alive_it(items, finalize=lambda bar: bar.text('Success!'))
 
 ### Definite/unknown: Counters
 
-Actually, the `total` argument is optional. If you do provide it, the bar enters in **definite mode**, the one used for well-bounded tasks. This mode has all the widgets `alive-progress` has to offer: count, throughput, and ETA.
+Actually, the `total` argument is optional. If you do provide it, the bar enters in **definite mode**, the one used for well-bounded tasks. This mode has all the widgets `alive-progress` has to offer: progress, count, throughput, and ETA.
 
-If you don't, the bar enters in **unknown mode**, the one used for unbounded tasks. In this mode, the whole progress bar is animated, as it's not possible to determine the percentage, and therefore the ETA. But you still get the count and throughput widgets as usual.
-<br>The cool spinner is still present here besides the progress bar, both running their animations concurrently and independently of each other, rendering a unique show in your terminal! 😜
+If you don't, the bar enters in **unknown mode**, the one used for unbounded tasks. In this mode, the whole progress bar is animated, as it's not possible to determine the progress, and therefore the ETA. But you still get the count and throughput widgets as usual.
+<br>The cool spinner is still present here alongside the progress bar, both running their animations concurrently and independently of each other, rendering a unique show in your terminal! 😜
 
 So, definite and unknown modes both use internally a **counter** to maintain progress. This is the source value from which all widgets are derived.
 
@@ -310,6 +333,27 @@ You can also use `total` here! If you do provide it, the `bar` will infer an int
 <br>If you don't, you'll at least get rough versions of the throughput and ETA widgets! The throughput will use "%/s" (percent per second), and the ETA will be until 1 (100%). Both are very inaccurate but are better than nothing.
 
 > You can call `bar` in manual mode as frequently as you want! The refresh rate will still be asynchronously computed as usual, according to the current progress and the elapsed time, so you won't ever spam the terminal with more updates than it can handle.
+
+
+### Summary of Modes
+
+When `total` is provided all is cool:
+
+|   mode   |    counter    |  percentage  | throughput | ETA | over/underflow |
+|:--------:|:-------------:|:------------:|:----------:|:---:|:--------------:|
+| definite | ✅ (user tick) | ✅ (inferred) |     ✅      |  ✅  |       ✅        |
+|  manual  | ✅ (inferred)  | ✅ (user set) |     ✅      |  ✅  |       ✅        |
+
+When it isn't, some compromises have to be made:
+
+|  mode   |    counter    |  percentage  |  throughput  |    ETA     | over/underflow |
+|:-------:|:-------------:|:------------:|:------------:|:----------:|:--------------:|
+| unknown | ✅ (user tick) |      ❌       |      ✅       |     ❌      |       ❌        |
+| manual  |       ❌       | ✅ (user set) | ⚠️ (simpler) | ⚠️ (rough) |       ✅        |
+
+But actually it's quite simple, you do not need to think about which mode you should use:
+<br>Just always send the `total` if you have it, and use `manual` if you need it!
+<br>It will just work the best it can! 👏 \o/
 
 
 ### The `bar()` handlers
@@ -327,31 +371,11 @@ In any case, to retrieve the current count/percentage, just call: `bar.current()
 - in **manual** mode, this provides a float in the interval [0, 1] — the last percentage set.
 
 
-### Summary
-
-When `total` is provided all is cool:
-
-| mode     | counter        | percentage    | throughput   | ETA         | over/underflow |
-|:---:|:---:|:---:|:---:|:---:|:---:|
-| definite | ✅ (user tick) | ✅ (inferred) | ✅            | ✅          | ✅ |
-| manual   | ✅ (inferred)  | ✅ (user set) | ✅            | ✅          | ✅ |
-
-When it isn't, some compromises have to be made:
-
-| mode     | counter        | percentage    | throughput   | ETA         | over/underflow |
-|:---:|:---:|:---:|:---:|:---:|:---:|
-| unknown  | ✅ (user tick) | ❌            | ✅            | ❌          | ❌ |
-| manual   | ❌             | ✅ (user set) | ⚠️ (simpler)  | ⚠️ (rough)  | ✅ |
-
-It's quite simple, you do not need to think about which mode you should use:
-<br>Just always send the `total` if you have it, and use `manual` if you need it!
-<br>It will just work the best it can! 👏 \o/
-
-
 ---
-Maintaining an open source project is hard and time-consuming.
-<br>I've put much ❤️ and effort into this.
-<br>You can back me up with a donation if you've appreciated my work, thank you 😊
+Maintaining an open source project is hard and time-consuming, and I've put much ❤️ and effort into this.
+
+If you've appreciated my work, you can back me up with a donation! Thank you 😊
+
 [<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
 [<img align="right" alt="Donate with PayPal button" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate?business=6SWSHEB5ZNS5N&no_recurring=0&item_name=I%27m+the+author+of+alive-progress%2C+clearly+and+about-time.+Thank+you+for+appreciating+my+work%21&currency_code=USD)
 
@@ -401,6 +425,10 @@ These are the options - default values in brackets:
 - `theme`: [`'smooth'`] a set of matching spinner, bar, and unknown
 <br>   ↳ accepts a predefined theme name
 - `force_tty`: [`None`] forces animations to be on, off, or according to the tty (more details [here](#forcing-animations-on-non-interactive-consoles))
+<br>   ↳ None -> auto select, according to the terminal/Jupyter
+<br>   ↳ True -> unconditionally enables animations, but still auto-detects Jupyter Notebooks
+<br>   ↳ False -> unconditionally disables animations, keeping only the the final receipt
+- `file`: [`sys.stdout`] the file object to use: `sys.stdout`, `sys.stderr`, or a similar `TextIOWrapper`
 - `disable`: [`False`] if True, completely disables all output, do not install hooks
 - `manual`: [`False`] set to manually control the bar position
 - `enrich_print`: [`True`] enriches print() and logging messages with the bar position
@@ -424,6 +452,9 @@ These are the options - default values in brackets:
 - `refresh_secs`: [`0`] forces the refresh period to this, `0` is the reactive visual feedback
 - `ctrl_c`: [`True`] if False, disables CTRL+C (captures it)
 - `dual_line`: [`False`] if True, places the text below the bar
+- `unit`: any text that labels your entities
+- `scale`: the scaling to apply to units: `None`, `SI`, `IEC`, or `SI2`
+<br>   ↳ supports aliases: `False` or `''` -> `None`, `True` -> `SI`, `10` or `'10'` -> `SI`, `2` or `'2'` -> `IEC`
 
 And there's also one that can only be set locally in an `alive_bar` context:
 - `calibrate`: maximum theoretical throughput to calibrate animation speed (more details [here](#fps-calibration))
@@ -462,15 +493,15 @@ The spinners' animations are engineered by very advanced generator expressions, 
 - this, for each cycle, assembles another generator expression for the animation frames of the same effect;
 - these generators together finally produce the streams of cycles and frames of the cool animations we see on the screen! Wow 😜👏
 
-These generators are capable of multiple different animation cycles according to the spinner behavior, e.g. a bouncing spinner with a simple pattern argument runs one cycle to smoothly bring a subject into the scene, then repeatedly reposition it until the other side, then make it smoothly disappear off the scene => this is all only one cycle! Then it is followed by another cycle to make it all backward. But the same bouncing spinner accepts repeating patterns in both right and left directions, which generates the cartesian product of all combinations, thus capable of producing dozens of different cycles!! 🤯
+These generators are capable of multiple different animation cycles according to the spinner behavior, e.g. a bouncing spinner can run one cycle to smoothly bring a subject into the scene, then repeatedly reposition it until the other side, then make it smoothly disappear off the scene => and this is all only one cycle! Then it can be followed by another cycle to make it all again but backwards!
+And bouncing spinners also accept _different_ and _alternating_ patterns in both the right and left directions, which makes them generate the cartesian product of all the combinations, possibly producing dozens of different cycles until they start repeating them!! 🤯
 
-And there's more! They only yield the next animation frame **until the current cycle is exhausted**, then halt! The next cycle does not start just yet! It creates natural breaks, in exactly the correct spots, where the animations would not be disrupted, and I can smoothly restart whatever generator I want!!
-<br>That has all kinds of cool implications: the cycles can have different frame counts, different screen lengths, they do not need to be synchronized, they can create long different sequences by themselves, they can cooperate to play cycles in sequence or alongside, and I can amaze you displaying several animations at the same time on the screen without any interferences!
+And there's more, I think one of the most impressive achievements I got in this animation system (besides the spinner compiler itself)... They only yield more animation frames until the current cycle is not exhausted, then **they halt themselves**! Yep, the next cycle does not start just yet! This behavior creates natural breaks in exactly the correct spots, where the animations are not disrupted, so I can smoothly link with whatever other animation I want!!
+<br>This has all kinds of cool implications: the cycles can have different frame counts, different screen lengths, they do not need to be synchronized, they can create long different sequences by themselves, they can cooperate to play cycles in sequence or alongside, and I can amaze you displaying several totally distinct animations at the same time without any interferences whatsoever!
 
----
-It's almost like they were... _alive_! ==> Yes, that's where this project's name came from! 😉
+> It's almost like they were... _alive_!! 😄
+> <br>==> Yes, that's where this project's name came from! 😉
 
----
 
 #### (📌 new in 2.0) A Spinner Compiler, really?
 
@@ -540,9 +571,10 @@ Wow, if you read everything till here, you should now have a sound knowledge abo
 <br>And if you want to know even more, exciting stuff lies ahead!
 
 ---
-Maintaining an open source project is hard and time-consuming.
-<br>I've put much ❤️ and effort into this.
-<br>You can back me up with a donation if you've appreciated my work, thank you 😊
+Maintaining an open source project is hard and time-consuming, and I've put much ❤️ and effort into this.
+
+If you've appreciated my work, you can back me up with a donation! Thank you 😊
+
 [<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
 [<img align="right" alt="Donate with PayPal button" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate?business=6SWSHEB5ZNS5N&no_recurring=0&item_name=I%27m+the+author+of+alive-progress%2C+clearly+and+about-time.+Thank+you+for+appreciating+my+work%21&currency_code=USD)
 
@@ -767,7 +799,8 @@ For Python 3.6:
 
 
 ## Changelog highlights (complete [here](CHANGELOG.md)):
-- 2.4.1: fix a crash when dual-line and disabled
+- 3.0.0: units support with automatic and configurable scaling and precision, automatic stats scaling for slow throughputs, support for using `sys.stderr` and other files instead of `sys.stdout`, smoothed out the rate estimation, more queries into the currently running widgets' data, help system in configuration errors
+- 2.4.1: fix a crash when dual-line and disabled are set
 - 2.4.0: support dual line text mode; finalize function parameter in alive_it; improve logging support, detecting customized ones
 - 2.3.1: introduce ctrl_c config param; print the final receipt even when interrupted
 - 2.3.0: customizable `monitor`, `elapsed`, and `stats` core widgets, new `monitor_end`, `elapsed_end`, and `stats_end` core widgets, better support for CTRL+C, which makes `alive_bar` stop prematurely
@@ -800,9 +833,10 @@ This software is licensed under the MIT License. See the LICENSE file in the top
 
 
 ---
-Maintaining an open source project is hard and time-consuming.
-<br>I've put much ❤️ and effort into this.
-<br>You can back me up with a donation if you've appreciated my work, thank you 😊
+Maintaining an open source project is hard and time-consuming, and I've put much ❤️ and effort into this.
+
+If you've appreciated my work, you can back me up with a donation! Thank you 😊
+
 [<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
 [<img align="right" alt="Donate with PayPal button" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate?business=6SWSHEB5ZNS5N&no_recurring=0&item_name=I%27m+the+author+of+alive-progress%2C+clearly+and+about-time.+Thank+you+for+appreciating+my+work%21&currency_code=USD)
 
