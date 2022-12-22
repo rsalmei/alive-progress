@@ -463,6 +463,7 @@ These are the options - default values in brackets:
 - `unit`: any text that labels your entities
 - `scale`: the scaling to apply to units: `None`, `SI`, `IEC`, or `SI2`
 <br>   ↳ supports aliases: `False` or `''` -> `None`, `True` -> `SI`, `10` or `'10'` -> `SI`, `2` or `'2'` -> `IEC`
+- `precision`: [`1`] how many decimals do display when scaling
 
 And there's also one that can only be set locally in an `alive_bar` context:
 - `calibrate`: maximum theoretical throughput to calibrate animation speed (more details [here](#fps-calibration))
