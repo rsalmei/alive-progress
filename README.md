@@ -192,6 +192,8 @@ from alive_progress.styles import showtime
 showtime()
 ```
 
+> Note: Disregard the path in the animated gif below, the correct one is in the text above `alive_progress.styles`. These long gifs are very time-consuming to generate, so I can't make another on every little change. Thanks for your understanding.
+
 ![alive-progress spinners](img/showtime-spinners.gif)
 
 I've made these styles just to try all the animation factories I've created, but I think some of them ended up very very cool! Use them at will, and mix them to your heart's content!
@@ -387,6 +389,12 @@ If you've appreciated my work, you can back me up with a donation! Thank you ðŸ˜
 ### Styles
 
 The `showtime` exhibit has an optional argument to choose which show to present, `Show.SPINNERS` (default), `Show.BARS` or `Show.THEMES`, do take a look at them! ;)
+
+```python
+from alive_progress.styles import showtime, Show
+```
+
+> Note: Disregard the path in the animated gif below, the correct one is in the text above `alive_progress.styles`. These long gifs are very time-consuming to generate, so I can't make another on every little change. Thanks for your understanding.
 
 ![alive-progress bars](img/showtime-bars.gif)
 
