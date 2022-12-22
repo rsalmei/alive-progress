@@ -237,7 +237,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
         thread.start()
 
     if not config.scale:
-        def human_count(value):
+        def human_count(value, _precision=None):
             return f'{value}{config.unit}'
 
         def rate_text(precision):
@@ -252,19 +252,19 @@ def __alive_bar(config, total=None, *, calibrate=None,
         fn_human_count = about_time.human_count.fn_human_count(False, d1024, iec)
         fn_human_throughput = about_time.human_throughput.fn_human_throughput(False, d1024, iec)
 
-        def human_count(value):
-            return fn_human_count(value, unit)
+        def human_count(value, precision=None):
+            return fn_human_count(value, unit, precision)
 
-        def rate_text(_precision):
-            return fn_human_throughput(run.rate, unit)
+        def rate_text(precision):
+            return fn_human_throughput(run.rate, unit, precision)
 
-    def monitor_run(f):
-        run.monitor_text = human_count(run.count)
+    def monitor_run(f, precision=config.precision):
+        run.monitor_text = human_count(run.count, precision)
         return f.format(count=run.monitor_text, total=total_human, percent=run.percent)
 
     def monitor_end(f):
         warning = '(!) ' if total is not None and current() != logic_total else ''
-        return f'{warning}{monitor_run(f)}'
+        return f'{warning}{monitor_run(f, None)}'
 
     def elapsed_run(f):
         return f.format(elapsed=elapsed_text(run.elapsed, False))
@@ -316,7 +316,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
             monitor_default = '{count}'
         total_human = None
 
-    monitor = _WidgetMax(monitor_run, config.monitor, monitor_default)
+    monitor = _Widget(monitor_run, config.monitor, monitor_default)
     monitor_end = _Widget(monitor_end, config.monitor_end, monitor.f[:-1])  # space separator.
     elapsed = _Widget(elapsed_run, config.elapsed, 'in {elapsed}')
     elapsed_end = _Widget(elapsed_end, config.elapsed_end, elapsed.f[:-1])  # space separator.
@@ -371,23 +371,6 @@ class _Widget:  # pragma: no cover
 
     def __call__(self):
         return self.func(self.f)
-
-
-class _WidgetMax(_Widget):  # pragma: no cover
-    """Avoid jiggling the right hand of alive-bar, when the unit scaling
-    cuts the zero decimal, and delivers a smaller repr than previous ones."""
-    def __init__(self, func, value, default):
-        super().__init__(func, value, default)
-        self.last_len = 0
-
-    def __call__(self):
-        info = self.func(self.f)
-        if len(info) == self.last_len:  # far most common.
-            return info
-        elif len(info) < self.last_len:  # on exact decimals
-            return f'{info:>{self.last_len}}'
-        self.last_len = len(info)  # only when getting a new digit.
-        return info
 
 
 class _GatedFunction:  # pragma: no cover
