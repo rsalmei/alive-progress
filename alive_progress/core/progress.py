@@ -304,8 +304,6 @@ def __alive_bar(config, total=None, *, calibrate=None,
 
             def bar_update_hook():
                 run.percent = run.count / total
-
-        total_human = human_count(total)  # this is fixed, no point converting on all refreshes.
     else:
         def bar_update_hook():
             pass
@@ -314,7 +312,8 @@ def __alive_bar(config, total=None, *, calibrate=None,
             monitor_default = '{percent:.0%}'
         else:
             monitor_default = '{count}'
-        total_human = None
+
+    total_human = human_count(total or 0)  # avoid converting it on all refreshes.
 
     monitor = _Widget(monitor_run, config.monitor, monitor_default)
     monitor_end = _Widget(monitor_end, config.monitor_end, monitor.f[:-1])  # space separator.
