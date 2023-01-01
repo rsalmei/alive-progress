@@ -81,11 +81,17 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
             yield logging.root
             yield from (logging.getLogger(name) for name in logging.root.manager.loggerDict)
 
+        def set_hook(h):
+            try:
+                return h.setStream(get_hook_for(h))
+            except AttributeError:
+                pass  # ignores errors and return None
+
         # account for reused handlers within loggers.
         handlers = set(h for logger in get_all_loggers()
                        for h in logger.handlers if isinstance(h, StreamHandler))
         # modify all stream handlers, including their subclasses.
-        before_handlers.update({h: h.setStream(get_hook_for(h)) for h in handlers})
+        before_handlers.update({h: set_hook(h) for h in handlers})  # there can be Nones now.
         sys.stdout, sys.stderr = (get_hook_for(SimpleNamespace(stream=x)) for x in base)
 
     def uninstall():
@@ -93,8 +99,7 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
         buffers.clear()
         sys.stdout, sys.stderr = base
 
-        [handler.setStream(original_stream)
-         for handler, original_stream in before_handlers.items()]
+        [handler.setStream(original) for handler, original in before_handlers.items() if original]
         before_handlers.clear()
 
         # did the number of logging handlers change??

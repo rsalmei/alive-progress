@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.1 - Jan 01, 2023
+- fix for logging streams that extend StreamHandler but doesn't allow changing streams (import dill issue)
+
+
 ## 3.0.0 - Dec 22, 2022
 - units with automatic scaling and configurable precision
 - automatic scaling for slow throughputs

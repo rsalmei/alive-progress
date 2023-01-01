@@ -93,7 +93,7 @@ def alive_bar(total=None, *, calibrate=None, **options):
                 send a string with `{count}`, `{total}` and `{percent}` to customize it
             elapsed (bool|str): configures the elapsed time widget `in 12s`
                 send a string with `{elapsed}` to customize it
-            stats (bool|str): configures the stats widget `(123.4/s, eta: 12s)`
+            stats (bool|str): configures the stats widget `(~12s, 123.4/s)`
                 send a string with `{rate}` and `{eta}` to customize it
             monitor_end (bool|str): configures the monitor widget within final receipt
                 same as monitor, the default format is dynamic, it inherits monitor's one
