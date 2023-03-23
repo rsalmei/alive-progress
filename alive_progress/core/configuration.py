@@ -130,16 +130,16 @@ def _format_input_factory(allowed):
 
 def _file_input_factory():
     def _input(x):
-        return x if all(hasattr(x, m) for m in ('write', 'flush')) else ERROR
+        return x if all(hasattr(x, m) for m in ('write', 'flush', 'fileno')) else ERROR
 
     _input.err_help = 'Expected sys.stdout, sys.stderr, or a similar TextIOWrapper object'
     return _input
 
 
-Config = namedtuple('Config', 'title length spinner bar unknown force_tty disable manual '
+Config = namedtuple('Config', 'title length max_cols spinner bar unknown force_tty disable manual '
                               'enrich_print receipt receipt_text monitor elapsed stats '
-                              'title_length spinner_length refresh_secs monitor_end '
-                              'elapsed_end stats_end ctrl_c dual_line unit scale precision file')
+                              'title_length spinner_length refresh_secs monitor_end elapsed_end '
+                              'stats_end ctrl_c dual_line unit scale precision file')
 
 
 def create_config():
@@ -148,6 +148,7 @@ def create_config():
         set_global(  # this must have all available config vars.
             title=None,
             length=40,
+            max_cols=80,
             theme='smooth',  # includes spinner, bar and unknown.
             force_tty=None,
             file=sys.stdout,
@@ -222,7 +223,8 @@ def create_config():
 
         validations.update(  # the ones the user can configure.
             title=_text_input_factory(),
-            length=_int_input_factory(3, 300),
+            length=_int_input_factory(3, 1000),
+            max_cols=_int_input_factory(3, 1000),
             spinner=_spinner_input_factory(None),  # accept empty.
             bar=_bar_input_factory(),
             unknown=_spinner_input_factory(ERROR),  # do not accept empty.
@@ -239,8 +241,8 @@ def create_config():
             elapsed_end=_format_input_factory('elapsed'),
             stats=_format_input_factory('rate eta'),
             stats_end=_format_input_factory('rate'),
-            title_length=_int_input_factory(0, 100),
-            spinner_length=_int_input_factory(0, 100),
+            title_length=_int_input_factory(0, 1000),
+            spinner_length=_int_input_factory(0, 1000),
             refresh_secs=_float_input_factory(0, 60 * 60 * 24),  # maximum 24 hours.
             ctrl_c=_bool_input_factory(),
             dual_line=_bool_input_factory(),
