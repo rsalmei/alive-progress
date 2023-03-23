@@ -466,10 +466,10 @@ def alive_it(it, total=None, *, finalize=None, calibrate=None, **options):
 
     Simply wrap your iterable with `alive_it`, and process your items normally!
     >>> from alive_progress import alive_it
-    ... import time
+    ...
     ... items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     ... for item in alive_it(items):
-    ...     time.sleep(.5)  # process item.
+    ...     # process item.
 
     And the bar will just work, it's that simple!
 
@@ -479,19 +479,27 @@ def alive_it(it, total=None, *, finalize=None, calibrate=None, **options):
     To force unknown mode, even when the total would be available, send `total=0`.
 
     If you want to use other alive_bar's more advanced features, like for example setting
-    situational messages, you can assign it to a variable, and just use it as always.
-    You can also send a `finalize` function to set the final receipt title and text!
+    situational messages, you can simply assign it to a variable.
 
     >>> from alive_progress import alive_it
     ...
-    ... def process_end(bar):
+    ... items = range(100000)
+    ... bar = alive_it(items)
+    ... for item in bar:
+    ...     bar.text(f'Wow, it works! Item: {item}')
+    ...     # process item.
+
+    You can also send a `finalize` function to set the final receipt title and text, and any other
+    alive_bar options you'd like!
+
+    >>> from alive_progress import alive_it
+    ...
+    ... def ending(bar):
     ...     bar.title = 'DB updated'
     ...     bar.text = f'{bar.current} entries changed'
     ...
     ... items = range(100000)
-    ... bar = alive_it(items, finalize=process_end, length=20, receipt_text=True)
-    ... for item in bar:
-    ...     bar.text(f'Wow, it works! Item: {item}')
+    ... for item in alive_it(items, finalize=ending, length=20, receipt_text=True)
     ...     # process item.
 
     This prints:
