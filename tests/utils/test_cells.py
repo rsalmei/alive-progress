@@ -64,14 +64,14 @@ def test_sanitize_text_double(text, expected, show_marks):
     (('rogerio', '\n', '12345'), 3, 3, '\rrog\x1b[K\n123'),
 ])
 def test_print_cells(fragments, cols, ret, expected, capsys):
-    term = get_term(sys.stdout, True)
+    term = get_term(force_tty=True)
     assert print_cells(fragments, cols, term) == ret
     term.flush()
     assert capsys.readouterr().out == expected
 
 
 def test_print_cells_clear(capsys):
-    term = get_term(sys.stdout, True)
+    term = get_term(force_tty=True)
     msg = 'loooong'
     assert print_cells((msg,), 100, term, 8) == len(msg)
     term.flush()

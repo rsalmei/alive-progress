@@ -162,7 +162,7 @@ def _showtime_gen(fps, gens, info, length):
     logo = spinner_player(SPINNERS['waves']())
     start, sleep, frame, line_num = time.perf_counter(), 1. / fps, 0, 0
     start, current = start - sleep, start  # simulates the first frame took exactly "sleep" ms.
-    term = terminal.get_term(sys.stdout)
+    term = terminal.get_term()
     term.hide_cursor()
     try:
         while True:

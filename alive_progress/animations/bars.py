@@ -1,5 +1,4 @@
 import math
-import sys
 import time
 
 from about_time import about_time
@@ -228,7 +227,7 @@ def animate(bar):  # pragma: no cover
     print(f'\n{SECTION("Animation")}')
     from ..styles.exhibit import exhibit_bar
     bar_gen = exhibit_bar(bar, 15)
-    term = terminal.get_term(sys.stdout)
+    term = terminal.get_term()
     term.hide_cursor()
     try:
         while True:

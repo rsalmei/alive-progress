@@ -21,7 +21,7 @@ def install_hook(hook_manager=None):
 
 
 def hook(header):
-    return buffered_hook_manager(header, lambda: 35, Condition(), get_term(sys.stdout))
+    return buffered_hook_manager(header, lambda: 35, Condition(), get_term())
 
 
 @pytest.fixture(params=[
@@ -86,7 +86,7 @@ def test_hook_manager_flush(capsys):
 
 
 def test_hook_manager_do_clear_line_on_stdout():
-    term = get_term(sys.stdout)
+    term = get_term()
     hook_manager = buffered_hook_manager('', None, Condition(), term)
     m_clear = mock.Mock()
     with install_hook(hook_manager), mock.patch.dict(term.__dict__, clear_line=m_clear):
@@ -98,7 +98,7 @@ def test_hook_manager_do_not_flicker_screen_when_logging():
     logging.basicConfig()
     logger = logging.getLogger()
 
-    term = get_term(sys.stdout)
+    term = get_term()
     hook_manager = buffered_hook_manager('', None, Condition(), term)
     m_clear = mock.Mock()
     with install_hook(hook_manager), mock.patch.dict(term.__dict__, clear_line=m_clear):

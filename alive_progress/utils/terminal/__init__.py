@@ -49,9 +49,13 @@ def _is_notebook():
     return class_ != 'TerminalInteractiveShell'
 
 
-def get_term(file, force_tty=None):
+def get_void():
+    return _create(void, False)
+
+
+def get_term(file=None, force_tty=None):
     if file is None:
-        return _create(void, False)
+        file = sys.stdout
 
     base = tty.new(file)
     if hasattr(file, 'isatty') and file.isatty() if force_tty is None else force_tty:

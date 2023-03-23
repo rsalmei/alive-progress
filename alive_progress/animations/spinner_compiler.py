@@ -1,6 +1,5 @@
 import operator
 import random
-import sys
 import time
 from inspect import signature
 from itertools import chain, count, islice, repeat
@@ -344,7 +343,7 @@ def animate(spec):  # pragma: no cover
     cf, lf, tf = (f'>{len(str(x))}' for x in (spec.cycles, max(spec.frames), spec.total_frames))
     from itertools import cycle
     cycles, frames = cycle(range(1, spec.cycles + 1)), cycle(range(1, spec.total_frames + 1))
-    term = terminal.get_term(sys.stdout)
+    term = terminal.get_term()
     term.hide_cursor()
     try:
         while True:
