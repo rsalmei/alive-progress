@@ -127,7 +127,7 @@ def bar_controller(inner_bar_factory):
 
         if draw_unknown:
             def draw_unknown_end(_percent=None):
-                return draw_known(ended, 1.)
+                return draw_end(1.)
 
             draw_unknown.end = draw_unknown_end
 
