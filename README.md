@@ -34,14 +34,11 @@ I like to think of it as a new kind of progress bar for Python since it has, amo
 - it is **customizable**, with a growing smorgasbord of spinner and bar styles, as well as several ready-to-use factories to easily generate yours! Now (📌 new in 2.0), we even have a super powerful and cool `check()` tool, in both spinners and bars, to help you design your own animations! You can see all the frames and cycles exploded on screen, with several verbosity levels, even including an **alive** rendition! It's awesome 😜
 
 
-New user? Just skip the News section and go to [how to get it](#get-it) 👍
-
-
 ## 📌 NEW in 3.1 series!
 
 A very cool update here! In addition to polishing things up and improving terminal support, now `alive-progress` supports resuming computations!
 
-When processing huge datasets or things that take a long time, you might either use batches or cache partial results. Then, in case it stops and is restarted, you end up skipping all those ready items very quickly, which makes the `alive_bar` think you're processing thousands of items per second, which in turn completely disrupts the ETA... But not anymore! Just tell `bar()` that you've skipped an item... 👏
+When processing huge datasets or things that take a long time, you might either use batches or cache partial results. Then, in case it stops and is restarted, you end up skipping all those already done items very quickly, which makes the `alive_bar` think you're processing thousands of items per second, which in turn completely ruins the ETA... But not anymore! Just tell `bar()` that you've skipped items... 👏
 
 You can use it in two ways:
 
@@ -49,8 +46,8 @@ You can use it in two ways:
 ```python
 with alive_bar(120000) as bar:
     bar(60000, skipped=True)
-    for i in range(60000):
-        time.sleep(0.0001)  # process item
+    for i in range(60000, 120000):
+        # process item
         bar()
 ```
 Yep, just call `bar(N, skipped=True)` once, with the number of items.
@@ -66,7 +63,7 @@ with alive_bar(120000) as bar:
         # process item
         bar()
 ```
-Yep, it's as simple as that! Just call `bar(skipped=True)` when an item is already done, and `bar()` as usual otherwise. Or, share one `bar(skipped=?)` call at the end, with a bool saying if you skipped that item or not.
+Yep, it's as simple as that! Just call `bar(skipped=True)` when an item is already done, or `bar()` as usual otherwise. You could also share a single `bar(skipped=?)` call at the end, with a bool saying whether you did skip that item or not. Cool, huh?
 
 Also in this version:
 
@@ -184,7 +181,7 @@ Some major new features, often requested, have finally landed!
 </details>
 
 <details>
-<summary>📌 NEW in the 2.1 series!</summary>
+<summary>📌 NEW in 2.1 series!</summary>
 
 YES! Now `alive-progress` has support for Jupyter Notebooks and also includes a _Disabled_ state! Both were highly sought after, and have finally landed!
 <br>And better, I've implemented an auto-detection mechanism for jupyter notebooks, so it just works, out of the box, without any changes in your code!!
@@ -224,7 +221,9 @@ This README is always being updated, so take a comprehensive look sometimes to f
 
 ---
 
-## Get it
+## Using `alive-progress`
+
+### Get it
 
 Just install with pip:
 
@@ -382,7 +381,7 @@ On the other hand, the **manual mode** uses internally a **percentage** to maint
 To use it, just include a `manual=True` argument into `alive_bar` (or `config_handler`), and you get to send any percentage to the `bar()` handler! For example, to set it to 15%, just call `bar(0.15)` — which is 15 / 100.
 
 You can also use `total` here! If you do provide it, `alive-progress` will infer an internal _counter_ by itself, and thus will be able to offer you the same count, throughput, and ETA widgets!
-<br>If you don't, you'll at least get rough versions of the throughput and ETA widgets. The throughput will use "%/s" (percent per second), and the ETA will be til 1.0 (100%). Both are very inaccurate but better than nothing.
+<br>If you don't, you'll at least get rough versions of the throughput and ETA widgets. The throughput will use "%/s" (percent per second), and the ETA will be till 1.0 (100%). Both are very inaccurate but better than nothing.
 
 You can call `bar` in manual mode as frequently as you want! The refresh rate will still be asynchronously computed as usual, according to the current progress and the elapsed time, so you won't ever spam the terminal with more updates than it can handle.
 
@@ -435,9 +434,7 @@ If you've appreciated my work, you can back me up with a donation! Thank you �
 ---
 
 
-## Customize it
-
-### Styles
+## Styles
 
 The `showtime` exhibit has an optional argument to choose which show to present, `Show.SPINNERS` (default), `Show.BARS` or `Show.THEMES`, do take a look at them! ;)
 
@@ -449,7 +446,7 @@ from alive_progress.styles import showtime, Show
 
 ![alive-progress bars](img/showtime-bars.gif)
 
-(📌 new in 2.0) And the themes one:
+And the themes one (📌 new in 2.0):
 
 ![alive-progress themes](img/showtime-themes.gif)
 
@@ -467,7 +464,7 @@ For example to get a marine show, you can `showtime(pattern='boat|fish|crab')`:
 > There's also a small utility called `print_chars()`, to help find that cool character to put in your customized spinners and bars, or to determine if your terminal does support Unicode characters.
 
 
-### Configurations
+## Configuration
 
 There are several options to customize both appearance and behavior!
 <br>All of them can be set both directly in the `alive_bar` or globally in the `config_handler`!
@@ -518,7 +515,7 @@ These are the options - default values in brackets:
 - `precision`: [`1`] how many decimals do display when scaling
 
 And there's also one that can only be set locally in an `alive_bar` context:
-- `calibrate`: maximum theoretical throughput to calibrate animation speed (more details [here](#fps-calibration))
+- `calibrate`: maximum theoretical throughput to calibrate the animation speed (more details [here](#fps-calibration))
 
 To set them locally, just send them as keyword arguments to `alive_bar`:
 
@@ -540,12 +537,12 @@ with alive_bar(total, bar='blocks', spinner='twirls') as bar:
 ```
 
 
-### Create your own animations
+## Create your own animations
 
 Yes, you can assemble your own spinners! And it's easy!
 <br>I've created a plethora of special effects, so you can just mix and match them any way you want! There are frames, scrolling, bouncing, sequential, alongside, and delayed spinners! Get creative! 😍
 
-#### Intro: How do they work?
+### Intro: How do they work?
 
 The spinners' animations are engineered by very advanced generator expressions, deep within several layers of meta factories, factories and generators 🤯!
 
@@ -564,7 +561,7 @@ And there's more, I think one of the most impressive achievements I got in this 
 > <br>==> Yes, that's where this project's name came from! 😉
 
 
-#### (📌 new in 2.0) A Spinner Compiler, really?
+### A Spinner Compiler, really? (📌 new in 2.0)
 
 Now, these generators of cycles and frames are fully consumed ahead of time by the **Spinner Compiler**! This is a very cool new processor that I made inside the _Cell Architecture_ effort, to make all these animations work even in the presence of wide chars or complex grapheme clusters! It was very hard to make these clusters  gradually enter and exit frames, smoothly, while keeping them from breaking the Unicode encoding and especially maintain their original lengths in all frames! Yes, several chars in sequence can represent another completely different symbol, so they cannot ever be split! They have to enter and exit the frame always together, all at once, or the grapheme won't show up at all (an Emoji for instance)!! Enter the **Spinner Compiler**......
 
@@ -593,7 +590,7 @@ In red, you see the grapheme clusters, that occupy one or two "logical positions
 
 The flag seems to move so smoothly because it uses "half-characters"! Since it is a wide char, `alive-progress` knows it will be rendered with "two visible chars", and the animations consider this, but compose with spaces, which occupy only one. When one uses mixed backgrounds, the situation is much more complex...
 
-#### Factories
+### Spinner Factories
 
 The types of factories I've created are:
 - `frames`: draws any sequence of characters at will, that will be played frame by frame in sequence;
@@ -606,7 +603,7 @@ The types of factories I've created are:
 For more details please look at their docstrings, which are very complete.
 
 
-### Create your own bars
+### Bar Factories
 
 Customizing bars is nowhere near that involved. Let's say they are "immediate", passive objects. They do not support animations, i.e. they will always generate the same rendition given the same parameters. Remember spinners are infinite generators, capable of generating long and complex sequences.
 
@@ -618,18 +615,17 @@ Bars also do not have a Bar Compiler, but they **do provide the check tool**!! �
 
 ![alive-progress check tool](img/alive-bar-check.png)
 
-You can even mix and match wide chars and normal chars! Just like spinners do!
+You can even mix and match wide chars and normal chars just like in spinners! (and everything keeps perfectly aligned 😅)
 
 ![alive-progress check tool](img/alive-bar-check-mix.png)
 
-> Use and abuse the check tools!! They have more goodies waiting for you, there are even real-time animations!
->
-> Create the wildest and coolest animations you can, and send them to me!
+> Use the check tools to your heart's content!! They have even more goodies awaiting for you, there are even real-time animations!
+
+> Create the wildest and coolest animations you can and send them to me!
 > <br>I'm thinking about creating some kind of `contrib` package, with user-contributed spinners and bars!
 
-
-Wow, if you read everything till here, you should now have a sound knowledge about using `alive-progress`! 👏
-<br>And if you want to know even more, exciting stuff lies ahead!
+Wow, if you've read everything till here, you should now have a sound knowledge about using `alive-progress`! 👏
+<br>But brace yourself because there is even more, exciting stuff lies ahead!
 
 ---
 Maintaining an open source project is hard and time-consuming, and I've put much ❤️ and effort into this.
@@ -641,12 +637,58 @@ If you've appreciated my work, you can back me up with a donation! Thank you �
 
 ---
 
-
 ## Advanced
+
+### The Pause Mechanism
+
+Oh, you want to pause it altogether, I hear? This is an amazing novel concept, not found anywhere AFAIK.
+<br>With this you get to act on some items **manually**, at will, right in the middle of an ongoing processing!!
+<br>YES, you can return to the prompt and fix, change, submit things, and the bar will just "remember" where it was...
+
+Suppose you need to reconcile payment transactions (been there, done that). You need to iterate over thousands of them, detect somehow the faulty ones, and fix them. This fix is not simple nor deterministic, you need to study each one to understand what to do. They could be missing a recipient, or have the wrong amount, or not be synced with the server, etc., it's hard to even imagine all possibilities.
+
+Typically, you would have to let the detection process run until completion, appending to a list each inconsistency it finds and waiting, potentially a long time, until you can finally start fixing them... You could of course mitigate that by processing in chunks, or printing them and acting via another shell, etc., but those have their own shortcomings... 😓
+<br>Now, there's a better way! Simply pause the actual detection process for a while! Then you just have to wait till the next fault is found, and act in near real-time!
+
+To use the pause mechanism you just have to write a function, so the code can `yield` the items you want to interact with. You most probably already use one in your code, but in the `ipython` shell or another REPL you probably don't. So just wrap your debug code in a function, then enter within a `bar.pause()` context!!
+
+```python
+def reconcile_transactions():
+    qs = Transaction.objects.filter()  # django example, or in sqlalchemy: session.query(Transaction).filter()
+    with alive_bar(qs.count()) as bar:
+        for transaction in qs:
+            if faulty(transaction):
+                with bar.pause():
+                    yield transaction
+            bar()
+```
+
+That's it! That simple!
+<br>Now run `gen = reconcile_transactions()` to instantiate the generator, and whenever you want the next faulty transaction, just call `next(gen, None)`! I love it...
+<br>The `alive-progress` bar will start and run as usual, but as soon as any inconsistency is found, the bar will pause itself, turning off the refresh thread and remembering its exact state, and yield the transaction to you directly on the prompt! It's almost magic! 😃
+
+```text
+In [11]: gen = reconcile_transactions()
+
+In [12]: next(gen, None)
+|█████████████████████                   | 105/200 [52%] in 5s (18.8/s, eta: 4s)
+Out[12]: Transaction<#123>
+```
+
+You can then inspect the transaction with the usual `_` shortcut of `ipython` (or just directly assign it with `t = next(gen, None)`), and you're all set to fix it!
+<br>When you're done, just reactivate the bar with the same `next` call as before!! The bar reappears, turns everything back on, and continues **like it had never stopped**!! Ok, it is magic 😜
+
+```text
+In [21]: next(gen, None)
+|█████████████████████                   | ▁▃▅ 106/200 [52%] in 5s (18.8/s, eta: 4s)
+```
+
+Rinse and repeat till the final receipt appears, and there'll be no faulty transactions anymore. 😄
+
 
 ### Loop-less use
 
-So, you need to monitor a fixed operation, without any loops?
+So, you need to monitor a fixed operation, without any loops, right?
 <br>It'll work for sure! Here is a naive example (we'll do better in a moment):
 
 ```python
@@ -728,50 +770,6 @@ For example, take a look at the effect these very different calibrations have, r
 > So, if your processing hardly gets to 20 items per second, and you think `alive-progress` is rendering sluggish, you could increase that sense of speed by calibrating it to let's say `40`, and it will be running waaaay faster... It is better to always leave some headroom and calibrate it to something between 50% and 100% more, and then tweak it from there to find the one you like the most! :)
 
 
-### The Pause Mechanism
-
-Oh, you want to suspend it altogether!
-
-Why would you want to pause it, I hear? To get to manually act on some items at will, I say!
-<br>Suppose you need to reconcile payment transactions (been there, done that). You need to iterate over thousands of them, detect somehow the faulty ones, and fix them. This fix is not simple nor deterministic, you need to study each one to understand what to do. They could be missing a recipient, or have the wrong amount, or not be synced with the server, etc., it's hard to even imagine all possibilities. Typically, you would have to let the detection process run until completion, appending to a list each inconsistency it finds and waiting (potentially a long time) until you can finally start fixing them... You could of course mitigate that by processing in chunks or printing them and acting via another shell or something like that, but those have their own shortcomings... 😓
-
-Now there's a better way! Simply pause the actual detection process for a while! Then you have to wait only until the next fault is found, and act in near real-time!
-
-To use the pause mechanism you must be inside a function, to enable the code to `yield` the items you want to interact with. You most probably already use one in your code, but in the `ipython` shell, for example, you probably not. So just wrap your code in a function, then just enter a `bar.pause()` context!!
-
-```python
-def reconcile_transactions():
-    qs = Transaction.objects.filter()  # django example, or in sqlalchemy: session.query(Transaction).filter()
-    with alive_bar(qs.count()) as bar:
-        for transaction in qs:
-            if not validate(transaction):
-                with bar.pause():
-                    yield transaction
-            bar()
-```
-
-That's it! Now call this `reconcile_transactions` function to instantiate the generator and assign it to some variable, and whenever you want the next broken transaction, call `next(gen, None)`!
-<br>The `alive-progress` bar will start as usual, but as soon as any inconsistency is found, the bar will pause itself, and you'll get the prompt back with the transaction! It's almost magic! 😃
-
-```text
-In [11]: gen = reconcile_transactions()
-
-In [12]: next(gen, None)
-|█████████████████████                   | 105/200 [52%] in 5s (18.8/s, eta: 4s)
-Out[12]: Transaction<#123>
-```
-
-You can then use the usual `_` and `_12` `ipython`'s shortcuts or just assign it directly with `trn = next(gen, None)`, and you're all set to fix that transaction!
-<br>When you're done, just reactivate the detection process with the same `next` as before!! The bar reappears and continues **exactly from where it was**!!
-
-```text
-In [21]: next(gen, None)
-|█████████████████████                   | ▁▃▅ 106/200 [52%] in 5s (18.8/s, eta: 4s)
-```
-
-Rinse and repeat, until there are no broken transactions anymore. Nice huh 😄
-
-
 ### Forcing animations on non-interactive consoles
 
 Do those astonishing animations refuse to display?
@@ -804,63 +802,58 @@ Do note that PyCharm's console and Jupyter notebooks are heavily instrumented an
 ## Interesting facts
 
 - This whole project was implemented in functional style;
-- It uses extensively (and very creatively) Python _Closures_ and _Generators_, e.g. all spinners are made with cool _Generator Expressions_! Besides the [spinners'](alive_progress/animations/spinners.py) module, the [exhibit](alive_progress/styles/exhibit.py) module and the [spinner_player](alive_progress/animations/utils.py) function are cool examples 😜;
+- It uses extensively (and very creatively) Python _Closures_ and _Generators_, e.g. all [spinners](alive_progress/animations/spinners.py#L10) are made with cool _Generator Expressions_! Besides it, there are other cool examples like the [exhibit](alive_progress/styles/exhibit.py#L42) module, and the core [spinner player](alive_progress/animations/utils.py#L10-L17)/[spinner runner](alive_progress/animations/spinner_compiler.py#L233) generators; 😜
 - Until 2.0, `alive-progress` hadn't had any dependency. Now it has two: one is [about-time](https://github.com/rsalmei/about-time) (another very cool project of mine if I say so myself), to track the spinner compilation times and generate its human-friendly renditions. The other is [grapheme](https://github.com/alvinlindstam/grapheme), to detect grapheme cluster breaks (I've opened an [issue](https://github.com/alvinlindstam/grapheme/issues/13) there asking about the future and correctness of it, and the author guarantees he intends to update the project on every new Unicode version);
-- Also, until 2.0 `alive-progress` hadn't had a single Python class! Now it has two tiny ones, for very specific reasons (change callables and iterator adapter). I've used _Closures_ extensively here, to create factories and persist parameters, and even `alive_bar` itself is a function, where I dynamically plug other ones (Python functions have a `__dict__` just like classes do).
+- Also, until 2.0 `alive-progress` hadn't had a single Python class! Now it has a few tiny ones for very specific reasons (change callables, iterator adapter, and some descriptors for the widgets).
+<br>Everything else is a function, which generates other functions internally with some state on the parent, i.e. _Closures_. I've used them to create spinner factories, bar factories, the global configuration, the system hooks, the spinner compiler (which is also a big _Function Decorator_), even `alive_bar` itself is a function! And in the latter mostly, I dynamically plug several other functions into the main one (Python functions have a `__dict__` just like classes do). 😝
 
 
 ## To do
 
-- enable multiple simultaneous bars, for nested or multiple activities (this is always requested!)
-- reset a running bar context, a quantifying mode is expected
-- dynamic bar width rendition, listening to changes in terminal size (the whole progress-bar line already truncates when needed, according to terminal size)
-- improve test coverage, currently at 77% branch coverage (but it's hard since it's multithreaded and includes system hooks)
-- create a `contrib` system, to allow a simple way to share the coolest users' spinners and bars
-- support colors in spinners and bars (it's **very** hard, since color codes alter string sizes, and it's a mess to synchronize animations then, besides correctly cutting, reversing, and iterating strings while _also maintaining colors_ is very, very complex)
+- enable multiple simultaneous bars for nested or multiple activities (the most requested, but very complex)
+- reset a running bar context, i.e. run in unknown mode while "quantifying" then switch to definite mode
+- dynamic bar width rendition, which notices terminal size changes and shrink or expand the bar as needed (currently `alive_bar` does notice terminal size changes, but just truncates the line accordingly)
+- improve test coverage, currently at ~~77~~89% branch coverage (but it's very hard since it's multithreaded, full of stateful closures, and includes system print hooks)
+- create a `contrib` system somehow, to allow a simple way to share cool spinners and bars from users
+- support colors in spinners and bars (it's very hard, since color codes alter string sizes, which makes it tricky to synchronize animations, besides correctly slicing, reversing, and iterating fragments of strings while _also maintaining color codes_ is very, very complex)
   - update here: this may be much simpler now with the new _Cell Architecture_!
 - any other ideas are welcome!
 
 <details>
-<summary>Already done 👍</summary>
+<summary>Noteworthy features already done ✅</summary>
 
-> - jupyter notebook support (experimental at the moment but awesome, since it works the same as in the terminal, animations and everything 😉)
-> - create an unknown mode for bars (without a known total and eta)
-> - implement a pausing mechanism
-> - change spinner styles
-> - change bar styles
-> - include a global configuration system
-> - create customizable generators for scrolling, bouncing, delayed, and compound spinners
-> - create an exhibition for spinners and bars, to see them all in motion
-> - include theme support in configuration
-> - soft wrapping support
-> - hiding cursor support
-> - Python logging support
-> - exponential smoothing of ETA time series
-> - create an exhibition for themes
->
-> ---
+- resuming computations support with `skipped` items
+- help system on configuration errors
+- readable widgets to extract information
+- exponential smoothing algorithm for the rate
+- support for using `stderr` and other files instead of `stdout`
+- units with automatic scaling
+- dual-line mode
+- customize final receipt widgets
+- customize widgets rendition like `monitor`, `elapsed`, `stats`
+- bar title can be dynamically set, changed or removed
+- exponential smoothing algorithm for the ETA
+- jupyter notebook support, which works the same as in the terminal, animations and everything
+- create an unknown mode for bars (without a known total and eta)
+- implement a pausing mechanism
+- change spinner styles
+- change bar styles
+- include a global configuration system
+- create customizable generators for scrolling, bouncing, delayed, and compound spinners
+- create an exhibition for spinners and bars, to see them all in motion
+- include theme support in configuration
+- soft wrapping support
+- hiding cursor support
+- Python logging support
+- exponential smoothing of ETA time series
+- create an exhibition for themes
 </details>
 
+<details>
+<summary>Changelog highlights</summary>
 
-## Python versions End of Life notice
+<br>Complete [here](CHANGELOG.md).
 
-The `alive_progress` framework starting from version 2.0 will always drop support of EOL Pythons.
-<br>If you need support for any EOL Python, you can always use the previous `alive_progress` version, which should still work very well.
-
-For Python 2.7 and 3.5:
-```sh
-❯ pip install -U "alive_progress<2"
-```
-
-For Python 3.6:
-```sh
-❯ pip install -U "alive_progress<2.2"
-```
-
-> If you put this as a dependency in a requirements.txt file, I strongly recommend using the aforementioned "less than" format, as that will always fetch the latest release that satisfies the condition. That way, if I ever release a bug fix for previous versions, you will get it.
-
-
-## Changelog highlights (complete [here](CHANGELOG.md)):
 - 3.1.0: new resuming computations support with `skipped` items, new `max_cols` config setting for jupyter, fix fetching the size of the terminal when using stderr, officially supports Python 3.11
 - 3.0.1: fix for logging streams that extend StreamHandler but doesn't allow changing streams
 - 3.0.0: units support with automatic and configurable scaling and precision, automatic stats scaling for slow throughputs, support for using `sys.stderr` and other files instead of `sys.stdout`, smoothed out the rate estimation, more queries into the currently running widgets' data, help system in configuration errors
@@ -890,6 +883,28 @@ For Python 3.6:
 - 1.1.0: new manual mode
 - 1.0.1: pycharm console support with force_tty, improve compatibility with Python stdio streams
 - 1.0.0: first public release, already very complete and mature
+</details>
+
+
+## Python End of Life notice
+
+`alive_progress` will always try to keep up with Python, so starting from version 2.0, I'll drop support for all Python versions which enter EoL. See their schedule [here](https://endoflife.date/python).
+
+But don't worry if you can't migrate yet, just do not update the `alive_progress` version on your project and you're good, since my published PyPI versions are perpetual and will still work very well for the Python they were designed to.
+
+### For new Python 2.7 and 3.5
+
+```sh
+❯ pip install -U "alive_progress<2"
+```
+
+### For new Python 3.6
+
+```sh
+❯ pip install -U "alive_progress<2.2"
+```
+
+> If you put this as a dependency in a requirements.txt file, I strongly recommend using the aforementioned "less than" format, as that will always fetch the latest release that satisfies the condition. That way, if I ever release a bug fix for previous versions, you'll get it too.
 
 
 ## License

@@ -16,7 +16,7 @@
 ## 3.0.0 - Dec 22, 2022
 - units with automatic scaling and configurable precision
 - automatic scaling for slow throughputs
-- support for using `sys.stderr` and other files instead of `sys.stdout`
+- support for using `stderr` and other files instead of `stdout`
 - smooth out the rate estimation
 - more queries into the currently running widgets' data, including monitor, rate, and ETA
 - new help system on configuration errors
