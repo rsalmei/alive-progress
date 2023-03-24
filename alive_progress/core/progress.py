@@ -227,7 +227,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
     if config.disable:
         term, hook_manager = terminal.get_void(), passthrough_hook_manager()
     else:
-        term = terminal.get_term(config.file, config.force_tty)
+        term = terminal.get_term(config.file, config.force_tty, config.max_cols)
         hook_manager = buffered_hook_manager(
             header if config.enrich_print else '', current, cond_refresh, term)
 
