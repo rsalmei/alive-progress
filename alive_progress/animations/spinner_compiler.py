@@ -1,6 +1,5 @@
 import operator
 import random
-import sys
 import time
 from inspect import signature
 from itertools import chain, count, islice, repeat
@@ -129,11 +128,14 @@ def pause(spec, edges=None, center=None, other=None):  # noqa
     edges, center, other = (max(1, x or 1) for x in (edges, center, other))
     if all(x == 1 for x in (edges, center, other)):
         edges, center, other = 8, 1, 1
-    repeats_func = lambda length: {
-        0: edges,
-        length - 1: edges,
-        round(length / 2): center,
-    }
+
+    def repeats_func(length):
+        return {
+            0: edges,
+            length - 1: edges,
+            round(length / 2): center,
+        }
+
     spec.data = tuple(tuple(chain.from_iterable(
         repeat(frame, repeats.get(i) or other) for i, frame in enumerate(cycle)
     )) for cycle, repeats in ((cycle, repeats_func(len(cycle))) for cycle in spec.data))
@@ -290,23 +292,28 @@ def check(spec, verbosity=0):  # noqa  # pragma: no cover
         animate(spec)
 
 
+def __check(p):
+    return f'{BLUE(f".{check.__name__}(")}{BLUE_BOLD(p)}{BLUE(")")}'
+
+
 SECTION = ORANGE_BOLD
-CHECK = lambda p: f'{BLUE(f".{check.__name__}(")}{BLUE_BOLD(p)}{BLUE(")")}'
 HELP_MSG = {
-    0: f'{CHECK(1)} to unfold frame data, or {CHECK(3)} to include animation',
-    1: f'{CHECK(2)} to reveal codepoints, or {CHECK(4)} to include animation,'
-       f' or {CHECK(0)} to fold up frame data',
-    2: f'{CHECK(5)} to include animation, or {CHECK(1)} to hide codepoints',
-    3: f'{CHECK(4)} to unfold frame data, or {CHECK(0)} to omit animation',
-    4: f'{CHECK(5)} to reveal codepoints, or {CHECK(1)} to omit animation,'
-       f' or {CHECK(3)} to fold up frame data',
-    5: f'{CHECK(2)} to omit animation, or {CHECK(4)} to hide codepoints',
+    0: f'{__check(1)} to unfold frame data, or {__check(3)} to include animation',
+    1: f'{__check(2)} to reveal codepoints, or {__check(4)} to include animation,'
+       f' or {__check(0)} to fold up frame data',
+    2: f'{__check(5)} to include animation, or {__check(1)} to hide codepoints',
+    3: f'{__check(4)} to unfold frame data, or {__check(0)} to omit animation',
+    4: f'{__check(5)} to reveal codepoints, or {__check(1)} to omit animation,'
+       f' or {__check(3)} to fold up frame data',
+    5: f'{__check(2)} to omit animation, or {__check(4)} to hide codepoints',
 }
 
 
 def spec_data(spec):  # pragma: no cover
+    def info(field):
+        return f'{YELLOW_BOLD(field.split(".")[0])}: {operator.attrgetter(field)(spec)}'
+
     print(f'\n{SECTION("Specs")}')
-    info = lambda field: f'{YELLOW_BOLD(field.split(".")[0])}: {operator.attrgetter(field)(spec)}'
     print(info('length'), f'({info("natural")})')
     print(info('cycles'), f'({info("strategy.name")})')
     print('\n'.join(info(field) for field in ('frames', 'total_frames')))
@@ -336,7 +343,7 @@ def animate(spec):  # pragma: no cover
     cf, lf, tf = (f'>{len(str(x))}' for x in (spec.cycles, max(spec.frames), spec.total_frames))
     from itertools import cycle
     cycles, frames = cycle(range(1, spec.cycles + 1)), cycle(range(1, spec.total_frames + 1))
-    term = terminal.get_term(sys.stdout)
+    term = terminal.get_term()
     term.hide_cursor()
     try:
         while True:

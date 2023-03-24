@@ -1,5 +1,4 @@
 import math
-import sys
 import time
 
 from about_time import about_time
@@ -128,7 +127,7 @@ def bar_controller(inner_bar_factory):
 
         if draw_unknown:
             def draw_unknown_end(_percent=None):
-                return draw_known(ended, 1.)
+                return draw_end(1.)
 
             draw_unknown.end = draw_unknown_end
 
@@ -175,23 +174,28 @@ def check(bar, t_compile, verbosity=0, *, steps=20):  # noqa  # pragma: no cover
         animate(bar)
 
 
+def __check(p):
+    return f'{BLUE(f".{check.__name__}(")}{BLUE_BOLD(p)}{BLUE(")")}'
+
+
 SECTION = ORANGE_BOLD
-CHECK = lambda p: f'{BLUE(f".{check.__name__}(")}{BLUE_BOLD(p)}{BLUE(")")}'
 HELP_MSG = {
-    0: f'{CHECK(1)} to unfold bar data, or {CHECK(3)} to include animation',
-    1: f'{CHECK(2)} to reveal codepoints, or {CHECK(4)} to include animation,'
-       f' or {CHECK(0)} to fold up bar data',
-    2: f'{CHECK(5)} to include animation, or {CHECK(1)} to hide codepoints',
-    3: f'{CHECK(4)} to unfold bar data, or {CHECK(0)} to omit animation',
-    4: f'{CHECK(5)} to reveal codepoints, or {CHECK(1)} to omit animation,'
-       f' or {CHECK(3)} to fold up bar data',
-    5: f'{CHECK(2)} to omit animation, or {CHECK(4)} to hide codepoints',
+    0: f'{__check(1)} to unfold bar data, or {__check(3)} to include animation',
+    1: f'{__check(2)} to reveal codepoints, or {__check(4)} to include animation,'
+       f' or {__check(0)} to fold up bar data',
+    2: f'{__check(5)} to include animation, or {__check(1)} to hide codepoints',
+    3: f'{__check(4)} to unfold bar data, or {__check(0)} to omit animation',
+    4: f'{__check(5)} to reveal codepoints, or {__check(1)} to omit animation,'
+       f' or {__check(3)} to fold up bar data',
+    5: f'{__check(2)} to omit animation, or {__check(4)} to hide codepoints',
 }
 
 
 def spec_data(bar):  # pragma: no cover
+    def info(field, p, b):
+        return f'{YELLOW_BOLD(field, "<11")}: {" ".join(bar_repr(b, p)[1:])}'
+
     print(f'\n{SECTION("Brief bar data")}')
-    info = lambda field, p, b: f'{YELLOW_BOLD(field, "<11")}: {" ".join(bar_repr(b, p)[1:])}'
     print('\n'.join(info(n, p, bar) for n, p in (
         ('starting', 0.), ('in progress', .5), ('completed', 1.), ('overflow', 1.2)
     )))
@@ -223,7 +227,7 @@ def animate(bar):  # pragma: no cover
     print(f'\n{SECTION("Animation")}')
     from ..styles.exhibit import exhibit_bar
     bar_gen = exhibit_bar(bar, 15)
-    term = terminal.get_term(sys.stdout)
+    term = terminal.get_term()
     term.hide_cursor()
     try:
         while True:

@@ -1,7 +1,16 @@
 # Changelog
 
+
+## 3.1.0 - Mar 23, 2023
+- new resuming computations support with `skipped` items
+- new `max_cols` config setting, the number of columns to use if not possible to fetch it, like in jupyter and other platforms which doesn't support size
+- fix fetching the size of the terminal when using stderr
+- officially supports Python 3.11
+- included [ruff](https://github.com/charliermarsh/ruff) linter before building
+
+
 ## 3.0.1 - Jan 01, 2023
-- fix for logging streams that extend StreamHandler but doesn't allow changing streams (import dill issue)
+- fix for logging streams that extend StreamHandler but doesn't allow changing streams (import dill/tensorflow/dask issues)
 
 
 ## 3.0.0 - Dec 22, 2022
@@ -27,7 +36,7 @@
 - improve logging support, detecting customized ones
 - fix final receipt and truncated bar in jupyter
 - fix default stats_end, which did not follow stats
-- fix bar.text assignment not working on alive_it
+- fix `bar.text` assignment not working on alive_it
 
 
 ## 2.3.1 - Feb 11, 2022
@@ -50,7 +59,7 @@
 - bar methods like `current` and `pause` are now read-only (non-data descriptors)
 - bar methods like `text` and `current` now support assigning in addition to calling (data descriptors)
 - faster performance, with optimized flush control
-- terminal columns detection is safer for exotic environments
+- detection of terminal columns is safer for exotic environments
 - fix hook manager trimming spaces at the start
 - remove Python 3.6 support
 

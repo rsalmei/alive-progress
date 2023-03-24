@@ -70,7 +70,8 @@ def alive_bar(total=None, *, calibrate=None, **options):
         calibrate (float): maximum theoretical throughput to calibrate animation speed
         **options: custom configuration options, which override the global configuration:
             title (Optional[str]): an optional, always visible bar title
-            length (int): the number of characters to render the animated progress bar
+            length (int): the number of cols to render the actual bar in alive_bar
+            max_cols (int): the maximum cols to use if not possible to fetch it, like in jupyter
             spinner (Union[None, str, object]): the spinner style to be rendered next to the bar
                 accepts a predefined spinner name, a custom spinner factory, or None
             bar (Union[None, str, object]): the bar style to be rendered in known modes
@@ -138,11 +139,12 @@ def __alive_bar(config, total=None, *, calibrate=None,
                 alive_repr(next(spinner_player), spinner_suffix)
                 cond_refresh.wait(1. / fps(run.rate))
 
-    run.rate, run.init, run.elapsed, run.percent, run.count, run.last_len = 0., 0., 0., 0., 0, 0
+    run.rate, run.init, run.elapsed, run.percent = 0., 0., 0., 0.
+    run.count, run.processed, run.last_len = 0, 0, 0
     run.text, run.title, run.suffix, ctrl_c = None, None, None, False
     run.monitor_text, run.eta_text, run.rate_text = '?', '?', '?'
 
-    if _testing:  # it's easier than trying to mock these values.
+    if _testing:  # it's easier than trying to mock these internal values.
         run.elapsed = 1.23
         run.rate = 9876.54
 
@@ -151,7 +153,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
     else:
         def main_update_hook():
             run.elapsed = time.perf_counter() - run.init
-            run.rate = gen_rate.send((current(), run.elapsed))
+            run.rate = gen_rate.send((processed(), run.elapsed))
 
     def alive_repr(spinner=None, spinner_suffix=None):
         main_update_hook()
@@ -175,27 +177,35 @@ def __alive_bar(config, total=None, *, calibrate=None,
             run.title += (' ',)  # space separator for print_cells.
 
     if config.manual:
-        def bar_handle(percent):  # for manual progress modes.
+        def bar(percent):  # for manual progress modes, regardless of total.
             hook_manager.flush_buffers()
             run.percent = max(0., float(percent))
             bar_update_hook()
-    else:
-        def bar_handle(count=1):  # for counting progress modes.
+    elif not total:
+        def bar(count=1):  # for unknown progress mode.
             hook_manager.flush_buffers()
             run.count += max(1, int(count))
+            bar_update_hook()
+    else:
+        def bar(count=1, *, skipped=False):  # for definite progress mode.
+            hook_manager.flush_buffers()
+            count = max(1, int(count))
+            run.count += count
+            if not skipped:
+                run.processed += count
             bar_update_hook()
 
     def start_monitoring(offset=0.):
         term.hide_cursor()
         hook_manager.install()
-        bar._handle = bar_handle
+        bar_handle._handle = bar
         run.init = time.perf_counter() - offset
         event_renderer.set()
 
     def stop_monitoring():
         term.show_cursor()
         hook_manager.uninstall()
-        bar._handle = None
+        bar_handle._handle = None
         return time.perf_counter() - run.init
 
     @contextmanager
@@ -216,18 +226,19 @@ def __alive_bar(config, total=None, *, calibrate=None,
     else:  # there's only a manual percentage.
         logic_total, current = 1., lambda: run.percent
         unit, factor, header = f'%{config.unit}', 1., 'on {:.1%}: '
+    processed = (lambda: run.processed) if total and not config.manual else current
 
     thread, event_renderer, cond_refresh = None, threading.Event(), _cond()
     bar_repr, bar_suffix = _create_bars(config)
     fps = (custom_fps(config.refresh_secs) if config.refresh_secs
            else calibrated_fps(calibrate or factor))
-    gen_rate = gen_simple_exponential_smoothing(.3, lambda a, b: a / b)
+    gen_rate = gen_simple_exponential_smoothing(.3, lambda pos, elapse: pos / elapse)
     gen_rate.send(None)
 
     if config.disable:
-        term, hook_manager = terminal.get_term(None), passthrough_hook_manager()
+        term, hook_manager = terminal.get_void(), passthrough_hook_manager()
     else:
-        term = terminal.get_term(config.file, config.force_tty)
+        term = terminal.get_term(config.file, config.force_tty, config.max_cols)
         hook_manager = buffered_hook_manager(
             header if config.enrich_print else '', current, cond_refresh, term)
 
@@ -322,12 +333,13 @@ def __alive_bar(config, total=None, *, calibrate=None,
     stats = _Widget(stats_run, config.stats, stats_default)
     stats_end = _Widget(stats_end, config.stats_end, '({rate})' if stats.f[:-1] else '')
 
-    bar = __AliveBarHandle(pause_monitoring, current, set_title, set_text,
-                           lambda: run.monitor_text, lambda: run.rate_text, lambda: run.eta_text)
+    bar_handle = __AliveBarHandle(pause_monitoring, current, set_title, set_text,
+                                  lambda: run.monitor_text, lambda: run.rate_text,
+                                  lambda: run.eta_text)
     set_text(), set_title()
     start_monitoring()
     try:
-        yield bar if not _sampling else locals()
+        yield bar_handle if not _sampling else locals()
     except KeyboardInterrupt:
         ctrl_c = True
         if config.ctrl_c:
@@ -466,10 +478,10 @@ def alive_it(it, total=None, *, finalize=None, calibrate=None, **options):
 
     Simply wrap your iterable with `alive_it`, and process your items normally!
     >>> from alive_progress import alive_it
-    ... import time
+    ...
     ... items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     ... for item in alive_it(items):
-    ...     time.sleep(.5)  # process item.
+    ...     # process item.
 
     And the bar will just work, it's that simple!
 
@@ -479,19 +491,27 @@ def alive_it(it, total=None, *, finalize=None, calibrate=None, **options):
     To force unknown mode, even when the total would be available, send `total=0`.
 
     If you want to use other alive_bar's more advanced features, like for example setting
-    situational messages, you can assign it to a variable, and just use it as always.
-    You can also send a `finalize` function to set the final receipt title and text!
+    situational messages, you can simply assign it to a variable.
 
     >>> from alive_progress import alive_it
     ...
-    ... def process_end(bar):
+    ... items = range(100000)
+    ... bar = alive_it(items)
+    ... for item in bar:
+    ...     bar.text(f'Wow, it works! Item: {item}')
+    ...     # process item.
+
+    You can also send a `finalize` function to set the final receipt title and text, and any other
+    alive_bar options you'd like!
+
+    >>> from alive_progress import alive_it
+    ...
+    ... def ending(bar):
     ...     bar.title = 'DB updated'
     ...     bar.text = f'{bar.current} entries changed'
     ...
     ... items = range(100000)
-    ... bar = alive_it(items, finalize=process_end, length=20, receipt_text=True)
-    ... for item in bar:
-    ...     bar.text(f'Wow, it works! Item: {item}')
+    ... for item in alive_it(items, finalize=ending, length=20, receipt_text=True)
     ...     # process item.
 
     This prints:

@@ -97,7 +97,9 @@ def scrolling_spinner_factory(chars, length=None, block=None, background=None, *
                 initial = -block_size if block else abs(actual_length - block_size)
 
         if block:
-            get_block = lambda g: fix_cells((mark_graphemes((g,)) * block_size)[:block_size])
+            def get_block(g):
+                return fix_cells((mark_graphemes((g,)) * block_size)[:block_size])
+
             contents = map(get_block, strip_marks(reversed(chars) if right else chars))
         else:
             contents = (chars,)
@@ -222,7 +224,7 @@ def alongside_spinner_factory(*spinner_factories, pivot=None):
             breaker, cycles = lambda: range(frames), 1
         else:
             breaker, cycles = lambda: actual_pivot(), \
-                              frames // actual_pivot.total_frames * actual_pivot.cycles
+                frames // actual_pivot.total_frames * actual_pivot.cycles
         return (frame_data(zip(breaker(), *spinners)) for _ in range(cycles))
 
     return inner_spinner_factory

@@ -18,7 +18,10 @@ clean-build:
 clean-pyc:
 	find . -type f -name *.pyc -delete
 
-build: clean
+lint:
+	ruff alive_progress --line-length 100
+
+build: lint clean
 	python setup.py sdist bdist_wheel
 
 release: build

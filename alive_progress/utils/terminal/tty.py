@@ -1,14 +1,23 @@
-import shutil
+import os
 from types import SimpleNamespace
 
 
-def new(original):
+def new(original, max_cols):
     write = original.write
     flush = original.flush
 
+    try:
+        _fd = original.fileno()
+    except OSError:
+        _fd = 1
+
     def cols():
-        # more resilient one, although 7x slower than os' one.
-        return shutil.get_terminal_size()[0]
+        try:
+            return os.get_terminal_size(_fd)[0]
+        except (ValueError, OSError):
+            # original is closed, detached, or not a terminal, or
+            # os.get_terminal_size() is unsupported
+            return max_cols
 
     def _ansi_escape_sequence(code, param=''):
         def inner(_available=None):  # because of jupyter.

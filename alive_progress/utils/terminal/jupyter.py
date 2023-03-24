@@ -4,7 +4,7 @@ from types import SimpleNamespace
 def get_from(parent):
     def cols():
         # it seems both `jupyter notebook` and `jupyter-lab` do not return cols, only 80 default.
-        return 120
+        return parent.max_cols
 
     def clear_line():
         write(_clear_line)

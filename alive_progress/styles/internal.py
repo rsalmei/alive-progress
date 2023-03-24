@@ -23,7 +23,7 @@ def __create_spinners():
     dots_waves2 = delayed_spinner_factory(dots, 5, 2)
 
     _balloon = bouncing_spinner_factory('🎈', 12, background='⠁⠈⠐⠠⢀⡀⠄⠂', overlay=True)
-    it = sequential_spinner_factory(  # do not use block mode, so that they doesn't grow.
+    it = sequential_spinner_factory(
         _balloon,
         _balloon,  # makes the balloon twice as common.
         bouncing_spinner_factory('🤡', background='⠁⠈⠐⠠⢀⡀⠄⠂', overlay=False),
@@ -61,18 +61,20 @@ def __create_spinners():
     fish2 = bouncing_spinner_factory(("><('>", "<')><"), 12, hide=False)
     _fish_trail = scrolling_spinner_factory('¸.·´¯`·.·´¯`·.¸¸.·´¯`·.><(((º>', 15)
     _small_fishes = bouncing_spinner_factory(('><>     ><>', '<><  <><    <><'), 15)
-    fishes = sequential_spinner_factory(_small_fishes, _fish_trail)
-    crab = bouncing_spinner_factory((r'Y (••) Y', r'Y (  ) Y'), 15, background='.,.,,..,.,',
+    fishes = sequential_spinner_factory(_small_fishes, _small_fishes, _fish_trail,
+                                        intermix=False).randomize()
+    crab = bouncing_spinner_factory((r'Y (••) Y', r'Y (  ) Y'), 15, background='⠠⢀⡀⡀⢀⠄⡀⡀',
                                     hide=False, overlay=True)  # hey it's Ferris #rustacean!
 
     _look = bouncing_spinner_factory(('Look!', "It's moving!"))
     _alive = bouncing_spinner_factory(("It's alive!", "IT'S ALIVE!!"))
-    frank = sequential_spinner_factory(_look, _alive, intermix=False)
+    alive = sequential_spinner_factory(_look, _alive, intermix=False)  # yep, frankenstein...
 
     wait = scrolling_spinner_factory('please wait...', right=False)
     wait2 = bouncing_spinner_factory(('please', 'wait'), 15, hide=False).pause()
-    wait3 = bouncing_spinner_factory(('processing',
-                                      'well, this is taking longer than anticipated, hold on'), 15)
+    wait3 = bouncing_spinner_factory(('please', 'wait'), 15).pause(center=8)
+    wait4 = bouncing_spinner_factory(('processing', 'this is not easy, please hold on'), 15)
+
     pulse = frame_spinner_factory((
         r'•––––––––––––', r'•––––––––––––', r'•––––––––––––', r'•––––––––-–––',
         r'–•–––––––––––', r'–•–––––––––––', r'–•–––––––––––', r'–•–––––––––––',
@@ -109,7 +111,7 @@ def __create_bars():
     ruler = bar_factory(tip='┃', background='∙∙∙∙.')
     ruler2 = bar_factory(tip='┃', background='∙∙∙∙+')
     fish = bar_factory(tip="><('>", background='¸.·´¯`·.·´¯`·.¸¸.·´¯`·.')
-    scuba = bar_factory(tip='>=≗)o', background='_)_)._∙__⠈__)○____∙○___)__⠈(_(__')
+    scuba = bar_factory(tip='>=≗)o', background='⠠⢀⡀⡀⢀⠄⡀⡀')
 
     return _filter(locals())
 
