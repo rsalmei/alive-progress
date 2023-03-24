@@ -10,7 +10,8 @@
 [![PyPI version](https://img.shields.io/pypi/v/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
 [![PyPI status](https://img.shields.io/pypi/status/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
-[![Downloads](https://pepy.tech/badge/alive-progress)](https://pepy.tech/project/alive-progress)
+[![Downloads](https://static.pepy.tech/badge/alive-progress/month)](https://pepy.tech/project/alive-progress)
+[![Downloads](https://static.pepy.tech/badge/alive-progress)](https://pepy.tech/project/alive-progress)
 
 Have you ever wondered where your lengthy processing was, and when it would finish? Ever found yourself hitting [RETURN] now and then to ensure it didn't hang, or if, in a remote SSH session, the connection was still working? Ever needed to *pause* some processing for a while, return to the Python prompt for a manual inspection or fixing an item, and then *resume* the process seamlessly? I did...
 
