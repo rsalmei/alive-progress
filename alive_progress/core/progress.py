@@ -178,17 +178,17 @@ def __alive_bar(config, total=None, *, calibrate=None,
 
     if config.manual:
         def bar(percent):  # for manual progress modes, regardless of total.
-            hook_manager.flush_buffers()
+            hook_manager.flush_buffers()  # notify that the current index is about to change.
             run.percent = max(0., float(percent))
             bar_update_hook()
     elif not total:
         def bar(count=1):  # for unknown progress mode.
-            hook_manager.flush_buffers()
+            hook_manager.flush_buffers()  # notify that the current index is about to change.
             run.count += max(1, int(count))
             bar_update_hook()
     else:
         def bar(count=1, *, skipped=False):  # for definite progress mode.
-            hook_manager.flush_buffers()
+            hook_manager.flush_buffers()  # notify that the current index is about to change.
             count = max(1, int(count))
             run.count += count
             if not skipped:

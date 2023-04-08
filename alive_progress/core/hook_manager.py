@@ -30,7 +30,7 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
 
     def flush(stream):
         if buffers[stream]:
-            write(stream, '\n')
+            write(stream, '\n')  # when the current index is about to change, send a newline.
             stream.flush()
 
     def write(stream, part):
@@ -39,6 +39,9 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
 
         buffer = buffers[stream]
         if part != '\n':
+            if part.startswith('\x1b'):  # if the part starts with ESC, just send it.
+                stream.write(part)
+                return
             # this will generate a sequence of lines interspersed with None, which will later
             # be rendered as the indent filler to align additional lines under the same header.
             gen = chain.from_iterable(zip(repeat(None), part.splitlines(True)))
