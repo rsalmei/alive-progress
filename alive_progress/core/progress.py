@@ -6,6 +6,7 @@ import math
 import threading
 import time
 from contextlib import contextmanager
+from typing import Any, Callable, Collection, Iterable, Optional, TypeVar
 
 from .calibration import calibrated_fps, custom_fps
 from .configuration import config_handler
@@ -16,7 +17,7 @@ from ..utils.timing import elapsed_text, eta_text, fn_simple_eta, \
     gen_simple_exponential_smoothing
 
 
-def alive_bar(total=None, *, calibrate=None, **options):
+def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, **options: Any):
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, elapsed time, throughput and ETA.
     When the operation finishes, a receipt is displayed with statistics.
@@ -289,7 +290,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
 
     if total or config.manual:  # we can track progress and therefore eta.
         def stats_run(f):
-            run.rate_text = rate_text(1)
+            run.rate_text = rate_text(1)  # although repeated below,
             run.eta_text = eta_text(gen_eta.send((current(), run.rate)))
             return f.format(rate=run.rate_text, unit=unit, eta=run.eta_text)
 
@@ -298,7 +299,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
         stats_default = '({eta}, {rate})'
     else:  # unknown progress.
         def stats_run(f):
-            run.rate_text = rate_text(1)
+            run.rate_text = rate_text(1)  # it won't be calculated if not needed.
             return f.format(rate=run.rate_text, eta='?')
 
         bar_repr = bar_repr.unknown
@@ -473,7 +474,12 @@ def _render_title(config, title=None):
     return combine_cells(fix_cells(title[:length - 1]), ('…',))
 
 
-def alive_it(it, total=None, *, finalize=None, calibrate=None, **options):
+T = TypeVar('T')
+
+
+def alive_it(it: Collection[T], total: Optional[int] = None, *,
+             finalize: Callable[[Any], None] = None,
+             calibrate: Optional[int] = None, **options: Any) -> Iterable[T]:
     """New iterator adapter in 2.0, which makes it simpler to monitor any processing.
 
     Simply wrap your iterable with `alive_it`, and process your items normally!
@@ -498,7 +504,7 @@ def alive_it(it, total=None, *, finalize=None, calibrate=None, **options):
     ... items = range(100000)
     ... bar = alive_it(items)
     ... for item in bar:
-    ...     bar.text(f'Wow, it works! Item: {item}')
+    ...     bar.text = f'Wow, it works! Item: {item}'
     ...     # process item.
 
     You can also send a `finalize` function to set the final receipt title and text, and any other
@@ -518,7 +524,7 @@ def alive_it(it, total=None, *, finalize=None, calibrate=None, **options):
 DB updated |████████████████████| 100k/100k [100%] in 2.6s (38.7k/s) 100000 entries changed
 
     Args:
-        it (iterable): the input iterable to be processed
+        it: the input iterable to be processed
         total: same as alive_bar
         finalize: a function to be called when the bar is going to finalize
         calibrate: same as alive_bar
@@ -546,7 +552,7 @@ DB updated |████████████████████| 100k/1
     return __AliveBarIteratorAdapter(it, finalize, __alive_bar(config, total, calibrate=calibrate))
 
 
-class __AliveBarIteratorAdapter:
+class __AliveBarIteratorAdapter(Iterable[T]):
     def __init__(self, it, finalize, inner_bar):
         self._it, self._finalize, self._inner_bar = it, finalize, inner_bar
 
