@@ -1,26 +1,70 @@
 [<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
 [<img align="right" alt="Donate with PayPal button" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate?business=6SWSHEB5ZNS5N&no_recurring=0&item_name=I%27m+the+author+of+alive-progress%2C+clearly+and+about-time.+Thank+you+for+appreciating+my+work%21&currency_code=USD)
 
-![alive-progress logo](img/alive-logo.gif)
+![alive-progress logo](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-logo.gif)
 
 # alive-progress :)
 ### A new kind of Progress Bar, with real-time throughput, ETA, and very cool animations!
 
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://gitHub.com/rsalmei/alive-progress/graphs/commit-activity)
+[![Maintenance](https://img.shields.io/badge/Maintained-yes-green.svg)](https://gitHub.com/rsalmei/alive-progress/graphs/commit-activity)
 [![PyPI version](https://img.shields.io/pypi/v/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
 [![PyPI status](https://img.shields.io/pypi/status/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
-[![Downloads](https://static.pepy.tech/badge/alive-progress/month)](https://pepy.tech/project/alive-progress)
-[![Downloads](https://static.pepy.tech/badge/alive-progress)](https://pepy.tech/project/alive-progress)
+[![Downloads](https://static.pepy.tech/personalized-badge/alive-progress?period=week&units=international_system&left_color=grey&right_color=orange&left_text=downloads/week)](https://pepy.tech/project/alive-progress)
+[![Downloads](https://static.pepy.tech/personalized-badge/alive-progress?period=month&units=international_system&left_color=grey&right_color=orange&left_text=/month)](https://pepy.tech/project/alive-progress)
+[![Downloads](https://static.pepy.tech/personalized-badge/alive-progress?period=total&units=international_system&left_color=grey&right_color=orange&left_text=total)](https://pepy.tech/project/alive-progress)
+
+<!-- TOC -->
+* [alive-progress :)](#alive-progress--)
+    * [A new kind of Progress Bar, with real-time throughput, ETA, and very cool animations!](#a-new-kind-of-progress-bar-with-real-time-throughput-eta-and-very-cool-animations-)
+  * [Introduction](#introduction)
+  * [📌 NEW in 3.1 series!](#-new-in-31-series-)
+  * [Using `alive-progress`](#using-alive-progress)
+    * [Get it](#get-it)
+    * [Try it](#try-it)
+    * [Awake it](#awake-it)
+    * [Master it](#master-it)
+  * [Displaying messages](#displaying-messages)
+  * [Auto-iterating](#auto-iterating)
+  * [Modes of operation](#modes-of-operation)
+    * [Definite/unknown: Counters](#definiteunknown--counters)
+    * [Manual: Percentages](#manual--percentages)
+    * [Summary of Modes](#summary-of-modes)
+    * [The `bar()` handlers](#the-bar-handlers)
+  * [Styles](#styles)
+  * [Configuration](#configuration)
+  * [Create your own animations](#create-your-own-animations)
+    * [Intro: How do they work?](#intro--how-do-they-work)
+    * [A Spinner Compiler, really?](#a-spinner-compiler-really)
+    * [Spinner Factories](#spinner-factories)
+    * [Bar Factories](#bar-factories)
+  * [Advanced](#advanced)
+    * [The Pause Mechanism](#the-pause-mechanism)
+    * [Loop-less use](#loop-less-use)
+    * [FPS Calibration](#fps-calibration)
+    * [Forcing animations on PyCharm, Jupyter, etc.](#forcing-animations-on-pycharm-jupyter-etc)
+  * [Interesting facts](#interesting-facts)
+  * [To do](#to-do)
+  * [Python End of Life notice](#python-end-of-life-notice)
+    * [For new Python 2.7 and 3.5](#for-new-python-27-and-35)
+    * [For new Python 3.6](#for-new-python-36)
+  * [License](#license)
+<!-- TOC -->
+
+
+This README is always evolving, so do take a more comprehensive look from time to time... You might find great new details in other sections! 😊
+
+
+## Introduction
 
 Have you ever wondered where your lengthy processing was, and when it would finish? Ever found yourself hitting [RETURN] now and then to ensure it didn't hang, or if, in a remote SSH session, the connection was still working? Ever needed to *pause* some processing for a while, return to the Python prompt for a manual inspection or fixing an item, and then *resume* the process seamlessly? I did...
 
 I've started this cool progress bar thinking about all that, the **alive-progress**! 😃
 
-![alive-progress demo](img/alive-demo.gif)
+![alive-progress demo](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-demo.gif)
 
 
-I like to think of it as a new kind of progress bar for Python since it has, among other things:
+I like to think of this as a new kind of progress bar for Python since it has, among other things:
 
 - a **live spinner** that is incredibly cool and clearly shows your lengthy process did not hang, or your ssh connection did not drop;
 - a **visual feedback** which reacts to your processing, as the live spinner will go faster or slower with it;
@@ -95,7 +139,7 @@ Highly anticipated fixes:
 - Fix unknown mode always ending with a warning (!)
 
 And last but not least, a more polished layout for you to enjoy your progress!
-![alive-progress 3.0](img/alive3.0.png)
+![alive-progress 3.0](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive3.0.png)
 </details>
 
 <details>
@@ -189,7 +233,7 @@ YES! Now `alive-progress` has support for Jupyter Notebooks and also includes a 
 
 See for yourself:
 
-![alive-progress demo](img/alive-jupyter.gif)
+![alive-progress demo](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-jupyter.gif)
 
 > It seems to work very well, but at this moment, it should be considered **experimental**.
 > <br>There were instances in which some visual glitches have appeared, like two `alive_bar` refreshes being concatenated together instead of over one another... And it's something I think I can't possibly work around: it seems Jupyter sometimes refresh the canvas at odd times, which makes it lose some data. Please let me know on the issues if something funnier arises.
@@ -217,9 +261,6 @@ This is a major breakthrough in `alive-progress`!
 > Since this is a major version change, direct backward compatibility is not guaranteed. If something does not work at first, just check the new imports and functions' signatures, and you should be good to go. All previous features should still work here! 👍
 </details>
 
-
-This README is always being updated, so take a comprehensive look sometimes to find great new details in other sections! 😊
-
 ---
 
 ## Using `alive-progress`
@@ -244,7 +285,7 @@ showtime()
 
 > Note: Please disregard the path in the animated gif below, the correct one is above. These long gifs are very time-consuming to generate, so I can't make another on every single change. Thanks for your understanding.
 
-![alive-progress spinners](img/showtime-spinners.gif)
+![alive-progress spinners](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/showtime-spinners.gif)
 
 I've made these styles just to try all the animation factories I've created, but I think some of them ended up very, very cool! Use them at will, and mix them to your heart's content!
 
@@ -255,7 +296,7 @@ Do you want to see actual `alive-progress` bars gloriously running in your syste
 ❯ python -m alive_progress.tools.demo
 ```
 
-![alive-progress demo-tool](img/alive-demo-tool.png)
+![alive-progress demo-tool](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-demo-tool.png)
 
 ### Awake it
 
@@ -318,10 +359,10 @@ While inside an `alive_bar` context, you can effortlessly display messages tight
 
 Awesome right? And all of these work just the same in a terminal or in a Jupyter notebook!
 
-![alive-progress printing messages](img/print-hook.gif)
+![alive-progress printing messages](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/print-hook.gif)
 
 
-## Auto-iterating (📌 new in 2.0)
+## Auto-iterating
 
 You now have a quicker way to monitor anything! Here, the items are automatically tracked for you!
 <br>Behold the `alive_it` => the `alive_bar` iterator adapter!
@@ -445,11 +486,11 @@ from alive_progress.styles import showtime, Show
 
 > Note: Please disregard the path in the animated gif below, the correct one is above. These long gifs are very time-consuming to generate, so I can't make another on every single change. Thanks for your understanding.
 
-![alive-progress bars](img/showtime-bars.gif)
+![alive-progress bars](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/showtime-bars.gif)
 
 And the themes one (📌 new in 2.0):
 
-![alive-progress themes](img/showtime-themes.gif)
+![alive-progress themes](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/showtime-themes.gif)
 
 The `showtime` exhibit also accepts some customization options:
 - **fps**: the frames per second rate refresh rate, default is 15;
@@ -458,7 +499,7 @@ The `showtime` exhibit also accepts some customization options:
 
 For example to get a marine show, you can `showtime(pattern='boat|fish|crab')`:
 
-![alive-progress filtered spinners](img/showtime-marine-spinners.gif)
+![alive-progress filtered spinners](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/showtime-marine-spinners.gif)
 
 > You can also access these shows with the shorthands `show_bars()`, `show_spinners()`, and `show_themes()`!
 
@@ -482,7 +523,7 @@ These are the options - default values in brackets:
 <br>   ↳ accepts a predefined spinner name, or a custom spinner factory (cannot be None)
 - `theme`: [`'smooth'`] a set of matching spinner, bar, and unknown
 <br>   ↳ accepts a predefined theme name
-- `force_tty`: [`None`] forces animations to be on, off, or according to the tty (more details [here](#forcing-animations-on-non-interactive-consoles))
+- `force_tty`: [`None`] forces animations to be on, off, or according to the tty (more details [here](#forcing-animations-on-pycharm-jupyter-etc))
 <br>   ↳ None -> auto select, according to the terminal/Jupyter
 <br>   ↳ True -> unconditionally enables animations, but still auto-detects Jupyter Notebooks
 <br>   ↳ False -> unconditionally disables animations, keeping only the final receipt
@@ -562,7 +603,7 @@ And there's more, I think one of the most impressive achievements I got in this 
 > <br>==> Yes, that's where this project's name came from! 😉
 
 
-### A Spinner Compiler, really? (📌 new in 2.0)
+### A Spinner Compiler, really?
 
 Now, these generators of cycles and frames are fully consumed ahead of time by the **Spinner Compiler**! This is a very cool new processor that I made inside the _Cell Architecture_ effort, to make all these animations work even in the presence of wide chars or complex grapheme clusters! It was very hard to make these clusters  gradually enter and exit frames, smoothly, while keeping them from breaking the Unicode encoding and especially maintain their original lengths in all frames! Yes, several chars in sequence can represent another completely different symbol, so they cannot ever be split! They have to enter and exit the frame always together, all at once, or the grapheme won't show up at all (an Emoji for instance)!! Enter the **Spinner Compiler**......
 
@@ -576,18 +617,18 @@ Also, with the complete frame data compiled and persisted, I could create severa
 But how can you see these effects? Does the effect you created look good? Or is it not working as you thought? YES, now you can see all generated cycles and frames analytically, in a very beautiful rendition!!
 <br>I love what I've achieved here 😊, it's probably THE most beautiful tool I've ever created... Behold the `check` tool!!
 
-![alive-progress check tool](img/alive-spinner-check.png)
+![alive-progress check tool](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-spinner-check.png)
 
 It's awesome if I say so myself, isn't it? And a very complex piece of software I'm proud of, [take a look at its code](alive_progress/animations/spinner_compiler.py) if you'd like.
 
 And the `check` tool is much more powerful! For instance, you can see the codepoints of the frames!!! And maybe have a glimpse of why this version was so, so very hard and complex to make...
 
-![alive-progress check tool](img/alive-spinner-check-codepoints.png)
+![alive-progress check tool](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-spinner-check-codepoints.png)
 
 In red, you see the grapheme clusters, that occupy one or two "logical positions", regardless of their actual sizes... These are the "Cells" of the new _Cell Architecture_...
 <br>Look how awesome an Emoji Flag is represented:
 
-![alive-progress check tool](img/alive-spinner-check-codepoints-flag.png)
+![alive-progress check tool](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-spinner-check-codepoints-flag.png)
 
 The flag seems to move so smoothly because it uses "half-characters"! Since it is a wide char, `alive-progress` knows it will be rendered with "two visible chars", and the animations consider this, but compose with spaces, which occupy only one. When one uses mixed backgrounds, the situation is much more complex...
 
@@ -614,13 +655,13 @@ Well, bars also have a meta factory, use closures to store the styling parameter
 
 Bars also do not have a Bar Compiler, but they **do provide the check tool**!! 🎉
 
-![alive-progress check tool](img/alive-bar-check.png)
+![alive-progress check tool](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-bar-check.png)
 
 You can even mix and match wide chars and normal chars just like in spinners! (and everything keeps perfectly aligned 😅)
 
-![alive-progress check tool](img/alive-bar-check-mix.png)
+![alive-progress check tool](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-bar-check-mix.png)
 
-> Use the check tools to your heart's content!! They have even more goodies awaiting for you, there are even real-time animations!
+> Use the check tools to your heart's content!! They have even more goodies awaiting you, even real-time animations!
 
 > Create the wildest and coolest animations you can and send them to me!
 > <br>I'm thinking about creating some kind of `contrib` package, with user-contributed spinners and bars!
@@ -664,7 +705,7 @@ def reconcile_transactions():
             bar()
 ```
 
-That's it! That simple!
+That's it! It's that simple! \o/
 <br>Now run `gen = reconcile_transactions()` to instantiate the generator, and whenever you want the next faulty transaction, just call `next(gen, None)`! I love it...
 <br>The `alive-progress` bar will start and run as usual, but as soon as any inconsistency is found, the bar will pause itself, turning off the refresh thread and remembering its exact state, and yield the transaction to you directly on the prompt! It's almost magic! 😃
 
@@ -755,7 +796,7 @@ So, you want to calibrate the engine?
 The `alive-progress` bars have cool visual feedback of the current throughput, so you can actually **see** how fast your processing is, as the spinner runs faster or slower with it.
 <br>For this to happen, I've put together and implemented a few fps curves to empirically find which one gave the best feel of speed:
 
-<p align="center"><img alt="alive-progress fps curves" src="img/alive-bar_fps.png" width="80%" height="80%"></p>
+<p align="center"><img alt="alive-progress fps curves" src="https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-bar_fps.png" width="80%" height="80%"></p>
 <p align="center">(interactive version [here](https://www.desmos.com/calculator/ema05elsux))</p>
 
 The graph shows the logarithmic (red), parabolic (blue) and linear (green) curves, these are the ones I started with. It was not an easy task, I've made dozens of tests, and never found one that really inspired that feel of speed I was looking for. The best one seemed to be the logarithmic one, but it reacted poorly with small numbers.
@@ -766,20 +807,25 @@ Well, the default `alive-progress` calibration is **1,000,000** in bounded modes
 
 For example, take a look at the effect these very different calibrations have, running the very same code at the very same speed! Notice the feel the spinner passes to the user, is this processing going slow or going fast? And remember that isn't only the spinner refreshing but the whole line, complete with the bar rendition and all widgets, so everything gets smoother or sluggish:
 
-![alive-progress calibration](img/alive-calibration.gif)
+![alive-progress calibration](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-calibration.gif)
 
 > So, if your processing hardly gets to 20 items per second, and you think `alive-progress` is rendering sluggish, you could increase that sense of speed by calibrating it to let's say `40`, and it will be running waaaay faster... It is better to always leave some headroom and calibrate it to something between 50% and 100% more, and then tweak it from there to find the one you like the most! :)
 
 
-### Forcing animations on non-interactive consoles
+### Forcing animations on PyCharm, Jupyter, etc.
 
-Do those astonishing animations refuse to display?
+Do these astonishing `alive-progress` animations refuse to display?
 
-Some terminals occasionally do not report themselves as "interactive", like within shell pipeline commands "|" or background processes. And some never report themselves as interactive, like PyCharm's console and Jupyter notebooks.
+PyCharm is awesome, I love it! But I'll never understand why they've disabled emulating a terminal by default... If you do use PyCharm's output console, please enable this on all your Run Configurations:
+![alive-progress in pycharm](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/pycharm-terminal.png)
 
-When a terminal is not interactive, `alive-progress` disables all kinds of animations, only printing the final receipt. This is made to avoid spamming a log file or messing up a pipe output with thousands of progress bar updates.
+I even recommend you enter `File` > `New Projects Setup` > `Run Configuration Templates`, select `Python`, and also enable it there, so any new ones you create will already have this set.
 
-So, when you know it's safe, you can force enable it and see `alive-progress` in all its glory! Just use the `force_tty` argument!
+In addition to that, some terminals report themselves as "non-interactive", like when running out of a real terminal (PyCharm and Jupyter for example), in shell pipelines (`cat file.txt | python program.py`), or in background processes (not connected to a tty).
+
+When `alive-progress` finds itself in a non-interactive terminal, it automatically disables all kinds of animations, printing only the final receipt. This is made in order to avoid both messing up the pipeline output and spamming your log file with thousands of `alive-progress` refreshes.
+
+So, when you know it's safe, you can force them to see `alive-progress` in all its glory! Here is the `force_tty` argument:
 
 ```python
 with alive_bar(1000, force_tty=True) as bar:
@@ -789,21 +835,19 @@ with alive_bar(1000, force_tty=True) as bar:
 ```
 
 The values accepted are:
-- `force_tty=True` -> enables animations, and auto-detects Jupyter Notebooks!
-- `force_tty=False` -> disables animations, keeping only the final receipt
-- `force_tty=None` (default) -> auto select, according to the terminal's tty state
+- `force_tty=True` -> always enables animations, and auto-detects Jupyter Notebooks!
+- `force_tty=False` -> always disables animations, keeping only the final receipt
+- `force_tty=None` (default) -> auto detect, according to the terminal's tty state
 
-You can also set it system-wide using the `config_handler`, then you won't need to pass that manually in all `alive_bar` calls.
+You can also set it system-wide using `config_handler`, so you don't need to pass it manually anymore.
 
-Do note that PyCharm's console and Jupyter notebooks are heavily instrumented and thus have more overhead, so the outcome may not be as fluid as you would expect; and on top of that Jupyter notebooks do not support ANSI Escape Codes, so I had to develop some workarounds, to emulate functions like "clear the line" and "clear from cursor".
-
-> To see `alive_bar` animations as I intended, always prefer a full-fledged terminal.
+> Do note that PyCharm's console and Jupyter notebooks are heavily instrumented and thus have much more overhead, so the outcome may not be as fluid as you would expect. On top of that, Jupyter notebooks do not support ANSI Escape Codes, so I had to develop some workarounds to emulate functions like "clear the line" and "clear from cursor"... To see the fluid and smooth `alive_bar` animations as I intended, always prefer a full-fledged terminal.
 
 
 ## Interesting facts
 
 - This whole project was implemented in functional style;
-- It uses extensively (and very creatively) Python _Closures_ and _Generators_, e.g. all [spinners](alive_progress/animations/spinners.py#L10) are made with cool _Generator Expressions_! Besides it, there are other cool examples like the [exhibit](alive_progress/styles/exhibit.py#L42) module, and the core [spinner player](alive_progress/animations/utils.py#L10-L17)/[spinner runner](alive_progress/animations/spinner_compiler.py#L233) generators; 😜
+- It uses extensively (and very creatively) Python _Closures_ and _Generators_, e.g. all [spinners](https://github.com/rsalmei/alive-progress/blob/main/alive_progress/animations/spinners.py#L10) are made with cool _Generator Expressions_! Besides it, there are other cool examples like the [exhibit](https://github.com/rsalmei/alive-progress/blob/main/alive_progress/styles/exhibit.py#L42) module, and the core [spinner player](https://github.com/rsalmei/alive-progress/blob/main/alive_progress/animations/utils.py#L10-L17)/[spinner runner](https://github.com/rsalmei/alive-progress/blob/main/alive_progress/animations/spinner_compiler.py#L233) generators; 😜
 - Until 2.0, `alive-progress` hadn't had any dependency. Now it has two: one is [about-time](https://github.com/rsalmei/about-time) (another very cool project of mine if I say so myself), to track the spinner compilation times and generate its human-friendly renditions. The other is [grapheme](https://github.com/alvinlindstam/grapheme), to detect grapheme cluster breaks (I've opened an [issue](https://github.com/alvinlindstam/grapheme/issues/13) there asking about the future and correctness of it, and the author guarantees he intends to update the project on every new Unicode version);
 - Also, until 2.0 `alive-progress` hadn't had a single Python class! Now it has a few tiny ones for very specific reasons (change callables, iterator adapter, and some descriptors for the widgets).
 <br>Everything else is a function, which generates other functions internally with some state on the parent, i.e. _Closures_. I've used them to create spinner factories, bar factories, the global configuration, the system hooks, the spinner compiler (which is also a big _Function Decorator_), even `alive_bar` itself is a function! And in the latter mostly, I dynamically plug several other functions into the main one (Python functions have a `__dict__` just like classes do). 😝
@@ -853,8 +897,9 @@ Do note that PyCharm's console and Jupyter notebooks are heavily instrumented an
 <details>
 <summary>Changelog highlights</summary>
 
-<br>Complete [here](CHANGELOG.md).
+<br>Complete [here](https://github.com/rsalmei/alive-progress/blob/main/CHANGELOG.md).
 
+- 3.1.1: print hook support for ANSI Escape Codes, typing support in `alive_it`
 - 3.1.0: new resuming computations support with `skipped` items, new `max_cols` config setting for jupyter, fix fetching the size of the terminal when using stderr, officially supports Python 3.11
 - 3.0.1: fix for logging streams that extend StreamHandler but doesn't allow changing streams
 - 3.0.0: units support with automatic and configurable scaling and precision, automatic stats scaling for slow throughputs, support for using `sys.stderr` and other files instead of `sys.stdout`, smoothed out the rate estimation, more queries into the currently running widgets' data, help system in configuration errors
@@ -891,7 +936,8 @@ Do note that PyCharm's console and Jupyter notebooks are heavily instrumented an
 
 `alive_progress` will always try to keep up with Python, so starting from version 2.0, I'll drop support for all Python versions which enter EoL. See their schedule [here](https://endoflife.date/python).
 
-But don't worry if you can't migrate yet, just do not update the `alive_progress` version on your project and you're good, since my published PyPI versions are perpetual and will still work very well for the Python they were designed to.
+But don't worry if you can't migrate just yet: `alive_progress` versions are perennial, so just keep using the one that works for you and you're good.
+<br>I just strongly recommend setting older `alive_progress` packages in a requirements.txt file with the following formats. These will always fetch the latest build releases previous to a given version, so, if I ever release bug fixes, you'll get them too.
 
 ### For new Python 2.7 and 3.5
 
@@ -904,8 +950,6 @@ But don't worry if you can't migrate yet, just do not update the `alive_progress
 ```sh
 ❯ pip install -U "alive_progress<2.2"
 ```
-
-> If you put this as a dependency in a requirements.txt file, I strongly recommend using the aforementioned "less than" format, as that will always fetch the latest release that satisfies the condition. That way, if I ever release a bug fix for previous versions, you'll get it too.
 
 
 ## License

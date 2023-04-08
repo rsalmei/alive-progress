@@ -1,6 +1,11 @@
 # Changelog
 
 
+## 3.1.1 - Apr 08, 2023
+- print hook support for ANSI Escape Codes (which avoid sending newlines when not needed)
+- typing support in `alive_it`, so the collection type is correctly identified.
+
+
 ## 3.1.0 - Mar 23, 2023
 - new resuming computations support with `skipped` items
 - new `max_cols` config setting, the number of columns to use if not possible to fetch it, like in jupyter and other platforms which doesn't support size
