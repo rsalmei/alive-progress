@@ -3,22 +3,43 @@
 
 ![alive-progress logo](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-logo.gif)
 
-# alive-progress :)
-### A new kind of Progress Bar, with real-time throughput, ETA, and very cool animations!
+# alive-progress
 
-[![Maintenance](https://img.shields.io/badge/Maintained-yes-green.svg)](https://gitHub.com/rsalmei/alive-progress/graphs/commit-activity)
+[![Maintenance](https://img.shields.io/badge/maintained-yes-brightgreen.svg)](https://gitHub.com/rsalmei/alive-progress/graphs/commit-activity)
 [![PyPI version](https://img.shields.io/pypi/v/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
-[![PyPI status](https://img.shields.io/pypi/status/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
 [![Downloads](https://static.pepy.tech/personalized-badge/alive-progress?period=week&units=international_system&left_color=grey&right_color=orange&left_text=downloads/week)](https://pepy.tech/project/alive-progress)
 [![Downloads](https://static.pepy.tech/personalized-badge/alive-progress?period=month&units=international_system&left_color=grey&right_color=orange&left_text=/month)](https://pepy.tech/project/alive-progress)
 [![Downloads](https://static.pepy.tech/personalized-badge/alive-progress?period=total&units=international_system&left_color=grey&right_color=orange&left_text=total)](https://pepy.tech/project/alive-progress)
+![GitHub Sponsors](https://img.shields.io/github/sponsors/rsalmei)
+
+
+Have you ever wondered where your lengthy processing was at, and when would it finish? Do you usually hit `RETURN` several times to make sure it didn't crash, or the SSH connection didn't freeze? Have you ever thought it'd be awesome to be able to _pause some processing_ without hassle, return to the Python prompt to manually fix some items, then _seamlessly resume_ it? I did...
+
+I've started this new progress bar thinking about all that, behold the **alive-progress**! 😃
+
+![alive-progress demo](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-demo.gif)
+
+
+Introducing the newest concept in progress bars for Python! `alive-progress` is in a class of its own, with an array of cool features that set it apart. Here are a few highlights:
+- A mesmerizing **live spinner** that clearly shows your lengthy process did not crash and your SSH connection did not freeze, with **visual feedback** reacting to your processing speed.
+- An efficient **multithreaded** bar that updates itself at a fraction of the actual processing speed to keep **CPU usage low** and avoid terminal spamming (1,000,000 iterations per second equates to roughly 60 updates per second, and you can also calibrate this to your liking).
+- An **ETA** (expected time of arrival) feature with an intelligent _Exponential Smoothing Algorithm_ that shows the time to completion, allowing you to plan your time and manage your workload more effectively.
+- Automatic **print** and **logging** hooks that provide seamless integration and effortless tracking, even enriching them with the current bar position when they occur.
+- It prints a **nice receipt** when the processing finishes, including the elapsed time and the observed throughput.
+- It detects **under** and **overflows**, enabling you to track hits, misses, or any desired count, not necessarily the actual iterations.
+- You can **pause** it! That's right, you heard it here first! No other progress bar anywhere has this feature! You can get back to the Python prompt during any processing, adjust some items, and get back into that running process as if it had never stopped! All `alive_bar` widgets are kept as they were, and the elapsed time nicely ignores the paused time!
+- It is **highly customizable**, with a smorgasbord of spinner and bar styles, as well as several ready-to-use factories to easily generate yours! You can even use the super powerful and cool `check()` tool to help you design your own animations! You can see all the generated frames and cycles exploded on screen, with several verbosity levels, even including an _alive_ rendition! It's boundless creativity at your fingertips!
+
+---
+## Table of contents
+
+This README is always evolving, so do take a more comprehensive look from time to time... You might find great new details in other sections! 😊
 
 <!-- TOC -->
-* [alive-progress :)](#alive-progress--)
-    * [A new kind of Progress Bar, with real-time throughput, ETA, and very cool animations!](#a-new-kind-of-progress-bar-with-real-time-throughput-eta-and-very-cool-animations-)
-  * [Introduction](#introduction)
-  * [📌 NEW in 3.1 series!](#-new-in-31-series-)
+* [alive-progress](#alive-progress)
+  * [Table of contents](#table-of-contents)
+  * [📌 NEW in 3.1 series](#-new-in-31-series)
   * [Using `alive-progress`](#using-alive-progress)
     * [Get it](#get-it)
     * [Try it](#try-it)
@@ -27,14 +48,14 @@
   * [Displaying messages](#displaying-messages)
   * [Auto-iterating](#auto-iterating)
   * [Modes of operation](#modes-of-operation)
-    * [Definite/unknown: Counters](#definiteunknown--counters)
-    * [Manual: Percentages](#manual--percentages)
+    * [Definite/unknown: Counters](#definiteunknown-counters)
+    * [Manual: Percentages](#manual-percentages)
     * [Summary of Modes](#summary-of-modes)
     * [The `bar()` handlers](#the-bar-handlers)
   * [Styles](#styles)
   * [Configuration](#configuration)
   * [Create your own animations](#create-your-own-animations)
-    * [Intro: How do they work?](#intro--how-do-they-work)
+    * [Intro: How do they work?](#intro-how-do-they-work)
     * [A Spinner Compiler, really?](#a-spinner-compiler-really)
     * [Spinner Factories](#spinner-factories)
     * [Bar Factories](#bar-factories)
@@ -52,34 +73,7 @@
 <!-- TOC -->
 
 
-This README is always evolving, so do take a more comprehensive look from time to time... You might find great new details in other sections! 😊
-
-
-## Introduction
-
-Have you ever wondered where your lengthy processing was, and when it would finish? Ever found yourself hitting [RETURN] now and then to ensure it didn't hang, or if, in a remote SSH session, the connection was still working? Ever needed to *pause* some processing for a while, return to the Python prompt for a manual inspection or fixing an item, and then *resume* the process seamlessly? I did...
-
-I've started this cool progress bar thinking about all that, the **alive-progress**! 😃
-
-![alive-progress demo](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-demo.gif)
-
-
-I like to think of this as a new kind of progress bar for Python since it has, among other things:
-
-- a **live spinner** that is incredibly cool and clearly shows your lengthy process did not hang, or your ssh connection did not drop;
-- a **visual feedback** which reacts to your processing, as the live spinner will go faster or slower with it;
-- an **efficient** multithreaded bar, which updates itself at a fraction of the actual processing speed (1,000,000 iterations per second equates to roughly 60 updates per second) to keep **CPU usage low** and avoid terminal spamming (you can also calibrate this to your liking);
-- nice monitoring of both _position and throughput_ of your processing;
-- an **ETA** (expected time of arrival) with an intelligent _exponential smoothing algorithm_, that shows the time to completion;
-- automatic **print** and **logging** hooks, which allow print statements and logging messages to work _effortlessly_, right amid an animated bar, and even enriching them with the current bar position when they occur;
-- a **nice receipt** is printed when your processing finishes, including the last bar rendition, the elapsed time, and the observed throughput;
-- it detects **under and overflows**, enabling you to track hits, misses, or any desired count, not necessarily the actual iterations;
-- it automatically detects if there's an **allocated tty**, and if there isn't (like in a shell pipeline), only the final receipt is printed (so you can safely include it in any code, and rest assured your log file won't get thousands of progress lines);
-- you can **pause** it! I think that's an unprecedented feature for progress bars ANYWHERE — in Python or any other language — no one has ever done it! It's incredible to be able to get back to the Python prompt during any running process! Then you can manually adjust an item or prepare something and get back into that running process as if it had never stopped!! All `alive_bar` widgets are kept as they were, and the elapsed time nicely ignores the paused time!;
-- it is **customizable**, with a growing smorgasbord of spinner and bar styles, as well as several ready-to-use factories to easily generate yours! Now (📌 new in 2.0), we even have a super powerful and cool `check()` tool, in both spinners and bars, to help you design your own animations! You can see all the frames and cycles exploded on screen, with several verbosity levels, even including an **alive** rendition! It's awesome 😜
-
-
-## 📌 NEW in 3.1 series!
+## 📌 NEW in 3.1 series
 
 A very cool update here! In addition to polishing things up and improving terminal support, now `alive-progress` supports resuming computations!
 
@@ -119,7 +113,7 @@ Also in this version:
 
 
 <details>
-<summary>📌 NEW in 3.0 series!</summary>
+<summary>📌 NEW in 3.0 series</summary>
 
 Yep, I could finally get this version out! These are the new goodies:
 
@@ -143,7 +137,7 @@ And last but not least, a more polished layout for you to enjoy your progress!
 </details>
 
 <details>
-<summary>📌 NEW in 2.4 series!</summary>
+<summary>📌 NEW in 2.4 series</summary>
 
 Now, `alive_bar` supports *Dual Line* text mode!
 
@@ -172,7 +166,7 @@ There's also a new `finalize` function parameter in `alive_it` which enables you
 </details>
 
 <details>
-<summary>📌 NEW in 2.3 series!</summary>
+<summary>📌 NEW in 2.3 series</summary>
 
 This is all about customization; the core widgets can now be changed:
 - send a string to the `monitor`, `elapsed`, and `stats` widgets to make them look anyway you want!
@@ -214,7 +208,7 @@ Download 8 |██████⚠︎                                 | (!) 15/10
 </details>
 
 <details>
-<summary>📌 NEW in 2.2 series!</summary>
+<summary>📌 NEW in 2.2 series</summary>
 
 Some major new features, often requested, have finally landed!
 - bar title can be dynamically set, changed, or even removed after being displayed
@@ -226,7 +220,7 @@ Some major new features, often requested, have finally landed!
 </details>
 
 <details>
-<summary>📌 NEW in 2.1 series!</summary>
+<summary>📌 NEW in 2.1 series</summary>
 
 YES! Now `alive-progress` has support for Jupyter Notebooks and also includes a _Disabled_ state! Both were highly sought after, and have finally landed!
 <br>And better, I've implemented an auto-detection mechanism for jupyter notebooks, so it just works, out of the box, without any changes in your code!!
@@ -240,7 +234,7 @@ See for yourself:
 </details>
 
 <details>
-<summary>📌 NEW in 2.0 series!</summary>
+<summary>📌 NEW in 2.0 series</summary>
 
 This is a major breakthrough in `alive-progress`!
 <br>I took 1 year developing it, and I'm very proud of what I've accomplished \o/
@@ -817,9 +811,9 @@ For example, take a look at the effect these very different calibrations have, r
 Do these astonishing `alive-progress` animations refuse to display?
 
 PyCharm is awesome, I love it! But I'll never understand why they've disabled emulating a terminal by default... If you do use PyCharm's output console, please enable this on all your Run Configurations:
-![alive-progress in pycharm](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/pycharm-terminal.png)
+<p align="center"><img alt="alive-progress in pycharm" src="https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/pycharm-terminal.png"></p>
 
-I even recommend you enter `File` > `New Projects Setup` > `Run Configuration Templates`, select `Python`, and also enable it there, so any new ones you create will already have this set.
+> I even recommend you go into `File` > `New Projects Setup` > `Run Configuration Templates`, select `Python`, and also enable it there, so any new ones you create will already have this set.
 
 In addition to that, some terminals report themselves as "non-interactive", like when running out of a real terminal (PyCharm and Jupyter for example), in shell pipelines (`cat file.txt | python program.py`), or in background processes (not connected to a tty).
 
