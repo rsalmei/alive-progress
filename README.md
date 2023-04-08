@@ -523,7 +523,7 @@ These are the options - default values in brackets:
 <br>   ↳ accepts a predefined spinner name, or a custom spinner factory (cannot be None)
 - `theme`: [`'smooth'`] a set of matching spinner, bar, and unknown
 <br>   ↳ accepts a predefined theme name
-- `force_tty`: [`None`] forces animations to be on, off, or according to the tty (more details [here](#forcing-animations-on-non-interactive-consoles))
+- `force_tty`: [`None`] forces animations to be on, off, or according to the tty (more details [here](#forcing-animations-on-pycharm-jupyter-etc))
 <br>   ↳ None -> auto select, according to the terminal/Jupyter
 <br>   ↳ True -> unconditionally enables animations, but still auto-detects Jupyter Notebooks
 <br>   ↳ False -> unconditionally disables animations, keeping only the final receipt
@@ -812,15 +812,20 @@ For example, take a look at the effect these very different calibrations have, r
 > So, if your processing hardly gets to 20 items per second, and you think `alive-progress` is rendering sluggish, you could increase that sense of speed by calibrating it to let's say `40`, and it will be running waaaay faster... It is better to always leave some headroom and calibrate it to something between 50% and 100% more, and then tweak it from there to find the one you like the most! :)
 
 
-### Forcing animations on non-interactive consoles
+### Forcing animations on PyCharm, Jupyter, etc.
 
-Do those astonishing animations refuse to display?
+Do these astonishing `alive-progress` animations refuse to display?
 
-Some terminals occasionally do not report themselves as "interactive", like within shell pipeline commands "|" or background processes. And some never report themselves as interactive, like PyCharm's console and Jupyter notebooks.
+PyCharm is awesome, I love it! But I'll never understand why they've disabled emulating a terminal by default... If you do use PyCharm's output console, please enable this on all your Run Configurations:
+![alive-progress in pycharm](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/pycharm-terminal.png)
 
-When a terminal is not interactive, `alive-progress` disables all kinds of animations, only printing the final receipt. This is made to avoid spamming a log file or messing up a pipe output with thousands of progress bar updates.
+I even recommend you enter `File` > `New Projects Setup` > `Run Configuration Templates`, select `Python`, and also enable it there, so any new ones you create will already have this set.
 
-So, when you know it's safe, you can force enable it and see `alive-progress` in all its glory! Just use the `force_tty` argument!
+In addition to that, some terminals report themselves as "non-interactive", like when running out of a real terminal (PyCharm and Jupyter for example), in shell pipelines (`cat file.txt | python program.py`), or in background processes (not connected to a tty).
+
+When `alive-progress` finds itself in a non-interactive terminal, it automatically disables all kinds of animations, printing only the final receipt. This is made in order to avoid both messing up the pipeline output and spamming your log file with thousands of `alive-progress` refreshes.
+
+So, when you know it's safe, you can force them to see `alive-progress` in all its glory! Here is the `force_tty` argument:
 
 ```python
 with alive_bar(1000, force_tty=True) as bar:
@@ -830,15 +835,13 @@ with alive_bar(1000, force_tty=True) as bar:
 ```
 
 The values accepted are:
-- `force_tty=True` -> enables animations, and auto-detects Jupyter Notebooks!
-- `force_tty=False` -> disables animations, keeping only the final receipt
-- `force_tty=None` (default) -> auto select, according to the terminal's tty state
+- `force_tty=True` -> always enables animations, and auto-detects Jupyter Notebooks!
+- `force_tty=False` -> always disables animations, keeping only the final receipt
+- `force_tty=None` (default) -> auto detect, according to the terminal's tty state
 
-You can also set it system-wide using the `config_handler`, then you won't need to pass that manually in all `alive_bar` calls.
+You can also set it system-wide using `config_handler`, so you don't need to pass it manually anymore.
 
-Do note that PyCharm's console and Jupyter notebooks are heavily instrumented and thus have more overhead, so the outcome may not be as fluid as you would expect; and on top of that Jupyter notebooks do not support ANSI Escape Codes, so I had to develop some workarounds, to emulate functions like "clear the line" and "clear from cursor".
-
-> To see `alive_bar` animations as I intended, always prefer a full-fledged terminal.
+> Do note that PyCharm's console and Jupyter notebooks are heavily instrumented and thus have much more overhead, so the outcome may not be as fluid as you would expect. On top of that, Jupyter notebooks do not support ANSI Escape Codes, so I had to develop some workarounds to emulate functions like "clear the line" and "clear from cursor"... To see the fluid and smooth `alive_bar` animations as I intended, always prefer a full-fledged terminal.
 
 
 ## Interesting facts
