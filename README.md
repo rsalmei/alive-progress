@@ -6,12 +6,56 @@
 # alive-progress :)
 ### A new kind of Progress Bar, with real-time throughput, ETA, and very cool animations!
 
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://gitHub.com/rsalmei/alive-progress/graphs/commit-activity)
+[![Maintenance](https://img.shields.io/badge/Maintained-yes-green.svg)](https://gitHub.com/rsalmei/alive-progress/graphs/commit-activity)
 [![PyPI version](https://img.shields.io/pypi/v/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
 [![PyPI status](https://img.shields.io/pypi/status/alive-progress.svg)](https://pypi.python.org/pypi/alive-progress/)
-[![Downloads](https://static.pepy.tech/badge/alive-progress/month)](https://pepy.tech/project/alive-progress)
-[![Downloads](https://static.pepy.tech/badge/alive-progress)](https://pepy.tech/project/alive-progress)
+[![Downloads](https://static.pepy.tech/personalized-badge/alive-progress?period=week&units=international_system&left_color=grey&right_color=orange&left_text=downloads/week)](https://pepy.tech/project/alive-progress)
+[![Downloads](https://static.pepy.tech/personalized-badge/alive-progress?period=month&units=international_system&left_color=grey&right_color=orange&left_text=/month)](https://pepy.tech/project/alive-progress)
+[![Downloads](https://static.pepy.tech/personalized-badge/alive-progress?period=total&units=international_system&left_color=grey&right_color=orange&left_text=total)](https://pepy.tech/project/alive-progress)
+
+<!-- TOC -->
+* [alive-progress :)](#alive-progress--)
+    * [A new kind of Progress Bar, with real-time throughput, ETA, and very cool animations!](#a-new-kind-of-progress-bar-with-real-time-throughput-eta-and-very-cool-animations-)
+  * [Introduction](#introduction)
+  * [📌 NEW in 3.1 series!](#-new-in-31-series-)
+  * [Using `alive-progress`](#using-alive-progress)
+    * [Get it](#get-it)
+    * [Try it](#try-it)
+    * [Awake it](#awake-it)
+    * [Master it](#master-it)
+  * [Displaying messages](#displaying-messages)
+  * [Auto-iterating](#auto-iterating)
+  * [Modes of operation](#modes-of-operation)
+    * [Definite/unknown: Counters](#definiteunknown--counters)
+    * [Manual: Percentages](#manual--percentages)
+    * [Summary of Modes](#summary-of-modes)
+    * [The `bar()` handlers](#the-bar-handlers)
+  * [Styles](#styles)
+  * [Configuration](#configuration)
+  * [Create your own animations](#create-your-own-animations)
+    * [Intro: How do they work?](#intro--how-do-they-work)
+    * [A Spinner Compiler, really?](#a-spinner-compiler-really)
+    * [Spinner Factories](#spinner-factories)
+    * [Bar Factories](#bar-factories)
+  * [Advanced](#advanced)
+    * [The Pause Mechanism](#the-pause-mechanism)
+    * [Loop-less use](#loop-less-use)
+    * [FPS Calibration](#fps-calibration)
+    * [Forcing animations on PyCharm, Jupyter, etc.](#forcing-animations-on-pycharm-jupyter-etc)
+  * [Interesting facts](#interesting-facts)
+  * [To do](#to-do)
+  * [Python End of Life notice](#python-end-of-life-notice)
+    * [For new Python 2.7 and 3.5](#for-new-python-27-and-35)
+    * [For new Python 3.6](#for-new-python-36)
+  * [License](#license)
+<!-- TOC -->
+
+
+This README is always evolving, so do take a more comprehensive look from time to time... You might find great new details in other sections! 😊
+
+
+## Introduction
 
 Have you ever wondered where your lengthy processing was, and when it would finish? Ever found yourself hitting [RETURN] now and then to ensure it didn't hang, or if, in a remote SSH session, the connection was still working? Ever needed to *pause* some processing for a while, return to the Python prompt for a manual inspection or fixing an item, and then *resume* the process seamlessly? I did...
 
@@ -20,7 +64,7 @@ I've started this cool progress bar thinking about all that, the **alive-progres
 ![alive-progress demo](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-demo.gif)
 
 
-I like to think of it as a new kind of progress bar for Python since it has, among other things:
+I like to think of this as a new kind of progress bar for Python since it has, among other things:
 
 - a **live spinner** that is incredibly cool and clearly shows your lengthy process did not hang, or your ssh connection did not drop;
 - a **visual feedback** which reacts to your processing, as the live spinner will go faster or slower with it;
@@ -216,9 +260,6 @@ This is a major breakthrough in `alive-progress`!
 
 > Since this is a major version change, direct backward compatibility is not guaranteed. If something does not work at first, just check the new imports and functions' signatures, and you should be good to go. All previous features should still work here! 👍
 </details>
-
-
-This README is always being updated, so take a comprehensive look sometimes to find great new details in other sections! 😊
 
 ---
 
@@ -620,7 +661,7 @@ You can even mix and match wide chars and normal chars just like in spinners! (a
 
 ![alive-progress check tool](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-bar-check-mix.png)
 
-> Use the check tools to your heart's content!! They have even more goodies awaiting for you, there are even real-time animations!
+> Use the check tools to your heart's content!! They have even more goodies awaiting you, even real-time animations!
 
 > Create the wildest and coolest animations you can and send them to me!
 > <br>I'm thinking about creating some kind of `contrib` package, with user-contributed spinners and bars!
@@ -664,7 +705,7 @@ def reconcile_transactions():
             bar()
 ```
 
-That's it! That simple!
+That's it! It's that simple! \o/
 <br>Now run `gen = reconcile_transactions()` to instantiate the generator, and whenever you want the next faulty transaction, just call `next(gen, None)`! I love it...
 <br>The `alive-progress` bar will start and run as usual, but as soon as any inconsistency is found, the bar will pause itself, turning off the refresh thread and remembering its exact state, and yield the transaction to you directly on the prompt! It's almost magic! 😃
 
@@ -891,7 +932,8 @@ Do note that PyCharm's console and Jupyter notebooks are heavily instrumented an
 
 `alive_progress` will always try to keep up with Python, so starting from version 2.0, I'll drop support for all Python versions which enter EoL. See their schedule [here](https://endoflife.date/python).
 
-But don't worry if you can't migrate yet, just do not update the `alive_progress` version on your project and you're good, since my published PyPI versions are perpetual and will still work very well for the Python they were designed to.
+But don't worry if you can't migrate just yet: `alive_progress` versions are perennial, so just keep using the one that works for you and you're good.
+<br>I just strongly recommend setting older `alive_progress` packages in a requirements.txt file with the following formats. These will always fetch the latest build releases previous to a given version, so, if I ever release bug fixes, you'll get them too.
 
 ### For new Python 2.7 and 3.5
 
@@ -904,8 +946,6 @@ But don't worry if you can't migrate yet, just do not update the `alive_progress
 ```sh
 ❯ pip install -U "alive_progress<2.2"
 ```
-
-> If you put this as a dependency in a requirements.txt file, I strongly recommend using the aforementioned "less than" format, as that will always fetch the latest release that satisfies the condition. That way, if I ever release a bug fix for previous versions, you'll get it too.
 
 
 ## License
