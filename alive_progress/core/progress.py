@@ -36,7 +36,7 @@ def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, *
     Use it like this:
 
     >>> from alive_progress import alive_bar
-    ... with alive_bar(123, 'Title') as bar:  # <-- expected total and bar title
+    ... with alive_bar(123, title='Title') as bar:  # <-- expected total and bar title
     ...     for item in <iterable>:
     ...         # process item
     ...         bar()  # makes the bar go forward
