@@ -39,9 +39,18 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
 
         buffer = buffers[stream]
         if part != '\n':
-            if part.startswith('\x1b'):  # if the part starts with ESC, just send it.
-                stream.write(part)
-                return
+            osc = part.find('\x1b]')  # https://en.wikipedia.org/wiki/ANSI_escape_code
+            if osc >= 0:
+                end, s = part.find('\x07', osc + 2), 1  # 1 -> len('\x07')
+                if end < 0:
+                    end, s = part.find('\x1b\\', osc + 2), 2  # 2 -> len('\x1b\\')
+                    if end < 0:
+                        end, s = len(part), 0
+                stream.write(part[osc:end + s])
+                stream.flush()
+                part = part[:osc] + part[end + s:]
+                if not part:
+                    return
             # this will generate a sequence of lines interspersed with None, which will later
             # be rendered as the indent filler to align additional lines under the same header.
             gen = chain.from_iterable(zip(repeat(None), part.splitlines(True)))

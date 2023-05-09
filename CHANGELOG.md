@@ -1,9 +1,13 @@
 # Changelog
 
 
+## 3.1.2 - May 08, 2023
+- fix some ANSI Escape Codes not being printed, by including support for terminal [OSC](https://en.wikipedia.org/wiki/ANSI_escape_code#OSC)
+
+
 ## 3.1.1 - Apr 08, 2023
 - print hook support for ANSI Escape Codes (which avoid sending newlines when not needed)
-- typing support in `alive_it`, so the collection type is correctly identified.
+- typing support in `alive_it`, so the collection type is correctly identified
 
 
 ## 3.1.0 - Mar 23, 2023
