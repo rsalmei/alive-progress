@@ -21,8 +21,14 @@ lint:
 build: lint clean
     python setup.py sdist bdist_wheel
 
-release: build
+release: build && tag
     twine upload dist/*
+
+tag:
+    #!/usr/bin/env zsh
+    tag=$(python -c 'import alive_progress; print("v" + alive_progress.__version__)')
+    git tag -a $tag -m ""
+    git push origin $tag
 
 test:
     pytest {{cov}}
