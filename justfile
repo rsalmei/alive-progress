@@ -27,7 +27,7 @@ release: build && tag
 tag:
     #!/usr/bin/env zsh
     tag=$(python -c 'import alive_progress; print("v" + alive_progress.__version__)')
-    git tag -a $tag -m ""
+    git tag -a $tag -m "Details: https://github.com/rsalmei/alive-progress/blob/main/CHANGELOG.md"
     git push origin $tag
 
 test:
