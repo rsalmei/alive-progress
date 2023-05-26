@@ -1,13 +1,18 @@
 # Changelog
 
 
+## 3.1.3 - May 26, 2023
+- better error handling of invalid alive_it calls before iterating it
+- better error message when detecting nested uses of alive_progress
+
+
 ## 3.1.2 - May 08, 2023
-- fix some ANSI Escape Codes not being printed, by including support for terminal [OSC](https://en.wikipedia.org/wiki/ANSI_escape_code#OSC)
+- fix some exotic ANSI Escape Codes not being printed, by including support for terminal [OSC](https://en.wikipedia.org/wiki/ANSI_escape_code#OSC)
 
 
 ## 3.1.1 - Apr 08, 2023
-- print hook support for ANSI Escape Codes (which avoid sending newlines when not needed)
-- typing support in `alive_it`, so the collection type is correctly identified
+- support for printing ANSI Escape Codes like set console title, avoiding printing newlines
+- typing annotations in `alive_it`, so collection types are correctly identified
 
 
 ## 3.1.0 - Mar 23, 2023
