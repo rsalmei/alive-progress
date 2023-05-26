@@ -569,11 +569,13 @@ class __AliveBarIteratorAdapter(Iterable[T]):
                 self._finalize(self._bar)
 
     def __call__(self, *args, **kwargs):
-        raise UserWarning('The bar position is controlled automatically with `alive_it`.')
+        raise UserWarning('The bar position is controlled automatically by `alive_it`.')
 
     def __getattr__(self, item):
         # makes this adapter work as the real bar.
-        return getattr(self._bar, item)
+        if '_bar' in self.__dict__: # detects not yet started bar instances.
+            return getattr(self._bar, item)
+        raise UserWarning('Configure this bar either via `alive_it()` or after iterating it.')
 
     def __setattr__(self, key, value):
         # makes this adapter work as the real bar.
