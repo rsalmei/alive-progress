@@ -70,18 +70,12 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
                 buffer[:] = []
 
     # better hook impl, which works even when nested, since __hash__ will be forwarded.
-    class Hook:
-        def __init__(self, stream):
-            self.__stream = stream
-
+    class Hook(BaseHook):
         def write(self, part):
-            return write(self.__stream, part)
+            return write(self._stream, part)
 
         def flush(self):
-            return flush(self.__stream)
-
-        def __getattr__(self, item):
-            return getattr(self.__stream, item)
+            return flush(self._stream)
 
     def get_hook_for(handler):
         if handler.stream:  # supports FileHandlers with delay=true.
@@ -120,6 +114,9 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
         # which causes a TypeError: unhashable type: 'types.SimpleNamespace'...
         # or simply a logger **reuses** a handler...
 
+    if issubclass(sys.stdout.__class__, BaseHook):
+        raise UserWarning('Nested use of alive_progress is not yet supported.')
+
     # internal data.
     buffers = defaultdict(list)
     get_header = gen_header(header_template, get_pos) if header_template else null_header
@@ -134,6 +131,14 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
     )
 
     return hook_manager
+
+
+class BaseHook:
+    def __init__(self, stream):
+        self._stream = stream
+
+    def __getattr__(self, item):
+        return getattr(self._stream, item)
 
 
 def passthrough_hook_manager():  # pragma: no cover
