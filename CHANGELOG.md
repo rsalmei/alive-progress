@@ -1,17 +1,21 @@
 # Changelog
 
 
+## 3.1.4 - May 31, 2023
+- support spaces at the start and end of titles and units (removed trim)
+
+
 ## 3.1.3 - May 26, 2023
-- better error handling of invalid alive_it calls before iterating it
-- better error message when detecting nested uses of alive_progress
+- better error handling of invalid `alive_it` calls before iterating it
+- detect nested uses of alive_progress and throw a clearer error message
 
 
 ## 3.1.2 - May 08, 2023
-- fix some exotic ANSI Escape Codes not being printed, by including support for terminal [OSC](https://en.wikipedia.org/wiki/ANSI_escape_code#OSC)
+- fix some exotic ANSI Escape Codes not being printed by supporting terminal [OSC](https://en.wikipedia.org/wiki/ANSI_escape_code#OSC)
 
 
 ## 3.1.1 - Apr 08, 2023
-- support for printing ANSI Escape Codes like set console title, avoiding printing newlines
+- support for printing ANSI Escape Codes without extra newlines, like "set console title"
 - typing annotations in `alive_it`, so collection types are correctly identified
 
 

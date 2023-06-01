@@ -892,9 +892,10 @@ You can also set it system-wide using `config_handler`, so you don't need to pas
 
 <br>Complete [here](https://github.com/rsalmei/alive-progress/blob/main/CHANGELOG.md).
 
-- 3.1.3: better error handling of invalid alive_it calls, better error message when detecting nested uses of alive_progress
+- 3.1.4: support spaces at the start and end of titles and units
+- 3.1.3: better error handling of invalid `alive_it` calls, detect nested uses of alive_progress and throw a clearer error message
 - 3.1.2: fix some exotic ANSI Escape Codes not being printed (OSC)
-- 3.1.1: support for printing ANSI Escape Codes like set console title, typing annotations in `alive_it`
+- 3.1.1: support for printing ANSI Escape Codes without extra newlines, typing annotations in `alive_it`
 - 3.1.0: new resuming computations support with `skipped` items, new `max_cols` config setting for jupyter, fix fetching the size of the terminal when using stderr, officially supports Python 3.11
 - 3.0.1: fix for logging streams that extend StreamHandler but doesn't allow changing streams
 - 3.0.0: units support with automatic and configurable scaling and precision, automatic stats scaling for slow throughputs, support for using `sys.stderr` and other files instead of `sys.stdout`, smoothed out the rate estimation, more queries into the currently running widgets' data, help system in configuration errors
