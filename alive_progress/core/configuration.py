@@ -3,14 +3,14 @@ This module must always be importable, even without the required libs for instal
 It's because I import metadata from main init, directly in setup.py, which imports this.
 """
 import os
-import re
 import sys
 from collections import namedtuple
 from string import Formatter
 from types import FunctionType
 
+from ..utils import sanitize
+
 ERROR = object()  # represents a config value not accepted.
-PATTERN_SANITIZE = re.compile(r'[\r\n]+')
 
 
 def _spinner_input_factory(default):

@@ -68,10 +68,10 @@ Support for these cool chars, like Emojis 😃, was so damn hard to implement be
 
 """
 
-import re
 import unicodedata
 
-PATTERN_SANITIZE = re.compile(r'[\r\n]+')
+from . import sanitize
+
 VS_15 = '\ufe0e'
 
 
@@ -159,8 +159,7 @@ def fix_cells(chars):
 
 
 def to_cells(text):
-    text = ' '.join(PATTERN_SANITIZE.split(text or ''))
-    return mark_graphemes(split_graphemes(text))
+    return mark_graphemes(split_graphemes(sanitize(text)))
 
 
 def split_graphemes(text):
