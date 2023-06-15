@@ -112,6 +112,7 @@ def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, *
             unit (str): any text that labels your entities
             scale (any): the scaling to apply to units: 'SI', 'IEC', 'SI2'
             precision (int): how many decimals do display when scaling
+            comma (bool): if True, use commas in numeric values
 
     """
     try:
@@ -250,10 +251,17 @@ def __alive_bar(config, total=None, *, calibrate=None,
 
     if not config.scale:
         def human_count(value, _precision=None):
-            return f'{value}{config.unit}'
+            if config.comma:
+                return f'{value:,}{config.unit}'
+            else:
+                return f'{value}{config.unit}'
 
         def rate_text(precision):
-            return f'{run.rate:.{precision}f}{unit}/s'
+            if config.comma:
+                return f'{run.rate:,.{precision}f}{unit}/s'
+            else:
+                return f'{run.rate:.{precision}f}{unit}/s'
+
     else:
         import about_time  # must not be on top.
         d1024, iec = {
