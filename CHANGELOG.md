@@ -73,9 +73,9 @@
 - new custom fps system, which enables very slow refresh rates (long periods)
 - the final receipt can be hidden (great for special effects)
 - new support for `click.echo()` printing
-- more resilient `text` method, which accepts any value, even numbers
-- bar methods like `current` and `pause` are now read-only (non-data descriptors)
-- bar methods like `text` and `current` now support assigning in addition to calling (data descriptors)
+- more resilient `text` method which accepts any value, even numbers
+- bar methods like `current` and `pause` are now read-only (read-only data descriptors)
+- bar methods like `text` and `title` now support assigning in addition to calling (data descriptors)
 - faster performance, with optimized flush control
 - detection of terminal columns is safer for exotic environments
 - fix hook manager trimming spaces at the start
