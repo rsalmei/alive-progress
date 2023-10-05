@@ -334,8 +334,8 @@ def __alive_bar(config, total=None, *, calibrate=None,
     stats = _Widget(stats_run, config.stats, stats_default)
     stats_end = _Widget(stats_end, config.stats_end, '({rate})' if stats.f[:-1] else '')
 
-    bar_handle = __AliveBarHandle(pause_monitoring, current, set_title, set_text,
-                                  lambda: run.monitor_text, lambda: run.rate_text,
+    bar_handle = __AliveBarHandle(pause_monitoring, set_title, set_text,
+                                  current, lambda: run.monitor_text, lambda: run.rate_text,
                                   lambda: run.eta_text)
     set_text(), set_title()
     start_monitoring()
@@ -385,22 +385,22 @@ class _Widget:  # pragma: no cover
         return self.func(self.f)
 
 
-class _GatedFunction:  # pragma: no cover
+class _ReadOnlyProperty:  # pragma: no cover
     def __set_name__(self, owner, name):
         self.prop = f'_{name}'
 
     def __get__(self, obj, objtype=None):
+        return getattr(obj, self.prop)()
+
+    def __set__(self, obj, value):
+        raise AttributeError(f'Cannot set "{self.prop[1:]}"')
+
+
+class _GatedFunction(_ReadOnlyProperty):  # pragma: no cover
+    def __get__(self, obj, objtype=None):
         if obj._handle:
             return getattr(obj, self.prop)
         return _noop
-
-    def __set__(self, obj, value):
-        raise AttributeError(f'Can\'t set "{self.prop[1:]}"')
-
-
-class _GatedProperty(_GatedFunction):  # pragma: no cover
-    def __get__(self, obj, objtype=None):
-        return getattr(obj, self.prop)()
 
 
 class _GatedAssignFunction(_GatedFunction):  # pragma: no cover
@@ -410,14 +410,14 @@ class _GatedAssignFunction(_GatedFunction):  # pragma: no cover
 
 class __AliveBarHandle:
     pause = _GatedFunction()
-    current = _GatedProperty()
+    current = _ReadOnlyProperty()
     text = _GatedAssignFunction()
     title = _GatedAssignFunction()
-    monitor = _GatedProperty()
-    rate = _GatedProperty()
-    eta = _GatedProperty()
+    monitor = _ReadOnlyProperty()
+    rate = _ReadOnlyProperty()
+    eta = _ReadOnlyProperty()
 
-    def __init__(self, pause, get_current, set_title, set_text, get_monitor, get_rate, get_eta):
+    def __init__(self, pause, set_title, set_text, get_current, get_monitor, get_rate, get_eta):
         self._handle, self._pause, self._current = None, pause, get_current
         self._title, self._text = set_title, set_text
         self._monitor, self._rate, self._eta = get_monitor, get_rate, get_eta
