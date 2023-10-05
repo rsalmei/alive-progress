@@ -336,7 +336,7 @@ So, in short: retrieve the items as always, enter the `alive_bar` context manage
 - the first argument of the `alive_bar` is the expected total, like `qs.count()` for querysets, `len(items)` for iterables with length, or even a static number;
 - the call `bar()` is what makes the bar go forward — you usually call it in every iteration, just after finishing an item;
 - if you call `bar()` too much (or too few at the end), the bar will graphically render that deviation from the expected `total`, making it very easy to notice overflows and underflows;
-- to retrieve the current bar count or percentage, call `bar.current()`.
+- to retrieve the current bar count or percentage, call `bar.current`.
 
 > You can get creative! Since the bar only goes forward when you call `bar()`, it is **independent of the loop**! So you can use it to monitor anything you want, like pending transactions, broken items, etc., or even call it more than once in the same iteration! So, in the end, you'll get to know how many of those "special" events there were, including their percentage relative to the total!
 
@@ -452,7 +452,7 @@ The `bar()` handlers support either relative or absolute semantics, depending on
 > - make it go backwards — perhaps to graphically display the timeout of something;
 > - create special effects — perhaps to act as a real-time gauge of some sort.
 
-In any case, to retrieve the current count/percentage, just call: `bar.current()`:
+In any case, to retrieve the current count/percentage, just call: `bar.current`:
 - in _definite_ and _unknown_ modes, this provides an **integer** — the actual internal counter;
 - in _manual_ modes, this provides a **float** in the interval [0, 1] — the last percentage set.
 
@@ -903,7 +903,7 @@ You can also set it system-wide using `config_handler`, so you don't need to pas
 - 2.4.0: support dual line text mode; finalize function parameter in alive_it; improve logging support, detecting customized ones
 - 2.3.1: introduce ctrl_c config param; print the final receipt even when interrupted
 - 2.3.0: customizable `monitor`, `elapsed`, and `stats` core widgets, new `monitor_end`, `elapsed_end`, and `stats_end` core widgets, better support for CTRL+C, which makes `alive_bar` stop prematurely
-- 2.2.0: bar title can be dynamically set, changed or removed; customizable refresh rates; final receipt can be hidden; `click.echo()` support; faster performance; safer detection of terminal columns; remove Python 3.6
+- 2.2.0: bar title can be dynamically set, changed or removed; customizable refresh rates; final receipt can be hidden; `click.echo()` support; faster performance; safer detection of terminal columns; `bar.current` acts like a property; remove Python 3.6
 - 2.1.0: Jupyter notebook support (experimental), Jupyter auto-detection, disable feature and configuration
 - 2.0.0: new system-wide Cell Architecture with grapheme clusters support; super cool spinner compiler and runner; `.check()` tools in both spinners and bars; bars and spinners engines revamp; new animation modes in alongside and sequential spinners; new builtin spinners, bars, and themes; dynamic showtime with themes, scroll protection and filter patterns; improved logging for files; several new configuration options for customizing appearance; new iterator adapter `alive_it`; uses `time.perf_counter()` high-resolution clock; requires Python 3.6+ (and officially supports Python 3.9 and 3.10)
 - 1.6.2: new `bar.current()` method; newlines get printed on vanilla Python REPL; the bar is truncated to 80 chars on Windows
