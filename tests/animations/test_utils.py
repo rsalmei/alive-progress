@@ -47,7 +47,6 @@ def test_sliding_window_error():
 
 
 def spinner_cycle_123():
-    # noinspection PyUnusedLocal
     def inner_factory(length=None):
         def inner_spinner():
             yield from '123'

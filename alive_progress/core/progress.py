@@ -389,7 +389,6 @@ class _GatedFunction:  # pragma: no cover
     def __set_name__(self, owner, name):
         self.prop = f'_{name}'
 
-    # noinspection PyProtectedMember
     def __get__(self, obj, objtype=None):
         if obj._handle:
             return getattr(obj, self.prop)
@@ -400,13 +399,11 @@ class _GatedFunction:  # pragma: no cover
 
 
 class _GatedProperty(_GatedFunction):  # pragma: no cover
-    # noinspection PyProtectedMember
     def __get__(self, obj, objtype=None):
         return getattr(obj, self.prop)()
 
 
 class _GatedAssignFunction(_GatedFunction):  # pragma: no cover
-    # noinspection PyProtectedMember
     def __set__(self, obj, value):
         self.__get__(obj)(value)
 
@@ -425,7 +422,7 @@ class __AliveBarHandle:
         self._title, self._text = set_title, set_text
         self._monitor, self._rate, self._eta = get_monitor, get_rate, get_eta
 
-    # this enables to exchange the __call__ implementation.
+    # support for disabling the bar() implementation.
     def __call__(self, *args, **kwargs):
         if self._handle:
             self._handle(*args, **kwargs)
@@ -573,7 +570,7 @@ class __AliveBarIteratorAdapter(Iterable[T]):
 
     def __getattr__(self, item):
         # makes this adapter work as the real bar.
-        if '_bar' in self.__dict__: # detects not yet started bar instances.
+        if '_bar' in self.__dict__:  # detects not yet started bar instances.
             return getattr(self._bar, item)
         raise UserWarning('Configure this bar either via `alive_it()` or after iterating it.')
 

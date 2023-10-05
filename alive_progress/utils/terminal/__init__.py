@@ -43,7 +43,6 @@ def _is_notebook():
         # if IPython hasn't been imported, there's nothing to check.
         return False
 
-    # noinspection PyPackageRequirements
     from IPython import get_ipython
     class_ = get_ipython().__class__.__name__
     return class_ != 'TerminalInteractiveShell'

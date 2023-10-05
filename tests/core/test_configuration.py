@@ -2,7 +2,6 @@ from unittest import mock
 
 import pytest
 
-# noinspection PyProtectedMember
 from alive_progress.core.configuration import Config, ERROR, __style_input, \
     _bool_input_factory, _int_input_factory, create_config, _format_input_factory
 from alive_progress.styles.internal import BARS, SPINNERS, THEMES

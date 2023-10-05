@@ -2,7 +2,6 @@ from unittest import mock
 
 import pytest
 
-# noinspection PyProtectedMember
 from alive_progress.core.progress import _GatedAssignFunction, _GatedFunction, _render_title
 from alive_progress.utils.cells import join_cells
 
