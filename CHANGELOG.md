@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 3.1.5 - Nov 08, 2023
+- ignore more errors when trying to set hooks (it seems `pyam` uses `setuptools_scm` which does `assert value is sys.stderr` in `setStream()` for whatever reason)
+
+
 ## 3.1.4 - May 31, 2023
 - support spaces at the start and end of titles and units (removed trim)
 
