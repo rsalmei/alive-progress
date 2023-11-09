@@ -90,8 +90,8 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
         def set_hook(h):
             try:
                 return h.setStream(get_hook_for(h))
-            except AttributeError:
-                pass  # ignores errors and return None
+            except Exception:  # captures AttributeError, AssertionError, and anything else,
+                pass  # then returns None, effectively leaving that handler alone, unchanged.
 
         # account for reused handlers within loggers.
         handlers = set(h for logger in get_all_loggers()
