@@ -21,14 +21,14 @@ I've started this new progress bar thinking about all that, behold the **alive-p
 
 
 Introducing the newest concept in progress bars for Python! `alive-progress` is in a class of its own, with an array of cool features that set it apart. Here are a few highlights:
-- A mesmerizing **live spinner** that clearly shows your lengthy process did not crash and your SSH connection did not freeze, with **visual feedback** reacting to your processing speed.
-- An efficient **multithreaded** bar that updates itself at a fraction of the actual processing speed to keep **CPU usage low** and avoid terminal spamming (1,000,000 iterations per second equates to roughly 60 updates per second, and you can also calibrate this to your liking).
-- An **ETA** (expected time of arrival) feature with an intelligent _Exponential Smoothing Algorithm_ that shows the time to completion, allowing you to plan your time and manage your workload more effectively.
-- Automatic **print** and **logging** hooks that provide seamless integration and effortless tracking, even enriching them with the current bar position when they occur.
-- It prints a **nice receipt** when the processing finishes, including the elapsed time and the observed throughput.
-- It detects **under** and **overflows**, enabling you to track hits, misses, or any desired count, not necessarily the actual iterations.
-- You can **pause** it! That's right, you heard it here first! No other progress bar anywhere has this feature! You can get back to the Python prompt during any processing, adjust some items, and get back into that running process as if it had never stopped! All `alive_bar` widgets are kept as they were, and the elapsed time nicely ignores the paused time!
-- It is **highly customizable**, with a smorgasbord of spinner and bar styles, as well as several ready-to-use factories to easily generate yours! You can even use the super powerful and cool `check()` tool to help you design your own animations! You can see all the generated frames and cycles exploded on screen, with several verbosity levels, even including an _alive_ rendition! It's boundless creativity at your fingertips!
+- A mesmerizing **live spinner** that reacts to your actual processing speed, i.e., it dynamically gets faster or slower with your throughput, and clearly shows a lengthy task is in progress, i.e., did not crash even if taking too long (and your SSH connection did not freeze if remote).
+- An efficient **multithreaded** bar that updates itself at a fraction of the actual processing speed to keep **CPU usage low** and avoid terminal spamming (1,000,000 iterations per second equates to roughly 60 updates per second), and you can also calibrate it to your liking.
+- An accurate **ETA** (Expected Time of Arrival) with an intelligent _Exponential Smoothing Algorithm_ that shows the time to completion, allowing you to plan your time and manage your workload more effectively.
+- Automatic **print** and **logging** hooks that provide seamless and efortless integration with any code, even enriching these outputs with the current bar position when they occurred.
+- It prints a nice **final receipt** when your processing ends, including the total items, the elapsed time, and the observed throughput.
+- It detects **under** and **overflows**, enabling you to track hits, misses, or any desired counts, not necessarily the actually performed iterations.
+- You can **suspend** it! That's right, you heard it here first! No other progress bar anywhere in any language has this feature! You can suspend your processing and get back to the Python prompt, adjust or fix some items, and then get back into the same processing as if it had never stopped!
+- It is **highly customizable**, with a smorgasbord of ready-to-use spinner and bar styles, as well as several factories to easily create yours! There's even a super powerful `check()` tool that helps you design your own animations! You can see how the generated frames and animation cycles will look like, exploded on your screen, and even see it _alive_ before installing in `alive-progress`! It's the coolest tool in the world! Unleash your creativity!
 
 ---
 ## Table of contents
