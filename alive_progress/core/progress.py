@@ -272,7 +272,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
 
     def monitor_run(f, precision=config.precision):
         run.monitor_text = human_count(run.count, precision)
-        return f.format(count=run.monitor_text, total=total_human, percent=run.percent)
+        return f.format(count=float(run.monitor_text), total=float(total_human), percent=run.percent)
 
     def monitor_end(f):
         warning = '(!) ' if total is not None and current() != logic_total else ''
