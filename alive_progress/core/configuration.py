@@ -48,7 +48,7 @@ def __func_lookup(module_lookup, inner_name):
         if isinstance(x, FunctionType):
             func_file, _ = os.path.splitext(module_lookup.__file__)
             if x.__code__.co_name == inner_name \
-                    and os.path.splitext(x.__code__.co_filename)[0] == func_file:
+                    and func_file.endswith(os.path.splitext(x.__code__.co_filename)[0]):
                 return x
             return ERROR
 
