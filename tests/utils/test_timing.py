@@ -1,28 +1,28 @@
 import pytest
 
-from alive_progress.utils.timing import elapsed_text, eta_text, fn_simple_eta, \
+from alive_progress.utils.timing import time_display, eta_text, fn_simple_eta, RUN, END, \
     gen_simple_exponential_smoothing
 
 
-@pytest.mark.parametrize('elapsed, precise, expected', [
-    (1.4, False, '1s'),
-    (1.4, True, '1.4s'),
-    (1.45, True, '1.4s'),
-    (1.5, False, '2s'),
-    (1.5, True, '1.5s'),
-    (1.55, True, '1.6s'),
-    (61.4, False, '1:01'),
-    (61.4, True, '1:01.4'),
-    (119.5, False, '2:00'),
-    (119.5, True, '1:59.5'),
-    (119.95, True, '2:00.0'),
-    (120.1, False, '2:00'),
-    (120.1, True, '2:00.1'),
-    (4000, False, '1:06:40'),
-    (4000, True, '1:06:40.0'),
+@pytest.mark.parametrize('elapsed, conf, expected', [
+    (1.4, RUN, '1s'),
+    (1.4, END, '1.4s'),
+    (1.45, END, '1.4s'),
+    (1.5, RUN, '2s'),
+    (1.5, END, '1.5s'),
+    (1.55, END, '1.6s'),
+    (61.4, RUN, '1:01'),
+    (61.4, END, '1:01.4'),
+    (119.5, RUN, '2:00'),
+    (119.5, END, '1:59.5'),
+    (119.95, END, '2:00.0'),
+    (120.1, RUN, '2:00'),
+    (120.1, END, '2:00.1'),
+    (4000, RUN, '1:06:40'),
+    (4000, END, '1:06:40.0'),
 ])
-def test_to_elapsed_text(elapsed, precise, expected):
-    assert elapsed_text(elapsed, precise) == expected
+def test_to_elapsed_text(elapsed, conf, expected):
+    assert time_display(elapsed, conf) == expected
 
 
 @pytest.mark.parametrize('eta, expected', [

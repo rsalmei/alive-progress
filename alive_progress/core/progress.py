@@ -13,8 +13,8 @@ from .configuration import config_handler
 from .hook_manager import buffered_hook_manager, passthrough_hook_manager
 from ..utils import terminal
 from ..utils.cells import combine_cells, fix_cells, print_cells, to_cells
-from ..utils.timing import elapsed_text, eta_text, fn_simple_eta, \
-    gen_simple_exponential_smoothing
+from ..utils.timing import eta_text, fn_simple_eta, gen_simple_exponential_smoothing, \
+    time_display, RUN, END
 
 
 def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, **options: Any):
@@ -89,6 +89,7 @@ def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, *
             disable (bool): if True, completely disables all output, do not install hooks
             manual (bool): set to manually control the bar position
             enrich_print (bool): enriches print() and logging messages with the bar position
+            enrich_offset (int): the offset to apply to enrich_print
             receipt (bool): prints the nice final receipt, disables if False
             receipt_text (bool): set to repeat the last text message in the final receipt
             monitor (bool|str): configures the monitor widget `152/200 [76%]`
@@ -178,22 +179,25 @@ def __alive_bar(config, total=None, *, calibrate=None,
             run.title += (' ',)  # space separator for print_cells.
 
     if config.manual:
-        def bar(percent):  # for manual progress modes, regardless of total.
+        def bar(percent):  # for manual mode (with total or not).
             hook_manager.flush_buffers()  # notify that the current index is about to change.
-            run.percent = max(0., float(percent))
+            run.percent = max(0., float(percent))  # absolute value can't be negative.
             bar_update_hook()
     elif not total:
-        def bar(count=1):  # for unknown progress mode.
+        def bar(count=1):  # for unknown mode, i.e. not manual and not total.
             hook_manager.flush_buffers()  # notify that the current index is about to change.
-            run.count += max(1, int(count))
+            run.count += int(count)  # relative value can be negative.
+            run.count = max(0, run.count)  # but absolute value can't.
             bar_update_hook()
     else:
-        def bar(count=1, *, skipped=False):  # for definite progress mode.
+        def bar(count=1, *, skipped=False):  # for definite mode, i.e. not manual and with total.
             hook_manager.flush_buffers()  # notify that the current index is about to change.
-            count = max(1, int(count))
+            count = int(count)  # relative value can be negative.
             run.count += count
+            run.count = max(0, run.count)  # but absolute value can't.
             if not skipped:
                 run.processed += count
+                run.processed = max(0, run.processed)  # but absolute value can't.
             bar_update_hook()
 
     def start_monitoring(offset=0.):
@@ -240,8 +244,8 @@ def __alive_bar(config, total=None, *, calibrate=None,
         term, hook_manager = terminal.get_void(), passthrough_hook_manager()
     else:
         term = terminal.get_term(config.file, config.force_tty, config.max_cols)
-        hook_manager = buffered_hook_manager(
-            header if config.enrich_print else '', current, cond_refresh, term)
+        hook_manager = buffered_hook_manager(header if config.enrich_print else '',
+                                             current, config.enrich_offset, cond_refresh, term)
 
     if term.interactive:
         thread = threading.Thread(target=run, args=_create_spinner_player(config))
@@ -279,10 +283,10 @@ def __alive_bar(config, total=None, *, calibrate=None,
         return f'{warning}{monitor_run(f, None)}'
 
     def elapsed_run(f):
-        return f.format(elapsed=elapsed_text(run.elapsed, False))
+        return f.format(elapsed=time_display(run.elapsed, RUN))
 
     def elapsed_end(f):
-        return f.format(elapsed=elapsed_text(run.elapsed, True))
+        return f.format(elapsed=time_display(run.elapsed, END))
 
     def stats_end(f):
         run.rate_text = rate_text(2)

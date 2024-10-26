@@ -1,21 +1,42 @@
-def elapsed_text(seconds, precise, prefix=''):
-    seconds = round(seconds, 1 if precise else 0)
+from collections import namedtuple
+from math import floor
+
+from typing import Callable
+
+TimeDisplay = namedtuple('TimeDisplay',
+                         'round, sec_prec, min_prec, hour_prec, prefix, '
+                         'round_sec_on_min, clear_sec_on_hour')
+RUN = TimeDisplay(0, .0, 2.0, 2.0, '', False, False)
+END = TimeDisplay(1, .1, 4.1, 4.1, '', False, False)
+ETA = RUN._replace(prefix='~', round_sec_on_min=True, clear_sec_on_hour=True)
+
+
+class Refresh:
+    def tick(self) -> 'Refresh':
+        pass
+
+
+def time_display(seconds: float, conf: TimeDisplay) -> str:
+    seconds = round(seconds, conf.round)
     if seconds < 60.:
-        return '{}{:{}f}s'.format(prefix, seconds, .1 if precise else .0)
+        return '{}{:{}f}s'.format(conf.prefix, seconds, conf.sec_prec)
 
     minutes, seconds = divmod(seconds, 60.)
     if minutes < 60.:
-        return '{}{:.0f}:{:0{}f}'.format(prefix, minutes, seconds, 4.1 if precise else 2.0)
+        if conf.round_sec_on_min:
+            seconds = floor(seconds / 10) * 10
+        return '{}{:.0f}:{:0{}f}'.format(conf.prefix, minutes, seconds, conf.min_prec)
 
     hours, minutes = divmod(minutes, 60.)
-    return '{}{:.0f}:{:02.0f}:{:0{}f}'.format(prefix, hours, minutes, seconds,
-                                              4.1 if precise else 2.0)
+    if conf.clear_sec_on_hour:
+        seconds = 0
+    return '{}{:.0f}:{:02.0f}:{:0{}f}'.format(conf.prefix, hours, minutes, seconds, conf.hour_prec)
 
 
-def eta_text(eta):
-    if eta < 0.:
+def eta_text(seconds: float) -> str:
+    if seconds < 0.:
         return '?'
-    return elapsed_text(eta, False, '~')
+    return time_display(seconds, ETA)
 
 
 def fn_simple_eta(logic_total):
@@ -25,16 +46,16 @@ def fn_simple_eta(logic_total):
     return simple_eta
 
 
-def gen_simple_exponential_smoothing(alfa, fn):
+def gen_simple_exponential_smoothing(alpha: float, fn: Callable[[float, float], float]):
     """Implements a generator with a simple exponential smoothing of some function.
-    Given alfa and y_hat (t-1), we can calculate the next y_hat:
-        y_hat = alfa * y + (1 - alfa) * y_hat
-        y_hat = alfa * y + y_hat - alfa * y_hat
-        y_hat = y_hat + alfa * (y - y_hat)
+    Given alpha and y_hat (t-1), we can calculate the next y_hat:
+        y_hat = alpha * y + (1 - alpha) * y_hat
+        y_hat = alpha * y + y_hat - alpha * y_hat
+        y_hat = y_hat + alpha * (y - y_hat)
 
     Args:
-        alfa (float): the smoothing coefficient
-        fn (Callable): the function
+        alpha: the smoothing coefficient
+        fn: the function
 
     Returns:
 
@@ -46,4 +67,4 @@ def gen_simple_exponential_smoothing(alfa, fn):
     while True:
         p = yield y_hat
         y = fn(*p)
-        y_hat += alfa * (y - y_hat)
+        y_hat += alpha * (y - y_hat)

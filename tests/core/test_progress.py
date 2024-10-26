@@ -47,32 +47,31 @@ def scale(request):
 
 
 def test_progress_bar(enrich_print, total, manual, scale, capsys):
+    def alive_bar_case(total_num):
+        with __alive_bar(config, total_num, _testing=True) as bar:
+            for i in range(n):
+                if i == n // 2:
+                    print('half')  # this is not a debug, it's part of the test.
+                bar((i + 1) / n if manual else 1)
+
     n = 2468
     config = config_handler(enrich_print=enrich_print, manual=manual, scale=scale,
                             length=3, bar='classic', force_tty=False, unit='U', file=sys.stdout)
 
-    alive_bar_case(n, n if total else None, config)
+    alive_bar_case(n if total else None)
     assert capsys.readouterr().out.strip() == DATA[enrich_print, total, manual, scale]
 
 
 def test_progress_it(enrich_print, total, scale, capsys):
+    def alive_it_case(total_num):
+        for i in __AliveBarIteratorAdapter(range(n), None,
+                                           __alive_bar(config, total_num, _testing=True)):
+            if i == n // 2:
+                print('half')  # this is not a debug, it's part of the test.
+
     n = 2468
     config = config_handler(enrich_print=enrich_print, scale=scale,
                             length=3, bar='classic', force_tty=False, unit='U', file=sys.stdout)
 
-    alive_it_case(n, n if total else None, config)
+    alive_it_case(n if total else None)
     assert capsys.readouterr().out.strip() == DATA[enrich_print, total, False, scale]
-
-
-def alive_bar_case(n, total, config):
-    with __alive_bar(config, total, _testing=True) as bar:
-        for i in range(n):
-            if i == n // 2:
-                print('half')  # this is not a debug, it's part of the test.
-            bar((i + 1) / n)
-
-
-def alive_it_case(n, total, config):
-    for i in __AliveBarIteratorAdapter(range(n), None, __alive_bar(config, total, _testing=True)):
-        if i == n // 2:
-            print('half')  # this is not a debug, it's part of the test.

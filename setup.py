@@ -45,17 +45,19 @@ setup(
         # 'Programming Language :: Python :: 3.4',
         # 'Programming Language :: Python :: 3.5',
         # 'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
+        # 'Programming Language :: Python :: 3.7',
+        # 'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
     ],
     keywords='progress bar progress-bar progressbar spinner eta monitoring python terminal '
              'multi-threaded REPL alive animated visual feedback simple live efficient monitor '
              'stats elapsed time throughput'.split(),
     packages=find_packages(exclude=['tests*']),
     data_files=[('', ['LICENSE'])],
-    python_requires='>=3.7, <4',
+    python_requires='>=3.9, <4',
     install_requires=['about_time==4.2.1', 'grapheme==0.6.0'],
 )

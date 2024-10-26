@@ -130,14 +130,14 @@ def _format_input_factory(allowed):
 
 def _file_input_factory():
     def _input(x):
-        return x if all(hasattr(x, m) for m in ('write', 'flush', 'fileno')) else ERROR
+        return x if all(hasattr(x, m) for m in ('write', 'flush')) else ERROR
 
     _input.err_help = 'Expected sys.stdout, sys.stderr, or a similar TextIOWrapper object'
     return _input
 
 
 Config = namedtuple('Config', 'title length max_cols spinner bar unknown force_tty disable manual '
-                              'enrich_print receipt receipt_text monitor elapsed stats '
+                              'enrich_print enrich_offset receipt receipt_text monitor elapsed stats '
                               'title_length spinner_length refresh_secs monitor_end elapsed_end '
                               'stats_end ctrl_c dual_line unit scale precision file')
 
@@ -155,6 +155,7 @@ def create_config():
             disable=False,
             manual=False,
             enrich_print=True,
+            enrich_offset=0,
             receipt=True,
             receipt_text=False,
             monitor=True,
@@ -233,6 +234,7 @@ def create_config():
             disable=_bool_input_factory(),
             manual=_bool_input_factory(),
             enrich_print=_bool_input_factory(),
+            enrich_offset=_int_input_factory(0, sys.maxsize),
             receipt=_bool_input_factory(),
             receipt_text=_bool_input_factory(),
             monitor=_format_input_factory('count total percent'),
