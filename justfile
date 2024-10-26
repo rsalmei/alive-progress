@@ -1,4 +1,5 @@
 # coverage related
+
 cov := "--cov=alive_progress --cov-branch --cov-report=term-missing"
 
 all:
@@ -16,7 +17,7 @@ clean-pyc:
     find . -type f -name *.pyc -delete
 
 lint:
-    ruff alive_progress --line-length 100
+    ruff check alive_progress --line-length 100
 
 build: lint clean
     python setup.py sdist bdist_wheel
@@ -31,10 +32,10 @@ tag:
     git push origin $tag
 
 test:
-    pytest {{cov}}
+    pytest {{ cov }}
 
 ptw:
-    ptw -- {{cov}}
+    ptw -- {{ cov }}
 
 cov-report:
     coverage report -m
