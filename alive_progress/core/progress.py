@@ -178,22 +178,25 @@ def __alive_bar(config, total=None, *, calibrate=None,
             run.title += (' ',)  # space separator for print_cells.
 
     if config.manual:
-        def bar(percent):  # for manual progress modes, regardless of total.
+        def bar(percent):  # for manual mode (with total or not).
             hook_manager.flush_buffers()  # notify that the current index is about to change.
-            run.percent = max(0., float(percent))
+            run.percent = max(0., float(percent))  # absolute value can't be negative.
             bar_update_hook()
     elif not total:
-        def bar(count=1):  # for unknown progress mode.
+        def bar(count=1):  # for unknown mode, i.e. not manual and not total.
             hook_manager.flush_buffers()  # notify that the current index is about to change.
-            run.count += max(1, int(count))
+            run.count += int(count)  # relative value can be negative.
+            run.count = max(0, run.count)  # but absolute value can't.
             bar_update_hook()
     else:
-        def bar(count=1, *, skipped=False):  # for definite progress mode.
+        def bar(count=1, *, skipped=False):  # for definite mode, i.e. not manual and with total.
             hook_manager.flush_buffers()  # notify that the current index is about to change.
-            count = max(1, int(count))
+            count = int(count)  # relative value can be negative.
             run.count += count
+            run.count = max(0, run.count)  # but absolute value can't.
             if not skipped:
                 run.processed += count
+                run.processed = max(0, run.processed)  # but absolute value can't.
             bar_update_hook()
 
     def start_monitoring(offset=0.):
