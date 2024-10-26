@@ -46,16 +46,16 @@ def fn_simple_eta(logic_total):
     return simple_eta
 
 
-def gen_simple_exponential_smoothing(alfa, fn):
+def gen_simple_exponential_smoothing(alpha: float, fn: Callable[[float, float], float]):
     """Implements a generator with a simple exponential smoothing of some function.
-    Given alfa and y_hat (t-1), we can calculate the next y_hat:
-        y_hat = alfa * y + (1 - alfa) * y_hat
-        y_hat = alfa * y + y_hat - alfa * y_hat
-        y_hat = y_hat + alfa * (y - y_hat)
+    Given alpha and y_hat (t-1), we can calculate the next y_hat:
+        y_hat = alpha * y + (1 - alpha) * y_hat
+        y_hat = alpha * y + y_hat - alpha * y_hat
+        y_hat = y_hat + alpha * (y - y_hat)
 
     Args:
-        alfa (float): the smoothing coefficient
-        fn (Callable): the function
+        alpha: the smoothing coefficient
+        fn: the function
 
     Returns:
 
@@ -67,4 +67,4 @@ def gen_simple_exponential_smoothing(alfa, fn):
     while True:
         p = yield y_hat
         y = fn(*p)
-        y_hat += alfa * (y - y_hat)
+        y_hat += alpha * (y - y_hat)
