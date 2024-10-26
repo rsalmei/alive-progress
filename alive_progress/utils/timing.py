@@ -11,11 +11,6 @@ END = TimeDisplay(1, .1, 4.1, 4.1, '', False, False)
 ETA = RUN._replace(prefix='~', round_sec_on_min=True, clear_sec_on_hour=True)
 
 
-class Refresh:
-    def tick(self) -> 'Refresh':
-        pass
-
-
 def time_display(seconds: float, conf: TimeDisplay) -> str:
     seconds = round(seconds, conf.round)
     if seconds < 60.:
