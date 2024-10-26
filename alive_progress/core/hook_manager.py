@@ -51,23 +51,25 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
                 part = part[:osc] + part[end + s:]
                 if not part:
                     return
-            # this will generate a sequence of lines interspersed with None, which will later
-            # be rendered as the indent filler to align additional lines under the same header.
-            gen = chain.from_iterable(zip(repeat(None), part.splitlines(True)))
-            buffer.extend(islice(gen, 1, None))
+            with cond_refresh:
+                # this will generate a sequence of lines interspersed with None, which will later
+                # be rendered as the indent filler to align additional lines under the same header.
+                gen = chain.from_iterable(zip(repeat(None), part.split('\n')))
+                buffer.extend(islice(gen, 1, None))
         else:
-            header = get_header()
-            spacer = ' ' * len(header)
-            nested = ''.join(line or spacer for line in buffer)
-            text = f'{header}{nested.rstrip()}\n'
             with cond_refresh:
                 if stream in base:  # pragma: no cover
                     term.clear_line()
                     term.clear_end_screen()
-                stream.write(text)
+                if buffer:
+                    header = get_header()
+                    spacer = '\n' + ' ' * len(header)
+                    nested = ''.join(spacer if line is None else line for line in buffer)
+                    buffer[:] = []
+                    stream.write(f'{header}{nested.rstrip()}')
+                stream.write('\n')
                 stream.flush()
                 cond_refresh.notify()
-                buffer[:] = []
 
     # better hook impl, which works even when nested, since __hash__ will be forwarded.
     class Hook(BaseHook):
