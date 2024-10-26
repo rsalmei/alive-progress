@@ -13,8 +13,8 @@ from .configuration import config_handler
 from .hook_manager import buffered_hook_manager, passthrough_hook_manager
 from ..utils import terminal
 from ..utils.cells import combine_cells, fix_cells, print_cells, to_cells
-from ..utils.timing import elapsed_text, eta_text, fn_simple_eta, \
-    gen_simple_exponential_smoothing
+from ..utils.timing import eta_text, fn_simple_eta, gen_simple_exponential_smoothing, \
+    time_display, RUN, END
 
 
 def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, **options: Any):
@@ -279,10 +279,10 @@ def __alive_bar(config, total=None, *, calibrate=None,
         return f'{warning}{monitor_run(f, None)}'
 
     def elapsed_run(f):
-        return f.format(elapsed=elapsed_text(run.elapsed, False))
+        return f.format(elapsed=time_display(run.elapsed, RUN))
 
     def elapsed_end(f):
-        return f.format(elapsed=elapsed_text(run.elapsed, True))
+        return f.format(elapsed=time_display(run.elapsed, END))
 
     def stats_end(f):
         run.rate_text = rate_text(2)
