@@ -9,13 +9,14 @@ from types import SimpleNamespace
 ENCODING = sys.getdefaultencoding()
 
 
-def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
+def buffered_hook_manager(header_template, get_pos, offset, cond_refresh, term):
     """Create and maintain a buffered hook manager, used for instrumenting print
     statements and logging.
 
     Args:
         header_template (): the template for enriching output
         get_pos (Callable[..., Any]): the container to retrieve the current position
+        offset (int): the offset to add to the current position
         cond_refresh: Condition object to force a refresh when printing
         term: the current terminal
 
@@ -121,7 +122,7 @@ def buffered_hook_manager(header_template, get_pos, cond_refresh, term):
 
     # internal data.
     buffers = defaultdict(list)
-    get_header = gen_header(header_template, get_pos) if header_template else null_header
+    get_header = gen_header(header_template, get_pos, offset)
     base = sys.stdout, sys.stderr  # needed for tests.
     before_handlers = {}
 
@@ -154,12 +155,11 @@ def __noop():  # pragma: no cover
     pass
 
 
-def gen_header(header_template, get_pos):  # pragma: no cover
-    def inner():
-        return header_template.format(get_pos())
+def gen_header(header_template, get_pos, offset):  # pragma: no cover
+    def header():
+        return header_template.format(get_pos() + offset)
 
-    return inner
+    def null_header():
+        return ''
 
-
-def null_header():  # pragma: no cover
-    return ''
+    return header if header_template else null_header

@@ -89,6 +89,7 @@ def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, *
             disable (bool): if True, completely disables all output, do not install hooks
             manual (bool): set to manually control the bar position
             enrich_print (bool): enriches print() and logging messages with the bar position
+            enrich_offset (int): the offset to apply to enrich_print
             receipt (bool): prints the nice final receipt, disables if False
             receipt_text (bool): set to repeat the last text message in the final receipt
             monitor (bool|str): configures the monitor widget `152/200 [76%]`
@@ -243,8 +244,8 @@ def __alive_bar(config, total=None, *, calibrate=None,
         term, hook_manager = terminal.get_void(), passthrough_hook_manager()
     else:
         term = terminal.get_term(config.file, config.force_tty, config.max_cols)
-        hook_manager = buffered_hook_manager(
-            header if config.enrich_print else '', current, cond_refresh, term)
+        hook_manager = buffered_hook_manager(header if config.enrich_print else '',
+                                             current, config.enrich_offset, cond_refresh, term)
 
     if term.interactive:
         thread = threading.Thread(target=run, args=_create_spinner_player(config))
