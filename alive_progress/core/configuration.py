@@ -130,7 +130,7 @@ def _format_input_factory(allowed):
 
 def _file_input_factory():
     def _input(x):
-        return x if all(hasattr(x, m) for m in ('write', 'flush', 'fileno')) else ERROR
+        return x if all(hasattr(x, m) for m in ('write', 'flush')) else ERROR
 
     _input.err_help = 'Expected sys.stdout, sys.stderr, or a similar TextIOWrapper object'
     return _input
