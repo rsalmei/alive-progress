@@ -12,15 +12,14 @@
 [![Downloads](https://static.pepy.tech/personalized-badge/alive-progress?period=total&units=international_system&left_color=grey&right_color=orange&left_text=downloads)](https://pepy.tech/project/alive-progress)
 ![GitHub Sponsors](https://img.shields.io/github/sponsors/rsalmei)
 
-
 Have you ever wondered where your lengthy processing was at, and when would it finish? Do you usually hit `RETURN` several times to make sure it didn't crash, or the SSH connection didn't freeze? Have you ever thought it'd be awesome to be able to _pause some processing_ without hassle, return to the Python prompt to manually fix some items, then _seamlessly resume_ it? I did...
 
 I've started this new progress bar thinking about all that, behold the **alive-progress**! 😃
 
 ![alive-progress demo](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-demo.gif)
 
-
 Introducing the newest concept in progress bars for Python! `alive-progress` is in a class of its own, with an array of cool features that set it apart. Here are a few highlights:
+
 - A mesmerizing **live spinner** that reacts to your actual processing speed, i.e., it dynamically gets faster or slower with your throughput, and clearly shows a lengthy task is in progress, i.e., did not crash even if taking too long (and your SSH connection did not freeze if remote).
 - An efficient **multithreaded** bar that updates itself at a fraction of the actual processing speed to keep **CPU usage low** and avoid terminal spamming (1,000,000 iterations per second equates to roughly 60 updates per second), and you can also calibrate it to your liking.
 - An accurate **ETA** (Expected Time of Arrival) with an intelligent _Exponential Smoothing Algorithm_ that shows the time to completion, allowing you to plan your time and manage your workload more effectively.
@@ -31,6 +30,7 @@ Introducing the newest concept in progress bars for Python! `alive-progress` is 
 - It is **highly customizable**, with a smorgasbord of ready-to-use spinner and bar styles, as well as several factories to easily create yours! There's even a super powerful `check()` tool that helps you design your own animations! You can see how the generated frames and animation cycles will look like, exploded on your screen, and even see it _alive_ before installing in `alive-progress`! It's the coolest tool in the world! Unleash your creativity!
 
 ---
+
 ## Table of contents
 
 This README is always evolving, so do take a more comprehensive look from time to time... You might find great new details in other sections! 😊
@@ -38,7 +38,8 @@ This README is always evolving, so do take a more comprehensive look from time t
 <!-- TOC -->
 * [alive-progress](#alive-progress)
   * [Table of contents](#table-of-contents)
-  * [📌 NEW in 3.1 series](#-new-in-31-series)
+  * [📌 What's new in 3.2 series](#-whats-new-in-32-series)
+    * [Previous releases](#previous-releases)
   * [Using `alive-progress`](#using-alive-progress)
     * [Get it](#get-it)
     * [Try it](#try-it)
@@ -47,10 +48,10 @@ This README is always evolving, so do take a more comprehensive look from time t
   * [Displaying messages](#displaying-messages)
   * [Auto-iterating](#auto-iterating)
   * [Modes of operation](#modes-of-operation)
-    * [Definite/unknown: Counters](#definiteunknown-counters)
-    * [Manual: Percentages](#manual-percentages)
-    * [Summary of Modes](#summary-of-modes)
-    * [The `bar()` handlers](#the-bar-handlers)
+    * [Auto and Unknown: Counter](#auto-and-unknown-counter)
+    * [Manual: Percentage](#manual-percentage)
+    * [Widgets available](#widgets-available)
+    * [The different `bar()` handlers](#the-different-bar-handlers)
   * [Styles](#styles)
   * [Configuration](#configuration)
   * [Create your own animations](#create-your-own-animations)
@@ -66,13 +67,33 @@ This README is always evolving, so do take a more comprehensive look from time t
   * [Interesting facts](#interesting-facts)
   * [To do](#to-do)
   * [Python End of Life notice](#python-end-of-life-notice)
-    * [For new Python 2.7 and 3.5](#for-new-python-27-and-35)
-    * [For new Python 3.6](#for-new-python-36)
+    * [For Python 2.7 and 3.5](#for-python-27-and-35)
+    * [For Python 3.6](#for-python-36)
+    * [For Python 3.7 and 3.8](#for-python-37-and-38)
   * [License](#license)
 <!-- TOC -->
 
+## 📌 What's new in 3.2 series
 
-## 📌 NEW in 3.1 series
+After about a year of reassuring stability, the new `alive-progress` has finally landed!
+
+The main features and improvements are:
+
+- The print/logging hooks now support multithreading => a highly requested feature: everything is synchronized now so you can print from different threads without issues! No more queues to send messages to the main thread!
+- Rounded ETAs for long tasks => now the ETA automatically decreases its precision the higher it gets, making it smoother and easier to read!
+- Support for zero and even negative bar increments => now on par with the manual mode, you can call `bar()` with `0` and even `-N` to make it go backwards! Useful when you couldn't make any progress in an iteration or had to roll back something!
+
+And more!
+
+- Custom offset for the enriched print/logging messages => now you can specify a custom `enrich_offset` to use for printed or logged messages, allowing you to start with `on 1:` or continue where you left from previous computations!
+- Improved compatibility with PyInstaller => now custom bars, unknown bars, and spinners work when bundled!
+- Improved compatibility with Celery => it will just work within Celery tasks!
+- drop python 3.7 and 3.8, hello 3.12 and 3.13!
+
+### Previous releases
+
+<details>
+<summary>New in 3.1 series</summary>
 
 A very cool update here! In addition to polishing things up and improving terminal support, now `alive-progress` supports resuming computations!
 
@@ -81,6 +102,7 @@ When processing huge datasets or things that take a long time, you might either 
 You can use it in two ways:
 
 <strong>1.</strong> If you do know where you've stopped:
+
 ```python
 with alive_bar(120000) as bar:
     bar(60000, skipped=True)
@@ -88,9 +110,11 @@ with alive_bar(120000) as bar:
         # process item
         bar()
 ```
+
 Yep, just call `bar(N, skipped=True)` once, with the number of items.
 
 <strong>2.</strong> If you do not know or the items are scattered:
+
 ```python
 with alive_bar(120000) as bar:
     for i in range(120000):
@@ -101,6 +125,7 @@ with alive_bar(120000) as bar:
         # process item
         bar()
 ```
+
 Yep, it's as simple as that! Just call `bar(skipped=True)` when an item is already done, or `bar()` as usual otherwise. You could also share a single `bar(skipped=?)` call at the end, with a bool saying whether you did skip that item or not. Cool, huh?
 
 Also in this version:
@@ -110,9 +135,10 @@ Also in this version:
 - officially supports Python 3.11
 - included [ruff](https://github.com/charliermarsh/ruff) linter before building
 
+</details>
 
 <details>
-<summary>📌 NEW in 3.0 series</summary>
+<summary>New in 3.0 series</summary>
 
 Yep, I could finally get this version out! These are the new goodies:
 
@@ -136,7 +162,7 @@ And last but not least, a more polished layout for you to enjoy your progress!
 </details>
 
 <details>
-<summary>📌 NEW in 2.4 series</summary>
+<summary>New in 2.4 series</summary>
 
 Now, `alive_bar` supports *Dual Line* text mode!
 
@@ -154,7 +180,11 @@ with alive_bar(26, dual_line=True, title='Alphabet') as bar:
             print(f'fail "{c}", retry later')
         time.sleep(0.3)
         bar()
+```
 
+Output:
+
+```
 on 7: fail "H", retry later
 on 10: fail "K", retry later
 Alphabet |███████████████████████████▊            | ▃▅▇ 18/26 [69%] in 6s (3.2/s, eta: 3s)
@@ -165,20 +195,23 @@ There's also a new `finalize` function parameter in `alive_it` which enables you
 </details>
 
 <details>
-<summary>📌 NEW in 2.3 series</summary>
+<summary>New in 2.3 series</summary>
 
 This is all about customization; the core widgets can now be changed:
+
 - send a string to the `monitor`, `elapsed`, and `stats` widgets to make them look anyway you want!
 
 > It's incredible that these strings support all Python format features, so you can e.g., `{percent:.1%}` 😉.
 
 They can be further customized when on the **final receipt**!
+
 - new `monitor_end`, `elapsed_end`, and `stats_end`, with dynamic formats inherited from the standard ones!
 
 > If you've hidden some widgets before, just so they wouldn't appear on the receipt, now you can see them in all their running glory, and hide just the receipt ones! Or the other way around 😜
 
 Another addition, now `alive-progress` beautifully renders its cool final receipt whenever it is stopped, even if you CTRL+C it prematurely! I don't know why I haven't thought about that before...
-```python
+
+```
 Download |██████████████████⚠︎                     | (!) 45/100 [45%] in 4.8s (9.43/s)
 ```
 
@@ -186,13 +219,18 @@ And finally, you can choose to disable CTRL+C at all! The default is the safer `
 <br>Disable it `ctrl_c=False`, to make your interactive `alive_bar` much smoother to use (there are no stack traces if you stop it), and/or if it is at the top-level of your program!
 
 > Beware: If it is e.g. inside a for-loop, it will just continue to the next iteration, which may or may not be what you want...
+
 ```python
 for i in range(10):
     with alive_bar(100, ctrl_c=False, title=f'Download {i}') as bar:
         for i in range(100):
             time.sleep(0.02)
             bar()
+```
 
+Output:
+
+```
 Download 0 |████████▊⚠︎                              | (!) 22/100 [22%] in 0.6s (36.40/s)
 Download 1 |████████████████▊⚠︎                      | (!) 42/100 [42%] in 1.0s (41.43/s)
 Download 2 |██████▍⚠︎                                | (!) 16/100 [16%] in 0.4s (39.29/s)
@@ -204,22 +242,25 @@ Download 7 |████████████⚠︎                          
 Download 8 |██████⚠︎                                 | (!) 15/100 [15%] in 0.4s (36.26/s)
 ...
 ```
+
 </details>
 
 <details>
-<summary>📌 NEW in 2.2 series</summary>
+<summary>New in 2.2 series</summary>
 
 Some major new features, often requested, have finally landed!
+
 - bar title can be dynamically set, changed, or even removed after being displayed
 - new custom fps system, which enables very slow refresh rates (to let it run on those k8s for long periods)
 - the final receipt can be totally hidden (great for special effects, like using the cool spinners standalone)
 - new support for `click.echo()` printing
 - terminal columns detection is safer for exotic environments
 - requires Python 3.7+
+
 </details>
 
 <details>
-<summary>📌 NEW in 2.1 series</summary>
+<summary>New in 2.1 series</summary>
 
 YES! Now `alive-progress` has support for Jupyter Notebooks and also includes a _Disabled_ state! Both were highly sought after, and have finally landed!
 <br>And better, I've implemented an auto-detection mechanism for jupyter notebooks, so it just works, out of the box, without any changes in your code!!
@@ -233,7 +274,7 @@ See for yourself:
 </details>
 
 <details>
-<summary>📌 NEW in 2.0 series</summary>
+<summary>New in 2.0 series</summary>
 
 This is a major breakthrough in `alive-progress`!
 <br>I took 1 year developing it, and I'm very proud of what I've accomplished \o/
@@ -266,10 +307,10 @@ Just install with pip:
 ❯ pip install alive-progress
 ```
 
-
 ### Try it
 
 If you're wondering what styles are builtin, it's `showtime`! ;)
+
 ```python
 from alive_progress.styles import showtime
 
@@ -281,7 +322,6 @@ showtime()
 ![alive-progress spinners](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/showtime-spinners.gif)
 
 I've made these styles just to try all the animation factories I've created, but I think some of them ended up very, very cool! Use them at will, and mix them to your heart's content!
-
 
 Do you want to see actual `alive-progress` bars gloriously running in your system before trying them yourself?
 
@@ -300,13 +340,14 @@ from alive_progress import alive_bar
 import time
 
 for x in 1000, 1500, 700, 0:
-   with alive_bar(x) as bar:
-       for i in range(1000):
-           time.sleep(.005)
-           bar()
+    with alive_bar(x) as bar:
+        for i in range(1000):
+            time.sleep(.005)
+            bar()
 ```
 
 You'll see something like this, with cool animations throughout the process 😜:
+
 ```
 |████████████████████████████████████████| 1000/1000 [100%] in 5.8s (171.62/s)
 |██████████████████████████▋⚠︎            | (!) 1000/1500 [67%] in 5.8s (172.62/s)
@@ -320,15 +361,14 @@ To actually use it, just wrap your normal loop in an `alive_bar` context manager
 
 ```python
 with alive_bar(total) as bar:  # declare your expected total
-    for item in items:         # <<-- your original loop
-        print(item)            # process each item
-        bar()                  # call `bar()` at the end
+    for item in items:  # <<-- your original loop
+        print(item)  # process each item
+        bar()  # call `bar()` at the end
 ```
 
 And it's alive! 👏
 
-So, in short: retrieve the items as always, enter the `alive_bar` context manager with the number of items, and then iterate/process those items, calling `bar()` at the end! It's that simple! :)
-
+So, in a nutshell: retrieve the items as always, enter the `alive_bar` context manager with the number of items, and then iterate/process those items, calling `bar()` at the end! It's that simple! :)
 
 ### Master it
 
@@ -340,10 +380,10 @@ So, in short: retrieve the items as always, enter the `alive_bar` context manage
 
 > You can get creative! Since the bar only goes forward when you call `bar()`, it is **independent of the loop**! So you can use it to monitor anything you want, like pending transactions, broken items, etc., or even call it more than once in the same iteration! So, in the end, you'll get to know how many of those "special" events there were, including their percentage relative to the total!
 
-
 ## Displaying messages
 
 While inside an `alive_bar` context, you can effortlessly display messages tightly integrated with the current progress bar being displayed! It won't break in any way and will even enrich your message!
+
 - the cool `bar.text('message')` and `bar.text = 'message'` set a situational message right within the bar, where you can display something about the current item or the phase the processing is in;
 - the (📌 new) dynamic title, which can be set right at the start, but also be changed anytime with `bar.title('Title')` and `bar.title = 'Title'` — mix with `title_length` to keep the bar from changing its length;
 - the usual Python `print()` statement, where `alive_bar` nicely cleans up the line, prints your message alongside the current bar position at the time, and continues the bar right below it;
@@ -353,7 +393,6 @@ While inside an `alive_bar` context, you can effortlessly display messages tight
 Awesome right? And all of these work just the same in a terminal or in a Jupyter notebook!
 
 ![alive-progress printing messages](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/print-hook.gif)
-
 
 ## Auto-iterating
 
@@ -366,8 +405,8 @@ Simply wrap your items with it, and loop over them as usual!
 ```python
 from alive_progress import alive_it
 
-for item in alive_it(items):   # <<-- wrapped items
-    print(item)                # process each item
+for item in alive_it(items):  # <<-- wrapped items
+    print(item)  # process each item
 ```
 
 HOW COOL IS THAT?! 😜
@@ -378,10 +417,10 @@ Note there isn't any `bar` handle at all in there. But what if you do want it, e
 <br>You can interact with the internal `alive_bar` by just assigning `alive_it` to a variable like this:
 
 ```python
-bar = alive_it(items)          # <<-- bar with wrapped items
-for item in bar:               # <<-- iterate on bar
-    print(item)                # process each item
-    bar.text(f'ok: {item}')    # WOW, it works!
+bar = alive_it(items)  # <<-- bar with wrapped items
+for item in bar:  # <<-- iterate on bar
+    print(item)  # process each item
+    bar.text(f'ok: {item}')  # WOW, it works!
 ```
 
 Note that this is a slightly special `bar`, which does not support `bar()`, since the iterator adapter tracks items automatically for you. Also, it supports `finalize`, which enables you to set the title and/or text of the final receipt:
@@ -396,39 +435,37 @@ alive_it(items, finalize=lambda bar: bar.text('Success!'))
 > - quick adapter use is `for item in alive_it(items)`, where items are automatically tracked;
 > - full adapter use is `bar = alive_it(items)`, where in addition to items being automatically tracked, you get a special iterable `bar` able to customize the inner `alive_progress` however you want.
 
-
 ## Modes of operation
 
-### Definite/unknown: Counters
+### Auto and Unknown: Counter
 
-Actually, the `total` argument is optional. If you do provide it, the bar enters in **definite mode**, the one used for well-bounded tasks. This mode has all the widgets `alive-progress` has to offer: progress, count, throughput, and ETA.
+The default modes are **auto** and **unknown**, which use internally a **counter** to track the progress. They count the number of items processed, and use it to update the progress bar accordingly.
 
-If you don't, the bar enters in **unknown mode**, the one used for unbounded tasks. In this mode, the whole progress bar is animated, as it's not possible to determine the progress, and therefore the ETA. But you still get the count and throughput widgets as usual.
-<br>The cool spinner is still present here alongside the progress bar, both running their animations concurrently and independently of each other, rendering a unique show in your terminal! 😜
+The `total` argument is optional. If you do provide it, the bar enters in **auto mode**. In this mode, the progress of the operation is automatically tracked, and all the widgets `alive-progress` has to offer are available: precise bar, spinner, percentage, counter, throughput, and ETA.
 
-Both definite and unknown modes use internally a **counter** to maintain progress. This is the source value which all widgets are derived from.
+If you don't provide `total`, the bar enters in **unknown mode**. In this mode, the progress is indeterminable, and therefore the ETA, so the whole progress bar is continuously animated. The widgets available are: animated bar, spinner, counter, and throughput.
+> The cool spinner runs completely independently of the animated bar, both running their own animations concurrently, rendering a unique show in your terminal! 😜
 
+Last but not least, the **auto** mode has a unique ability: mark items as skipped, making the throughput and ETA much more accurate! More on that later.
 
-### Manual: Percentages
+### Manual: Percentage
 
-On the other hand, the **manual mode** uses internally a **percentage** to maintain progress. This enables you to get complete control of the bar position! It's usually used to monitor processes that only feed you the percentage of completion, or to generate some kind of special effects.
+The **manual mode**, manually activated by the `manual=True` argument, uses internally a **percentage** to track the progress. It enables you to get complete control of the bar position. It's usually used to monitor processes that only feed you a percentage of completion, or to generate some random special effects.
 
-To use it, just include a `manual=True` argument into `alive_bar` (or `config_handler`), and you get to send any percentage to the `bar()` handler! For example, to set it to 15%, just call `bar(0.15)` — which is 15 / 100.
+You can use it directly with `alive_bar` or via `config_handler`, and it allows you to send percentages to the `bar()` handler! For example, to set it to 15% completion, just call `bar(0.15)` — which is 15 / 100.
 
-You can also use `total` here! If you do provide it, `alive-progress` will infer an internal _counter_ by itself, and thus will be able to offer you the same count, throughput, and ETA widgets!
-<br>If you don't, you'll at least get rough versions of the throughput and ETA widgets. The throughput will use "%/s" (percent per second), and the ETA will be till 1.0 (100%). Both are very inaccurate but better than nothing.
+You can also provide `total` here. If you do, `alive-progress` will automatically infer an internal counter, and will thus be able to offer you all the same widgets available in auto mode!
 
-You can call `bar` in manual mode as frequently as you want! The refresh rate will still be asynchronously computed as usual, according to the current progress and the elapsed time, so you won't ever spam the terminal with more updates than it can handle.
+If you don't provide `total`, you'll at least get rough versions of the throughput and ETA widgets, computed as "%/s" (percentage per second) and until 100%, respectively. Neither of them are very accurate, but they are better than nothing.
 
-
-### Summary of Modes
+### Widgets available
 
 When `total` is provided all is cool:
 
-|   mode   |    counter    |  percentage  | throughput | ETA | over/underflow |
-|:--------:|:-------------:|:------------:|:----------:|:---:|:--------------:|
-| definite | ✅ (user tick) | ✅ (inferred) |     ✅      |  ✅  |       ✅        |
-|  manual  | ✅ (inferred)  | ✅ (user set) |     ✅      |  ✅  |       ✅        |
+|  mode  |    counter    |  percentage  | throughput | ETA | over/underflow |
+|:------:|:-------------:|:------------:|:----------:|:---:|:--------------:|
+|  auto  | ✅ (user tick) | ✅ (inferred) |     ✅      |  ✅  |       ✅        |
+| manual | ✅ (inferred)  | ✅ (user set) |     ✅      |  ✅  |       ✅        |
 
 When it isn't, some compromises have to be made:
 
@@ -437,26 +474,31 @@ When it isn't, some compromises have to be made:
 | unknown | ✅ (user tick) |      ❌       |      ✅       |     ❌      |       ❌        |
 | manual  |       ❌       | ✅ (user set) | ⚠️ (simpler) | ⚠️ (rough) |       ✅        |
 
-But actually it's quite simple, you do not need to think about which mode you should use:
-<br>Just always send the `total` if you have it, and use `manual` if you need it!
-<br>It will just work the best it can! 👏 \o/
+But it's actually simple to understand: you do not need to think about which mode you should use!
+- Just always send the `total` if you have it, and use `manual` if you need it!
 
+That's it! It will just work the best it can! 👏 \o/
 
-### The `bar()` handlers
+### The different `bar()` handlers
 
 The `bar()` handlers support either relative or absolute semantics, depending on the mode:
-- _definite_ and _unknown_ modes use **relative positioning**, so you can just call `bar()` to increment the counter by one, or send any other positive increment like `bar(5)` to increment by those at once;
-- _manual_ modes use **absolute positioning**, so you can just call `bar(0.35)` to instantly put the bar in 35% position — this argument is mandatory here!
 
-> The manual modes enable you to get super creative! Since you can set the bar instantly to whatever position you want, you could:
-> - make it go backwards — perhaps to graphically display the timeout of something;
-> - create special effects — perhaps to act as a real-time gauge of some sort.
+- _auto_ and _unknown_ modes use **optional relative** positioning, so you can just call `bar()` to increment the counter by one, or send any other increment like `bar(200)` to increment by 200 at once;
+  > they even support `bar(0)` and `bar(-5)` to hold or decrement if needed!
+- _manual_ mode uses **mandatory absolute** positioning, so you can call `bar(0.35)` to make the bar instantly jump to 35% progress.
 
-In any case, to retrieve the current count/percentage, just call: `bar.current`:
-- in _definite_ and _unknown_ modes, this provides an **integer** — the actual internal counter;
-- in _manual_ modes, this provides a **float** in the interval [0, 1] — the last percentage set.
+> Both modes enable you to get creative! Since you can just make the bar go instantly to whatever position you want, you can:
+> - make it go backwards — e.g. to graphically display the timeout of something;
+> - create special effects — e.g. to mimic a real-time analog gauge of some sort.
 
-Last but not least, the `bar()` handler of the **definite** mode has a unique ability: skipping items for an accurate ETA! Just call `bar(skipped=False)` or `bar(skipped=True)` to use it. When skipped is True, that item(s) are ignored when computing the rate, and thus not ruining the ETA.
+You can call `bar()` as many times as you want! The terminal refresh rate will always be asynchronously computed according to the current throughput and progress, so you won't risk spamming the terminal with more updates than needed.
+
+In any case, to retrieve the current counter/percentage, just call: `bar.current`:
+
+- in _auto_ and _unknown_ modes, this provides an **integer** — the actual internal counter;
+- in _manual_ mode, this provides a **float** in the interval [0, 1] — the last percentage set.
+
+Finally, the `bar()` handler leverages the **auto** mode unique ability: just call `bar(skipped=True)` or `bar(N, skipped=True)` to use it. When `skipped` is set to=`True`, the associated item(s) are excluded from throughput calculations, preventing skipped items from inaccurately affecting the ETA.
 
 ---
 Maintaining an open source project is hard and time-consuming, and I've put much ❤️ and effort into this.
@@ -468,13 +510,15 @@ If you've appreciated my work, you can back me up with a donation! Thank you �
 
 ---
 
-
 ## Styles
 
 The `showtime` exhibit has an optional argument to choose which show to present, `Show.SPINNERS` (default), `Show.BARS` or `Show.THEMES`, do take a look at them! ;)
 
 ```python
 from alive_progress.styles import showtime, Show
+
+showtime(Show.BARS)
+showtime(Show.THEMES)
 ```
 
 > Note: Please disregard the path in the animated gif below, the correct one is above. These long gifs are very time-consuming to generate, so I can't make another on every single change. Thanks for your understanding.
@@ -486,6 +530,7 @@ And the themes one (📌 new in 2.0):
 ![alive-progress themes](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/showtime-themes.gif)
 
 The `showtime` exhibit also accepts some customization options:
+
 - **fps**: the frames per second rate refresh rate, default is 15;
 - **length**: the length of the bars, default is 40;
 - **pattern**: a filter to choose which ones to display.
@@ -498,58 +543,60 @@ For example to get a marine show, you can `showtime(pattern='boat|fish|crab')`:
 
 > There's also a small utility called `print_chars()`, to help find that cool character to put in your customized spinners and bars, or to determine if your terminal does support Unicode characters.
 
-
 ## Configuration
 
 There are several options to customize both appearance and behavior!
 <br>All of them can be set both directly in the `alive_bar` or globally in the `config_handler`!
 
 These are the options - default values in brackets:
+
 - `title`: an optional, always visible bar title
 - `length`: [`40`] the number of cols to render the animated progress bar
 - `max_cols`: [`80`] the maximum cols to use if not possible to fetch it, like in jupyter
 - `spinner`: the spinner style to be rendered next to the bar
-<br>   ↳ accepts a predefined spinner name, a custom spinner factory, or None
+  <br> ↳ accepts a predefined spinner name, a custom spinner factory, or None
 - `bar`: the bar style to be rendered in known modes
-<br>   ↳ accepts a predefined bar name, a custom bar factory, or None
+  <br> ↳ accepts a predefined bar name, a custom bar factory, or None
 - `unknown`: the bar style to be rendered in the unknown mode
-<br>   ↳ accepts a predefined spinner name, or a custom spinner factory (cannot be None)
+  <br> ↳ accepts a predefined spinner name, or a custom spinner factory (cannot be None)
 - `theme`: [`'smooth'`] a set of matching spinner, bar, and unknown
-<br>   ↳ accepts a predefined theme name
+  <br> ↳ accepts a predefined theme name
 - `force_tty`: [`None`] forces animations to be on, off, or according to the tty (more details [here](#forcing-animations-on-pycharm-jupyter-etc))
-<br>   ↳ None -> auto select, according to the terminal/Jupyter
-<br>   ↳ True -> unconditionally enables animations, but still auto-detects Jupyter Notebooks
-<br>   ↳ False -> unconditionally disables animations, keeping only the final receipt
+  <br> ↳ None -> auto select, according to the terminal/Jupyter
+  <br> ↳ True -> unconditionally enables animations, but still auto-detects Jupyter Notebooks
+  <br> ↳ False -> unconditionally disables animations, keeping only the final receipt
 - `file`: [`sys.stdout`] the file object to use: `sys.stdout`, `sys.stderr`, or a similar `TextIOWrapper`
 - `disable`: [`False`] if True, completely disables all output, do not install hooks
 - `manual`: [`False`] set to manually control the bar position
 - `enrich_print`: [`True`] enriches print() and logging messages with the bar position
+- `enrich_offset`: [`0`] the offset to apply to enrich_print
 - `receipt`: [`True`] prints the nice final receipt, disables if False
 - `receipt_text`: [`False`] set to repeat the last text message in the final receipt
 - `monitor` (bool|str): [`True`] configures the monitor widget `152/200 [76%]`
-<br>   ↳ send a string with `{count}`, `{total}` and `{percent}` to customize it
+  <br> ↳ send a string with `{count}`, `{total}` and `{percent}` to customize it
 - `elapsed` (bool|str): [`True`] configures the elapsed time widget `in 12s`
-<br>   ↳ send a string with `{elapsed}` to customize it
+  <br> ↳ send a string with `{elapsed}` to customize it
 - `stats` (bool|str): [`True`] configures the stats widget `(123.4/s, eta: 12s)`
-<br>   ↳ send a string with `{rate}` and `{eta}` to customize it
+  <br> ↳ send a string with `{rate}` and `{eta}` to customize it
 - `monitor_end` (bool|str): [`True`] configures the monitor widget within final receipt
-<br>   ↳ same as monitor, the default format is dynamic, it inherits `monitor`'s one
+  <br> ↳ same as monitor, the default format is dynamic, it inherits `monitor`'s one
 - `elapsed_end` (bool|str): [`True`] configures the elapsed time widget within final receipt
-<br>   ↳ same as elapsed, the default format is dynamic, it inherits `elapsed`'s one
+  <br> ↳ same as elapsed, the default format is dynamic, it inherits `elapsed`'s one
 - `stats_end` (bool|str): [`True`] configures the stats widget within final receipt
-<br>   ↳ send a string with `{rate}` to customize it (no relation to stats)
+  <br> ↳ send a string with `{rate}` to customize it (no relation to stats)
 - `title_length`: [`0`] fixes the length of titles, or 0 for unlimited
-<br>   ↳ title will be truncated if longer, and a cool ellipsis "…" will appear at the end
+  <br> ↳ title will be truncated if longer, and a cool ellipsis "…" will appear at the end
 - `spinner_length`: [`0`] forces the spinner length, or `0` for its natural one
 - `refresh_secs`: [`0`] forces the refresh period to this, `0` is the reactive visual feedback
 - `ctrl_c`: [`True`] if False, disables CTRL+C (captures it)
 - `dual_line`: [`False`] if True, places the text below the bar
 - `unit`: any text that labels your entities
 - `scale`: the scaling to apply to units: `None`, `SI`, `IEC`, or `SI2`
-<br>   ↳ supports aliases: `False` or `''` -> `None`, `True` -> `SI`, `10` or `'10'` -> `SI`, `2` or `'2'` -> `IEC`
+  <br> ↳ supports aliases: `False` or `''` -> `None`, `True` -> `SI`, `10` or `'10'` -> `SI`, `2` or `'2'` -> `IEC`
 - `precision`: [`1`] how many decimals do display when scaling
 
-And there's also one that can only be set locally in an `alive_bar` context:
+And there's also one that can only be set locally in the `alive_bar` context:
+
 - `calibrate`: maximum theoretical throughput to calibrate the animation speed (more details [here](#fps-calibration))
 
 To set them locally, just send them as keyword arguments to `alive_bar`:
@@ -570,7 +617,6 @@ with alive_bar(total, bar='blocks', spinner='twirls') as bar:
     # the length is 20, the bar is 'blocks' and the spinner is 'twirls'.
     ...
 ```
-
 
 ## Create your own animations
 
@@ -595,15 +641,15 @@ And there's more, I think one of the most impressive achievements I got in this 
 > It's almost like they were... _alive_!! 😄
 > <br>==> Yes, that's where this project's name came from! 😉
 
-
 ### A Spinner Compiler, really?
 
-Now, these generators of cycles and frames are fully consumed ahead of time by the **Spinner Compiler**! This is a very cool new processor that I made inside the _Cell Architecture_ effort, to make all these animations work even in the presence of wide chars or complex grapheme clusters! It was very hard to make these clusters  gradually enter and exit frames, smoothly, while keeping them from breaking the Unicode encoding and especially maintain their original lengths in all frames! Yes, several chars in sequence can represent another completely different symbol, so they cannot ever be split! They have to enter and exit the frame always together, all at once, or the grapheme won't show up at all (an Emoji for instance)!! Enter the **Spinner Compiler**......
+Now, these generators of cycles and frames are fully consumed ahead of time by the **Spinner Compiler**! This is a very cool new processor that I made inside the _Cell Architecture_ effort, to make all these animations work even in the presence of wide chars or complex grapheme clusters! It was very hard to make these clusters gradually enter and exit frames, smoothly, while keeping them from breaking the Unicode encoding and especially maintain their original lengths in all frames! Yes, several chars in sequence can represent another completely different symbol, so they cannot ever be split! They have to enter and exit the frame always together, all at once, or the grapheme won't show up at all (an Emoji for instance)!! Enter the **Spinner Compiler**......
 
 This has made possible some incredible things!! Since this Compiler generates the whole spinner frame data beforehand:
+
 - the grapheme fixes can be applied only once;
 - the animations do not need to be calculated again!
-<br>So, I can just collect all that _ready to play_ animations and be done with it, **no runtime overhead** at all!! 👏
+> So, I can just collect all that _ready to play_ animations and be done with it, **no runtime overhead** at all!! 👏
 
 Also, with the complete frame data compiled and persisted, I could create several commands to **refactor** that data, like changing shapes, replacing chars, adding visual pauses (frame repetitions), generating bouncing effects on-demand over any content, and even transposing cycles with frames!!
 
@@ -628,6 +674,7 @@ The flag seems to move so smoothly because it uses "half-characters"! Since it i
 ### Spinner Factories
 
 The types of factories I've created are:
+
 - `frames`: draws any sequence of characters at will, that will be played frame by frame in sequence;
 - `scrolling`: generates a smooth flow from one side to the other, hiding behind or wrapping upon invisible borders — allows using subjects one at a time, generating several cycles of distinct characters;
 - `bouncing`: similar to `scrolling`, but makes the animations bounce back to the start, hiding behind or immediately bouncing upon invisible borders;
@@ -636,7 +683,6 @@ The types of factories I've created are:
 - `delayed`: get any other factory and copy it multiple times, increasingly skipping some frames on each one! very cool effects are made here!
 
 For more details please look at their docstrings, which are very complete.
-
 
 ### Bar Factories
 
@@ -720,7 +766,6 @@ In [21]: next(gen, None)
 
 Rinse and repeat till the final receipt appears, and there'll be no faulty transactions anymore. 😄
 
-
 ### Loop-less use
 
 So, you need to monitor a fixed operation, without any loops, right?
@@ -747,14 +792,14 @@ You can use my other open source project [about-time](https://github.com/rsalmei
 ```python
 from about_time import about_time
 
-with about_time() as t_total:          # this about_time will measure the whole time of the block.
-    with about_time() as t1            # the other four will get the relative timings within the whole.
-        corpus = read_file(file)       # `about_time` supports several calling conventions, including one-liners.
-    with about_time() as t2            # see its documentation for more details.
+with about_time() as t_total:  # this about_time will measure the whole time of the block.
+    with about_time() as t1:  # the other four will get the relative timings within the whole.
+        corpus = read_file(file)  # `about_time` supports several calling conventions, including one-liners.
+    with about_time() as t2:  # see its documentation for more details.
         tokens = tokenize(corpus)
-    with about_time() as t3
+    with about_time() as t3:
         data = process(tokens)
-    with about_time() as t4
+    with about_time() as t4:
         resp = send(data)
 
 print(f'percentage1 = {t1.duration / t_total.duration}')
@@ -770,21 +815,20 @@ For example, if the timings you found were 10%, 30%, 20%, and 40%, you'd use 0.1
 ```python
 with alive_bar(4, manual=True) as bar:
     corpus = read_big_file()
-    bar(0.1)                           # 10%
+    bar(0.1)  # 10%
     tokens = tokenize(corpus)
-    bar(0.4)                           # 30% + 10% from previous steps
+    bar(0.4)  # 30% + 10% from previous steps
     data = process(tokens)
-    bar(0.6)                           # 20% + 40% from previous steps
+    bar(0.6)  # 20% + 40% from previous steps
     resp = send(data)
-    bar(1.)                            # always 1. in the last step
+    bar(1.)  # always 1. in the last step
 ```
 
 That's it! The user experience and ETA should be greatly improved now.
 
-
 ### FPS Calibration
 
-So, you want to calibrate the engine?
+Yes, you can calibrate the spinner speed!
 
 The `alive-progress` bars have cool visual feedback of the current throughput, so you can actually **see** how fast your processing is, as the spinner runs faster or slower with it.
 <br>For this to happen, I've put together and implemented a few fps curves to empirically find which one gave the best feel of speed:
@@ -803,7 +847,6 @@ For example, take a look at the effect these very different calibrations have, r
 ![alive-progress calibration](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-calibration.gif)
 
 > So, if your processing hardly gets to 20 items per second, and you think `alive-progress` is rendering sluggish, you could increase that sense of speed by calibrating it to let's say `40`, and it will be running waaaay faster... It is better to always leave some headroom and calibrate it to something between 50% and 100% more, and then tweak it from there to find the one you like the most! :)
-
 
 ### Forcing animations on PyCharm, Jupyter, etc.
 
@@ -828,6 +871,7 @@ with alive_bar(1000, force_tty=True) as bar:
 ```
 
 The values accepted are:
+
 - `force_tty=True` -> always enables animations, and auto-detects Jupyter Notebooks!
 - `force_tty=False` -> always disables animations, keeping only the final receipt
 - `force_tty=None` (default) -> auto detect, according to the terminal's tty state
@@ -836,25 +880,22 @@ You can also set it system-wide using `config_handler`, so you don't need to pas
 
 > Do note that PyCharm's console and Jupyter notebooks are heavily instrumented and thus have much more overhead, so the outcome may not be as fluid as you would expect. On top of that, Jupyter notebooks do not support ANSI Escape Codes, so I had to develop some workarounds to emulate functions like "clear the line" and "clear from cursor"... To see the fluid and smooth `alive_bar` animations as I intended, always prefer a full-fledged terminal.
 
-
 ## Interesting facts
 
 - This whole project was implemented in functional style;
 - It uses extensively (and very creatively) Python _Closures_ and _Generators_, e.g. all [spinners](https://github.com/rsalmei/alive-progress/blob/main/alive_progress/animations/spinners.py#L10) are made with cool _Generator Expressions_! Besides it, there are other cool examples like the [exhibit](https://github.com/rsalmei/alive-progress/blob/main/alive_progress/styles/exhibit.py#L42) module, and the core [spinner player](https://github.com/rsalmei/alive-progress/blob/main/alive_progress/animations/utils.py#L10-L17)/[spinner runner](https://github.com/rsalmei/alive-progress/blob/main/alive_progress/animations/spinner_compiler.py#L233) generators; 😜
-- Until 2.0, `alive-progress` hadn't had any dependency. Now it has two: one is [about-time](https://github.com/rsalmei/about-time) (another very cool project of mine if I say so myself), to track the spinner compilation times and generate its human-friendly renditions. The other is [grapheme](https://github.com/alvinlindstam/grapheme), to detect grapheme cluster breaks (I've opened an [issue](https://github.com/alvinlindstam/grapheme/issues/13) there asking about the future and correctness of it, and the author guarantees he intends to update the project on every new Unicode version);
-- Also, until 2.0 `alive-progress` hadn't had a single Python class! Now it has a few tiny ones for very specific reasons (change callables, iterator adapter, and some descriptors for the widgets).
-<br>Everything else is a function, which generates other functions internally with some state on the parent, i.e. _Closures_. I've used them to create spinner factories, bar factories, the global configuration, the system hooks, the spinner compiler (which is also a big _Function Decorator_), even `alive_bar` itself is a function! And in the latter mostly, I dynamically plug several other functions into the main one (Python functions have a `__dict__` just like classes do). 😝
-
+- Until 2.0, `alive-progress` hadn't had any dependency. Now it has two: one is [about-time](https://github.com/rsalmei/about-time) (another interesting project of mine, if I say so myself), which is used to track the time it takes for the spinner compilation, and to generate its human-friendly renditions. The other is [grapheme](https://github.com/alvinlindstam/grapheme), to detect grapheme cluster breaks (I've opened an [issue](https://github.com/alvinlindstam/grapheme/issues/13) there asking about the future and correctness of it, and the author guarantees he intends to update the project on every new Unicode version);
+- Also, until 2.0, `alive-progress` hadn't had a single Python class! Now it has a few tiny ones for very specific reasons (change callables, iterator adapters, and some descriptors for the `alive_bar` widgets).
+- Everything else is either a function or a closure, which generate other closures internally with some state on the parent context. I've used them to create spinner factories, bar factories, the global configuration, the system hooks, the spinner compiler (which is also a big _Function Decorator_), etc.! Even `alive_bar` itself is just a function! Although, to be fair, it is "just" a function where I dynamically plug several closures from within into itself (remember that Python functions have a `__dict__` just like classes do 😝).
 
 ## To do
 
-- enable multiple simultaneous bars for nested or multiple activities (the most requested, but very complex)
-- reset a running bar context, i.e. run in unknown mode while "quantifying" then switch to definite mode
-- dynamic bar width rendition, which notices terminal size changes and shrink or expand the bar as needed (currently `alive_bar` does notice terminal size changes, but just truncates the line accordingly)
-- improve test coverage, currently at ~~77~~89% branch coverage (but it's very hard since it's multithreaded, full of stateful closures, and includes system print hooks)
-- create a `contrib` system somehow, to allow a simple way to share cool spinners and bars from users
-- support colors in spinners and bars (it's very hard, since color codes alter string sizes, which makes it tricky to synchronize animations, besides correctly slicing, reversing, and iterating fragments of strings while _also maintaining color codes_ is very, very complex)
-  - update here: this may be much simpler now with the new _Cell Architecture_!
+- enable multiple simultaneous bars for nested or multiple activities (the most requested feature, but very complex).
+- reset a running bar context, i.e. run in unknown mode while "quantifying" the work, then switch to the auto mode.
+- dynamic bar width rendition, which notices terminal size changes and shrink or expand the bar as needed (currently `alive_bar` does notice terminal size changes, but just truncates the line accordingly).
+- improve test coverage, currently at 87% branch coverage (but it's very hard since it's multithreaded, full of stateful closures, and includes system print hooks).
+- create a `contrib` system somehow, to allow a simple way to share cool spinners and bars from users.
+- support colors in spinners and bars (it's very hard, since color codes alter string sizes, which makes it tricky to synchronize animations and correctly slicing, reversing, and iterating fragments of strings while _still keeping color codes_--which is very, very complex) --> probably simpler now with the new _Cell Architecture_.
 - any other ideas are welcome!
 
 <details>
@@ -885,6 +926,7 @@ You can also set it system-wide using `config_handler`, so you don't need to pas
 - Python logging support
 - exponential smoothing of ETA time series
 - create an exhibition for themes
+
 </details>
 
 <details>
@@ -892,6 +934,7 @@ You can also set it system-wide using `config_handler`, so you don't need to pas
 
 <br>Complete [here](https://github.com/rsalmei/alive-progress/blob/main/CHANGELOG.md).
 
+- 3.2.0: print/logging hooks now support multithreading, rounded ETAs for long tasks, support for zero and negative bar increments, custom offset for enriched print/logging messages, improved compatibility with PyInstaller and Celery, drop 3.7 and 3.8, hello 3.12 and 3.13
 - 3.1.4: support spaces at the start and end of titles and units
 - 3.1.3: better error handling of invalid `alive_it` calls, detect nested uses of alive_progress and throw a clearer error message
 - 3.1.2: fix some exotic ANSI Escape Codes not being printed (OSC)
@@ -925,8 +968,8 @@ You can also set it system-wide using `config_handler`, so you don't need to pas
 - 1.1.0: new manual mode
 - 1.0.1: pycharm console support with force_tty, improve compatibility with Python stdio streams
 - 1.0.0: first public release, already very complete and mature
-</details>
 
+</details>
 
 ## Python End of Life notice
 
@@ -935,20 +978,26 @@ You can also set it system-wide using `config_handler`, so you don't need to pas
 But don't worry if you can't migrate just yet: `alive_progress` versions are perennial, so just keep using the one that works for you and you're good.
 <br>I just strongly recommend setting older `alive_progress` packages in a requirements.txt file with the following formats. These will always fetch the latest build releases previous to a given version, so, if I ever release bug fixes, you'll get them too.
 
-### For new Python 2.7 and 3.5
+### For Python 2.7 and 3.5
 
 ```sh
 ❯ pip install -U "alive_progress<2"
 ```
 
-### For new Python 3.6
+### For Python 3.6
 
 ```sh
 ❯ pip install -U "alive_progress<2.2"
 ```
 
+### For Python 3.7 and 3.8
+
+```sh
+❯ pip install -U "alive_progress<3.2"
+```
 
 ## License
+
 This software is licensed under the MIT License. See the LICENSE file in the top distribution directory for the full license text.
 
 
