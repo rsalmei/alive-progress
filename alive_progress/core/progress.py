@@ -6,7 +6,8 @@ import math
 import threading
 import time
 from contextlib import contextmanager
-from typing import Any, Callable, Collection, Iterable, Optional, TypeVar
+from typing import Any, Callable, Optional, TypeVar
+from collections.abc import Collection, Iterable
 
 from .calibration import calibrated_fps, custom_fps
 from .configuration import config_handler

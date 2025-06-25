@@ -69,7 +69,7 @@ def demo(sleep=None):
             for i in range(1, case.count + 1):
                 time.sleep(sleep or .003)
                 if manual:
-                    bar((float(i) / (total or case.count)))
+                    bar(float(i) / (total or case.count))
                 else:
                     bar()
                 if case.hooks and i:
