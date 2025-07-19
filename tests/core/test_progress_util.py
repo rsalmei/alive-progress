@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from alive_progress.core.progress import _GatedAssignFunction, _GatedFunction, _render_title
+from alive_progress.core.progress import _AssignFunction, _Function, _GatedFunction, _render_title
 from alive_progress.utils.cells import join_cells
 
 
@@ -32,23 +32,42 @@ def test_render_title(length, text, expected):
 
 def test_gated_properties():
     class AClass:
+        always = _Function()
         readonly = _GatedFunction()
-        assignable = _GatedAssignFunction()
+        assignable = _AssignFunction()
 
     instance, m = AClass(), mock.Mock()
-    instance._handle = True
+    instance._always = lambda: 'ok'
     instance._readonly = lambda: 1
     instance._assignable = m
 
-    assert instance.readonly() == 1
+    instance._handle = True
+    assert instance.always() == 'ok'
+    assert instance.readonly() == 1  # works.
 
     instance.assignable()
     m.assert_called_once_with()
 
     m.reset_mock()
-    instance.assignable(2)
+    instance.assignable(2)  # as parameter.
     m.assert_called_once_with(2)
 
     m.reset_mock()
-    instance.assignable = 3
+    instance.assignable = 3  # as attribute.
+    m.assert_called_once_with(3)
+
+    instance._handle = False
+    assert instance.always() == 'ok'
+    assert instance.readonly() is None  # is None when handle is False.
+
+    m.reset_mock()
+    instance.assignable()
+    m.assert_called_once_with()
+
+    m.reset_mock()
+    instance.assignable(2)  # as parameter.
+    m.assert_called_once_with(2)
+
+    m.reset_mock()
+    instance.assignable = 3  # as attribute.
     m.assert_called_once_with(3)
