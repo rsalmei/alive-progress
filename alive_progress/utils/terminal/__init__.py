@@ -56,7 +56,7 @@ def get_term(file=None, force_tty=None, cols=None):
     if file is None:
         file = sys.stdout
 
-    base = tty.new(file, cols or 80)
+    base = tty.new(file, cols or 100)
     if hasattr(file, 'isatty') and file.isatty() if force_tty is None else force_tty:
         return _create(jupyter.get_from(base) if _is_notebook() else base, True)
     return _create(non_tty.get_from(base), False)
