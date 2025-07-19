@@ -59,5 +59,5 @@ setup(
     packages=find_packages(exclude=['tests*']),
     data_files=[('', ['LICENSE'])],
     python_requires='>=3.9, <4',
-    install_requires=['about_time==4.2.1', 'graphemeu'],
+    install_requires=['about_time==4.2.1', 'graphemeu==0.7.2'],
 )
