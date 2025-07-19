@@ -430,7 +430,7 @@ class _Function(_ReadOnlyProperty):  # pragma: no cover
         return getattr(obj, self.prop)
 
 
-class _AssignFunction(_GatedFunction):  # pragma: no cover
+class _AssignFunction(_Function):  # pragma: no cover
     """An ungated descriptor that provides a setter function even after the bar has finished."""
 
     def __set__(self, obj, value):
