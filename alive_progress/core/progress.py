@@ -5,6 +5,7 @@ It's because I import metadata from main init, directly in setup.py, which impor
 import math
 import threading
 import time
+import io
 from contextlib import contextmanager
 from typing import Any, Callable, Optional, TypeVar
 from collections.abc import Collection, Iterable
@@ -139,7 +140,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
         with cond_refresh:
             while thread:
                 event_renderer.wait()
-                alive_repr(next(spinner_player), spinner_suffix)
+                alive_repr(term, next(spinner_player), spinner_suffix)
                 cond_refresh.wait(1. / fps(run.rate))
 
     run.rate, run.init, run.elapsed, run.percent = 0., 0., 0., 0.
@@ -151,22 +152,21 @@ def __alive_bar(config, total=None, *, calibrate=None,
         run.elapsed = 1.23
         run.rate = 9876.54
 
-        def main_update_hook():
-            pass
+        main_update_hook = _noop
     else:
         def main_update_hook():
             run.elapsed = time.perf_counter() - run.init
             run.rate = gen_rate.send((processed(), run.elapsed))
 
-    def alive_repr(spinner=None, spinner_suffix=None):
+    def alive_repr(out, spinner=None, spinner_suffix=None):
         main_update_hook()
 
         fragments = (run.title, bar_repr(run.percent), bar_suffix, spinner, spinner_suffix,
                      monitor(), elapsed(), stats(), *run.text)
 
-        run.last_len = print_cells(fragments, term.cols(), term, run.last_len)
-        term.write(run.suffix)
-        term.flush()
+        run.last_len = print_cells(fragments, out.cols(), out, run.last_len)
+        out.write(run.suffix)
+        out.flush()
 
     def set_text(text=None):
         if text and config.dual_line:
@@ -218,7 +218,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
     def pause_monitoring():
         event_renderer.clear()
         offset = stop_monitoring()
-        alive_repr()
+        alive_repr(term)
         term.write('\n')
         term.flush()
         try:
@@ -339,9 +339,12 @@ def __alive_bar(config, total=None, *, calibrate=None,
     stats = _Widget(stats_run, config.stats, stats_default)
     stats_end = _Widget(stats_end, config.stats_end, '({rate})' if stats.f[:-1] else '')
 
+    def get_receipt():
+        return _get_receipt(alive_repr)
+
     bar_handle = __AliveBarHandle(pause_monitoring, set_title, set_text,
                                   current, lambda: run.monitor_text, lambda: run.rate_text,
-                                  lambda: run.eta_text, lambda: run.elapsed)
+                                  lambda: run.eta_text, lambda: run.elapsed, get_receipt)
     set_text(), set_title()
     start_monitoring()
     try:
@@ -366,11 +369,19 @@ def __alive_bar(config, total=None, *, calibrate=None,
             if not config.receipt_text:
                 set_text()
             term.clear_end_screen()
-            alive_repr()
+            alive_repr(term)
             term.write('\n')
         else:
             term.clear_line()
+        main_update_hook = _noop  # freeze the final elapsed, rate and eta values.
         term.flush()
+
+
+def _get_receipt(alive_repr):
+    buffer = io.StringIO()
+    tbuf = terminal.get_term(buffer, True, 1000)  # large enough to not truncate.
+    alive_repr(tbuf)
+    return buffer.getvalue().strip()
 
 
 class _Widget:  # pragma: no cover
@@ -391,7 +402,7 @@ class _Widget:  # pragma: no cover
 
 
 class _ReadOnlyProperty:  # pragma: no cover
-    """A read-only descriptor that calls a getter function."""
+    """A descriptor that provides a read-only property, which calls a getter function."""
 
     def __set_name__(self, owner, name):
         self.prop = f'_{name}'
@@ -404,7 +415,7 @@ class _ReadOnlyProperty:  # pragma: no cover
 
 
 class _GatedFunction(_ReadOnlyProperty):  # pragma: no cover
-    """A gated descriptor that calls a getter function, but only if the handle is set."""
+    """A gated descriptor that provides a function only while the bar is running."""
 
     def __get__(self, obj, objtype=None):
         if obj._handle:
@@ -412,8 +423,15 @@ class _GatedFunction(_ReadOnlyProperty):  # pragma: no cover
         return _noop
 
 
-class _GatedAssignFunction(_GatedFunction):  # pragma: no cover
-    """A gated descriptor that calls a setter function, but only if the handle is set."""
+class _Function(_ReadOnlyProperty):  # pragma: no cover
+    """An ungated descriptor that provides a function even after the bar has finished."""
+
+    def __get__(self, obj, objtype=None):
+        return getattr(obj, self.prop)
+
+
+class _AssignFunction(_GatedFunction):  # pragma: no cover
+    """An ungated descriptor that provides a setter function even after the bar has finished."""
 
     def __set__(self, obj, value):
         self.__get__(obj)(value)
@@ -422,19 +440,20 @@ class _GatedAssignFunction(_GatedFunction):  # pragma: no cover
 class __AliveBarHandle:
     pause = _GatedFunction()
     current = _ReadOnlyProperty()
-    text = _GatedAssignFunction()
-    title = _GatedAssignFunction()
+    text = _AssignFunction()
+    title = _AssignFunction()
     monitor = _ReadOnlyProperty()
     rate = _ReadOnlyProperty()
     eta = _ReadOnlyProperty()
     elapsed = _ReadOnlyProperty()
+    receipt = _Function()
 
     def __init__(self, pause, set_title, set_text, get_current, get_monitor, get_rate, get_eta,
-                 get_elapsed):
+                 get_elapsed, get_receipt):
         self._handle, self._pause, self._current = None, pause, get_current
         self._title, self._text = set_title, set_text
         self._monitor, self._rate, self._eta = get_monitor, get_rate, get_eta
-        self._elapsed = get_elapsed
+        self._elapsed, self._receipt = get_elapsed, get_receipt
 
     # support for disabling the bar() implementation.
     def __call__(self, *args, **kwargs):
