@@ -114,8 +114,8 @@ def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, *
             unit (str): any text that labels your entities
             scale (any): the scaling to apply to units: 'SI', 'IEC', 'SI2'
             precision (int): how many decimals do display when scaling
-
     """
+
     try:
         config = config_handler(**options)
     except Exception as e:
@@ -341,7 +341,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
 
     bar_handle = __AliveBarHandle(pause_monitoring, set_title, set_text,
                                   current, lambda: run.monitor_text, lambda: run.rate_text,
-                                  lambda: run.eta_text)
+                                  lambda: run.eta_text, lambda: run.elapsed)
     set_text(), set_title()
     start_monitoring()
     try:
@@ -391,6 +391,8 @@ class _Widget:  # pragma: no cover
 
 
 class _ReadOnlyProperty:  # pragma: no cover
+    """A read-only descriptor that calls a getter function."""
+
     def __set_name__(self, owner, name):
         self.prop = f'_{name}'
 
@@ -402,6 +404,8 @@ class _ReadOnlyProperty:  # pragma: no cover
 
 
 class _GatedFunction(_ReadOnlyProperty):  # pragma: no cover
+    """A gated descriptor that calls a getter function, but only if the handle is set."""
+
     def __get__(self, obj, objtype=None):
         if obj._handle:
             return getattr(obj, self.prop)
@@ -409,6 +413,8 @@ class _GatedFunction(_ReadOnlyProperty):  # pragma: no cover
 
 
 class _GatedAssignFunction(_GatedFunction):  # pragma: no cover
+    """A gated descriptor that calls a setter function, but only if the handle is set."""
+
     def __set__(self, obj, value):
         self.__get__(obj)(value)
 
@@ -421,11 +427,14 @@ class __AliveBarHandle:
     monitor = _ReadOnlyProperty()
     rate = _ReadOnlyProperty()
     eta = _ReadOnlyProperty()
+    elapsed = _ReadOnlyProperty()
 
-    def __init__(self, pause, set_title, set_text, get_current, get_monitor, get_rate, get_eta):
+    def __init__(self, pause, set_title, set_text, get_current, get_monitor, get_rate, get_eta,
+                 get_elapsed):
         self._handle, self._pause, self._current = None, pause, get_current
         self._title, self._text = set_title, set_text
         self._monitor, self._rate, self._eta = get_monitor, get_rate, get_eta
+        self._elapsed = get_elapsed
 
     # support for disabling the bar() implementation.
     def __call__(self, *args, **kwargs):
