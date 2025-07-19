@@ -1,6 +1,4 @@
-from distutils.core import setup
-
-from setuptools import find_packages
+from setuptools import find_packages, setup
 
 import alive_progress
 
@@ -54,10 +52,11 @@ setup(
         'Programming Language :: Python :: 3.13',
         'Programming Language :: Python :: 3.14',
     ],
-    keywords='progress bar progress-bar progressbar spinner eta monitoring python terminal '
-             'multi-threaded REPL alive animated visual feedback simple live efficient monitor '
-             'stats elapsed time throughput'.split(),
+    keywords='progress bar progress-bar progressbar spinner eta monitoring python terminal'
+             ' multithreaded REPL alive animated visual feedback simple live efficient monitor'
+             ' stats elapsed time throughput'.split(),
     packages=find_packages(exclude=['tests*']),
+    package_data={'alive_progress': ['py.typed']},
     data_files=[('', ['LICENSE'])],
     python_requires='>=3.9, <4',
     install_requires=['about_time==4.2.1', 'graphemeu==0.7.2'],
