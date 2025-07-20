@@ -684,7 +684,7 @@ But how can you see these effects? Does the effect you created look good? Or is 
 
 ![alive-progress check tool](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/alive-spinner-check.png)
 
-It's awesome if I say so myself, isn't it? And a very complex piece of software I'm proud of, [take a look at its code](alive_progress/animations/spinner_compiler.py) if you'd like.
+It's awesome if I say so myself, isn't it? And a very complex piece of software I'm proud of, [take a look at its code](https://github.com/rsalmei/alive-progress/blob/main/alive_progress/animations/spinner_compiler.py) if you'd like.
 
 And the `check` tool is much more powerful! For instance, you can see the codepoints of the frames!!! And maybe have a glimpse of why this version was so, so very hard and complex to make...
 
@@ -910,7 +910,7 @@ You can also set it system-wide using `config_handler`, so you don't need to pas
 
 - This whole project was implemented in functional style;
 - It uses extensively (and very creatively) Python _Closures_ and _Generators_, e.g. all [spinners](https://github.com/rsalmei/alive-progress/blob/main/alive_progress/animations/spinners.py#L10) are made with cool _Generator Expressions_! Besides it, there are other cool examples like the [exhibit](https://github.com/rsalmei/alive-progress/blob/main/alive_progress/styles/exhibit.py#L42) module, and the core [spinner player](https://github.com/rsalmei/alive-progress/blob/main/alive_progress/animations/utils.py#L10-L17)/[spinner runner](https://github.com/rsalmei/alive-progress/blob/main/alive_progress/animations/spinner_compiler.py#L233) generators; 😜
-- Until 2.0, `alive-progress` hadn't had any dependency. Now it has two: one is [about-time](https://github.com/rsalmei/about-time) (another interesting project of mine, if I say so myself), which is used to track the time it takes for the spinner compilation, and to generate its human-friendly renditions. The other is [grapheme](https://github.com/alvinlindstam/grapheme), to detect grapheme cluster breaks (I've opened an [issue](https://github.com/alvinlindstam/grapheme/issues/13) there asking about the future and correctness of it, and the author guarantees he intends to update the project on every new Unicode version);
+- Until 2.0, `alive-progress` hadn't had any dependency. Now it has two: one is [about-time](https://github.com/rsalmei/about-time) (another interesting project of mine, if I say so myself), which is used to track the time it takes for the spinner compilation, and to generate its human-friendly renditions. The other is [graphemeu](https://github.com/timendum/grapheme), to detect grapheme cluster breaks (updated from [grapheme](https://github.com/alvinlindstam/grapheme) which is unmaintained—this new one has updated the project with newer Unicode versions and is actively maintained);
 - Also, until 2.0, `alive-progress` hadn't had a single Python class! Now it has a few tiny ones for very specific reasons (change callables, iterator adapters, and some descriptors for the `alive_bar` widgets).
 - Everything else is either a function or a closure, which generate other closures internally with some state on the parent context. I've used them to create spinner factories, bar factories, the global configuration, the system hooks, the spinner compiler (which is also a big _Function Decorator_), etc.! Even `alive_bar` itself is just a function! Although, to be fair, it is "just" a function where I dynamically plug several closures from within into itself (remember that Python functions have a `__dict__` just like classes do 😝).
 
@@ -918,6 +918,7 @@ You can also set it system-wide using `config_handler`, so you don't need to pas
 
 - enable multiple simultaneous bars for nested or multiple activities (the most requested feature, but very complex).
 - reset a running bar context, i.e. run in unknown mode while "quantifying" the work, then switch to the auto mode.
+- update the total of a running bar, so it can be used in a dynamic way, e.g. to show the progress of a file download or maybe a long-running task that has a variable number of items to process like a web scraper.
 - dynamic bar width rendition, which notices terminal size changes and shrink or expand the bar as needed (currently `alive_bar` does notice terminal size changes, but just truncates the line accordingly).
 - improve test coverage, currently at 87% branch coverage (but it's very hard since it's multithreaded, full of stateful closures, and includes system print hooks).
 - create a `contrib` system somehow, to allow a simple way to share cool spinners and bars from users.
