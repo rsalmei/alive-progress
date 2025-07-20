@@ -38,20 +38,20 @@ This README is always evolving, so do take a more comprehensive look from time t
 <!-- TOC -->
 * [alive-progress](#alive-progress)
   * [Table of contents](#table-of-contents)
-  * [📌 What's new in 3.2 series](#-whats-new-in-32-series)
+  * [📌 What's new in 3.3 series](#-whats-new-in-33-series)
     * [Previous releases](#previous-releases)
   * [Using `alive-progress`](#using-alive-progress)
     * [Get it](#get-it)
     * [Try it](#try-it)
     * [Awake it](#awake-it)
     * [Master it](#master-it)
-  * [Displaying messages](#displaying-messages)
+  * [The `bar` handler](#the-bar-handler)
   * [Auto-iterating](#auto-iterating)
   * [Modes of operation](#modes-of-operation)
     * [Auto and Unknown: Counter](#auto-and-unknown-counter)
     * [Manual: Percentage](#manual-percentage)
     * [Widgets available](#widgets-available)
-    * [The different `bar()` handlers](#the-different-bar-handlers)
+    * [The different `bar()` handler semantics](#the-different-bar-handler-semantics)
   * [Styles](#styles)
   * [Configuration](#configuration)
   * [Create your own animations](#create-your-own-animations)
@@ -73,7 +73,27 @@ This README is always evolving, so do take a more comprehensive look from time t
   * [License](#license)
 <!-- TOC -->
 
-## 📌 What's new in 3.2 series
+## 📌 What's new in 3.3 series
+
+The latest `alive-progress` release is finally here, and it brings some exciting improvements! 🎉
+
+Here's a summary of the most notable changes:
+
+- Now the final receipt is available in the alive_bar handle, even after the bar has finished!
+    - This allows you to access the final receipt data and use it in your code, such as logging or displaying it in a custom way.
+- You can change the bar title and text even after it has finished, so you can update the final receipt with new information or context.
+- Included the elapsed time in the alive_bar handle, with full precision, so you can access the exact time it took to complete your processing.
+
+Technical changes:
+
+- Changed the `grapheme` dependency which was no longer maintained to `graphemeu`, which is a maintained fork of the original one.
+- Added `py.typed` in the distribution to satisfy mypy and other type checking tools.
+- Included Python 3.14 support (in CI for now).
+
+### Previous releases
+
+<details>
+<summary>New in 3.2 series</summary>
 
 After about a year of reassuring stability, the new `alive-progress` has finally landed!
 
@@ -90,7 +110,7 @@ And more!
 - Improved compatibility with Celery => it will just work within Celery tasks!
 - drop python 3.7 and 3.8, hello 3.12 and 3.13!
 
-### Previous releases
+</details>
 
 <details>
 <summary>New in 3.1 series</summary>
@@ -372,27 +392,33 @@ So, in a nutshell: retrieve the items as always, enter the `alive_bar` context m
 
 ### Master it
 
-- `items` can be any iterable, like for example, a queryset;
-- the first argument of the `alive_bar` is the expected total, like `qs.count()` for querysets, `len(items)` for iterables with length, or even a static number;
-- the call `bar()` is what makes the bar go forward — you usually call it in every iteration, just after finishing an item;
-- if you call `bar()` too much (or too few at the end), the bar will graphically render that deviation from the expected `total`, making it very easy to notice overflows and underflows;
-- to retrieve the current bar count or percentage, call `bar.current`.
-
-> You can get creative! Since the bar only goes forward when you call `bar()`, it is **independent of the loop**! So you can use it to monitor anything you want, like pending transactions, broken items, etc., or even call it more than once in the same iteration! So, in the end, you'll get to know how many of those "special" events there were, including their percentage relative to the total!
-
-## Displaying messages
-
-While inside an `alive_bar` context, you can effortlessly display messages tightly integrated with the current progress bar being displayed! It won't break in any way and will even enrich your message!
-
-- the cool `bar.text('message')` and `bar.text = 'message'` set a situational message right within the bar, where you can display something about the current item or the phase the processing is in;
-- the (📌 new) dynamic title, which can be set right at the start, but also be changed anytime with `bar.title('Title')` and `bar.title = 'Title'` — mix with `title_length` to keep the bar from changing its length;
-- the usual Python `print()` statement, where `alive_bar` nicely cleans up the line, prints your message alongside the current bar position at the time, and continues the bar right below it;
-- the standard Python `logging` framework, including file outputs, is also enriched exactly like the previous one;
-- if you're using click CLI lib, you can even use `click.echo()` to print styled text.
-
-Awesome right? And all of these work just the same in a terminal or in a Jupyter notebook!
+- The `items` argument can be any iterable, like for example, a queryset.
+- The first argument of the `alive_bar` is the expected total, like `qs.count()` for querysets, `len(items)` for bounded iterables, or even some static number.
+- Calling `bar()` is what makes the bar go forward — you usually call it once in every iteration, just after finishing an item.
+- If you call `bar()` too much or too few, the bar will graphically render that deviation from the expected `total`, making it very easy to notice under and overflows.
+- The usual Python `print()` is automatically hooked, so you can effortlessly display messages tightly integrated with the current progress bar on display! It won't break the fast bar refreshes in any way and will even enrich your message! The bar nicely cleans up the line, prints the current bar position alongside your message, and continues refreshing right below it!
+- The standard Python `logging` framework is also automatically hooked and enriched, exactly like the `print()` above!
+- If you're using the `click` CLI lib, you can even use `click.echo()` to print styled text.
 
 ![alive-progress printing messages](https://raw.githubusercontent.com/rsalmei/alive-progress/main/img/print-hook.gif)
+
+> You can get creative! Since the bar goes forward only when you call `bar()`, it is **independent of the loop** it is in! So you can use it to monitor unrelated things like pending transactions, broken items, etc., or even call it more than once in the same iteration! That way, you'll get to know how many of these "special" events there were, including their percentage relative to the total!
+
+Awesome right? And everything work the same both in real terminals and in Jupyter notebooks!
+
+## The `bar` handler
+
+After a bar has finished (or even while running), you have a plethora of methods available to grab information about the bar, and to control it. Here are they:
+
+- `bar.text('message')` or `bar.text = 'message'`: set a situational message at the end of the bar, where you can display information about the current item or the phase the processing is in.
+- `bar.title('Title')` or `bar.title = 'Title'`: set a title at the beginning of the bar; can be set right when starting it or while it's running or even after finished to affect the receipt on demand — mix it with `title_length` config to keep the bar from changing its length while running.
+- `bar.current`: retrieve the current bar count or percentage — more details below on Modes of Operation.
+- `bar.monitor` returns the current monitor widget text, which is the current bar position formatted according to the current configuration.
+- `bar.eta`: returns the current ETA widget text, formatted according to the current configuration.
+- `bar.rate`: returns the current throughput widget text, formatted according to the current configuration.
+- `bar.elapsed`: returns the current elapsed time in seconds, with full precision.
+- `bar.receipt`: returns an on-demand receipt, which can be used however you want in your code, such as logging or displaying it in a custom way.
+- `bar.pause()`: pauses the bar without losing its state — more details below on the Pause Mechanism.
 
 ## Auto-iterating
 
@@ -479,7 +505,7 @@ But it's actually simple to understand: you do not need to think about which mod
 
 That's it! It will just work the best it can! 👏 \o/
 
-### The different `bar()` handlers
+### The different `bar()` handler semantics
 
 The `bar()` handlers support either relative or absolute semantics, depending on the mode:
 
@@ -498,7 +524,7 @@ In any case, to retrieve the current counter/percentage, just call: `bar.current
 - in _auto_ and _unknown_ modes, this provides an **integer** — the actual internal counter;
 - in _manual_ mode, this provides a **float** in the interval [0, 1] — the last percentage set.
 
-Finally, the `bar()` handler leverages the **auto** mode unique ability: just call `bar(skipped=True)` or `bar(N, skipped=True)` to use it. When `skipped` is set to=`True`, the associated item(s) are excluded from throughput calculations, preventing skipped items from inaccurately affecting the ETA.
+Finally, the `bar()` handler in **auto** mode leverages a unique ability: skip items! Just call `bar(skipped=True)` or `bar(10, skipped=True)` to exclude those items from the throughput calculations, and thus preventing them from inaccurately affecting the ETA.
 
 ---
 Maintaining an open source project is hard and time-consuming, and I've put much ❤️ and effort into this.
@@ -934,6 +960,7 @@ You can also set it system-wide using `config_handler`, so you don't need to pas
 
 <br>Complete [here](https://github.com/rsalmei/alive-progress/blob/main/CHANGELOG.md).
 
+- 3.3.0: new bar.receipt and bar.elapsed; allow changing bar title and text even after finished; use `graphemeu` dependency; add `py.typed`; include Python 3.14 support in CI
 - 3.2.0: print/logging hooks now support multithreading, rounded ETAs for long tasks, support for zero and negative bar increments, custom offset for enriched print/logging messages, improved compatibility with PyInstaller and Celery, drop 3.7 and 3.8, hello 3.12 and 3.13
 - 3.1.4: support spaces at the start and end of titles and units
 - 3.1.3: better error handling of invalid `alive_it` calls, detect nested uses of alive_progress and throw a clearer error message
