@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.3.0 - Jul 19, 2025
+- the final receipt is available in the alive_bar handle
+- the elapsed time is available in the alive_bar handle, in seconds with full precision
+- bar title and text can be changed even after the bar has finished
+- changed the `grapheme` dependency which was no longer maintained to `graphemeu`, which is a maintained fork of the original one
+- added `py.typed` in the distribution to satisfy mypy and other type checking tools
+- included Python 3.14 support (in CI for now)
+
 ## 3.2.0 - Oct 26, 2024
 - print/logging hooks now support multithreading
 - rounded ETAs for long tasks
