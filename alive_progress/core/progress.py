@@ -485,7 +485,7 @@ def _create_spinner_player(config):
 
 
 def _render_title(config, title=None):
-    title, length = to_cells(title or config.title or ''), config.title_length
+    title, length = to_cells(title is None and config.title or title), config.title_length
     if not length:
         return title
 
