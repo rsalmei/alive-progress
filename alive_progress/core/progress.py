@@ -340,7 +340,11 @@ def __alive_bar(config, total=None, *, calibrate=None,
     stats_end = _Widget(stats_end, config.stats_end, '({rate})' if stats.f[:-1] else '')
 
     def get_receipt():
-        return _get_receipt(alive_repr)
+        buffer = io.StringIO()
+        tbuf = terminal.get_term(buffer, True, 1000)  # large enough to not truncate.
+        run.last_len = 0  # prevents the inclusion of the clear end line escape sequence.
+        alive_repr(tbuf)
+        return buffer.getvalue().strip()
 
     bar_handle = __AliveBarHandle(pause_monitoring, set_title, set_text,
                                   current, lambda: run.monitor_text, lambda: run.rate_text,
@@ -375,13 +379,6 @@ def __alive_bar(config, total=None, *, calibrate=None,
             term.clear_line()
         main_update_hook = _noop  # freeze the final elapsed, rate and eta values.
         term.flush()
-
-
-def _get_receipt(alive_repr):
-    buffer = io.StringIO()
-    tbuf = terminal.get_term(buffer, True, 1000)  # large enough to not truncate.
-    alive_repr(tbuf)
-    return buffer.getvalue().strip()
 
 
 class _Widget:  # pragma: no cover
