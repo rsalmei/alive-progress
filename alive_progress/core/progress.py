@@ -504,7 +504,7 @@ def _render_title(config, title=None):
 T = TypeVar('T')
 
 
-def alive_it(it: Collection[T], total: Optional[int] = None, *,
+def alive_it(it: Iterable[T], total: Optional[int] = None, *,
              finalize: Callable[[Any], None] = None,
              calibrate: Optional[int] = None, **options: Any) -> Iterable[T]:
     """New iterator adapter in 2.0, which makes it simpler to monitor any processing.
