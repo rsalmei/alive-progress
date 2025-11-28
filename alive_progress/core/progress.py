@@ -1,16 +1,14 @@
-"""
-This module must always be importable, even without the required libs for install!
-It's because I import metadata from main init, directly in setup.py, which imports this.
-"""
+import io
 import math
 import threading
 import time
-import io
+from collections.abc import Iterable
 from contextlib import contextmanager
 from typing import Any, Callable, Optional, TypeVar
-from collections.abc import Collection, Iterable
 
-from .calibration import calibrated_fps, custom_fps
+import about_time
+
+from .calibration import reactive_fps, custom_fps
 from .configuration import config_handler
 from .hook_manager import buffered_hook_manager, passthrough_hook_manager
 from ..utils import terminal
@@ -115,8 +113,8 @@ def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, *
             unit (str): any text that labels your entities
             scale (any): the scaling to apply to units: 'SI', 'IEC', 'SI2'
             precision (int): how many decimals do display when scaling
-    """
 
+    """
     try:
         config = config_handler(**options)
     except Exception as e:
@@ -260,7 +258,6 @@ def __alive_bar(config, total=None, *, calibrate=None,
         def rate_text(precision):
             return f'{run.rate:.{precision}f}{unit}/s'
     else:
-        import about_time  # must not be on top.
         d1024, iec = {
             'SI': (False, False),
             'SI2': (True, False),
