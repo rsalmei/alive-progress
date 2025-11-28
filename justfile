@@ -1,5 +1,3 @@
-# coverage related
-
 cov := "--cov=alive_progress --cov-branch --cov-report=term-missing"
 
 all:
@@ -20,14 +18,14 @@ lint:
     ruff check alive_progress --line-length 100
 
 build: lint clean
-    python setup.py sdist bdist_wheel
+    python -m build
 
 release: build && tag
     twine upload dist/*
 
 tag:
     #!/usr/bin/env zsh
-    tag=$(python -c 'import alive_progress; print("v" + alive_progress.__version__)')
+    tag=$(python -c 'import alive_progress; print("v{alive_progress.__version__}")')
     git tag -a $tag -m "Details: https://github.com/rsalmei/alive-progress/blob/main/CHANGELOG.md"
     git push origin $tag
 
