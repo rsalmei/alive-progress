@@ -16,7 +16,7 @@ def calibrated_fps(calibrate):
     Neat! ;)
 
     Args:
-        calibrate (float): user provided
+        calibrate (float): maximum expected rate of the task, used to adjust the fps curve.
 
     Returns:
         a callable to calculate the fps
@@ -40,6 +40,14 @@ def calibrated_fps(calibrate):
 def custom_fps(refresh_secs):
     def fps(_rate):
         return refresh_secs
+    """Custom frames per second engine, which calculates the fps based on a fixed refresh interval.
 
+    Args:
+        refresh_secs (float): the number of seconds between each refresh.
+
+    Returns:
+        a callable to calculate the fps
+
+    """
     refresh_secs = 1 / refresh_secs
     return fps

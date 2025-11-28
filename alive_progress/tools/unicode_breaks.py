@@ -10,7 +10,7 @@ CACHE = '.unicode_cache'
 
 
 def validate_unicode_breaks(uver=None, show_all=False, cache=True):
-    # validate unicode grapheme clusters detection.
+    # validate Unicode grapheme clusters detection.
     # this downloads the specs directly from unicode.org and caches it locally.
     # document: https://unicode.org/reports/tr51/
 
@@ -149,8 +149,8 @@ def find_groups(data, max_diff):
 
 
 if __name__ == '__main__':
-    parser, run = toolkit('Tests the grapheme break implementation against some unicode version.')
-    parser.add_argument('uver', type=float, nargs='?', help='the unicode version to be used')
+    parser, run = toolkit('Tests the grapheme break implementation against some Unicode version.')
+    parser.add_argument('uver', type=float, nargs='?', help='the Unicode version to be used')
     parser.add_argument('--all', dest='show_all', action='store_true',
                         help='shows the correct cases, in addition to the wrong ones')
     parser.add_argument('--no-cache', dest='cache', action='store_false',

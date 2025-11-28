@@ -39,13 +39,12 @@ def extract_fill_graphemes(text, default):
 
 
 def static_sliding_window(sep, gap, contents, length, right, initial):
-    """Implement a sliding window over some content interspersed with a separator.
-    It is very efficient, storing data in only one string.
+    """Implement a sliding window over some content interspersed with a separator. It is very
+    efficient, storing data in only one string.
 
-    Note that the implementation is "static" in the sense that the content is pre-
-    calculated and maintained static, but actually when the window slides both the
-    separator and content seem to be moved.
-    Also keep in mind that `right` is for the content, not the window.
+    Note that the implementation is "static" in the sense that the content is pre-calculated and
+    maintained static, but actually when the window slides both the separator and content seem to be
+    moved. Also keep in mind that `right` is for the content, not the window.
     """
 
     def sliding_window():
@@ -67,10 +66,9 @@ def static_sliding_window(sep, gap, contents, length, right, initial):
 
 
 def overlay_sliding_window(background, gap, contents, length, right, initial):
-    """Implement a sliding window over some content on top of a background.
-    It uses internally a static sliding window, but dynamically swaps the separator
-    characters for the background ones, thus making it appear immobile, with the
-    contents sliding over it.
+    """Implement a sliding window over some content on top of a background. It uses internally a
+    static sliding window, but dynamically swaps the separator characters for the background ones,
+    thus making it appear immobile, with the contents sliding over it.
     """
 
     def overlay_window():
@@ -83,8 +81,8 @@ def overlay_sliding_window(background, gap, contents, length, right, initial):
 
 
 def combinations(nums):
-    """Calculate the number of total combinations a few spinners should have together,
-    can be used for example with cycles or with frames played at the same time."""
+    """Calculate the number of total combinations a few spinners should have together, can be used
+    for example with cycles or with frames played at the same time."""
 
     def lcm(a, b):
         """Calculate the lowest common multiple of two numbers."""

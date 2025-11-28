@@ -97,7 +97,7 @@ def replace(spec, old, new):  # noqa
         new (str): the new string
 
     """
-    # different lengths could lead to broken frames, but they will be verified afterwards.
+    # different lengths could lead to broken frames, but they will be verified afterward.
     spec.data = tuple(tuple(
         to_cells(join_cells(frame).replace(old, new)) for frame in cycle
     ) for cycle in spec.data)

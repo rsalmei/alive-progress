@@ -50,7 +50,7 @@ def gen_simple_exponential_smoothing(alpha: float, fn: Callable[[float, float], 
 
     Args:
         alpha: the smoothing coefficient
-        fn: the function
+        fn: the function to apply to the input, which should return a tuple (processed, elapsed).
 
     Returns:
 
