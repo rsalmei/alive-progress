@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools~=75.3"] # github actions stops at 75.3; the latest 88 yells locally about deprecated license format.
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alive-progress"
+version = "3.3.1"
+description = "A new kind of Progress Bar, with real-time throughput, ETA, and very cool animations!"
+readme = "README.md"
+requires-python = ">=3.9, <4"
+dependencies = [
+    "about_time>=4.2",
+    "graphemeu>=0.7.2",
+]
+license = { text = "MIT" }  # can't upgrade format yet, see 'requires' above.
+authors = [
+    { name = "Rogério Sampaio de Almeida", email = "rsalmei@gmail.com" },
+]
+keywords = ["progress", "bar", "progress-bar", "progressbar", "spinner", "eta", "monitoring",
+    "python", "terminal", "multithreaded", "REPL", "alive", "animated", "visual", "feedback",
+    "simple", "live", "efficient", "monitor", "stats", "elapsed", "time", "throughput"]
+classifiers = [
+    # How mature is this project? Common values are
+    #   3 - Alpha
+    #   4 - Beta
+    #   5 - Production/Stable
+    "Development Status :: 5 - Production/Stable",
+    # Indicate who your project is intended for
+    "Intended Audience :: Developers",
+    "Environment :: Console",
+    "Natural Language :: English",
+    # Specify the Python versions you support here. In particular, ensure
+    # that you indicate whether you support Python 2, Python 3 or both.
+    # "Programming Language :: Python :: 2",
+    # "Programming Language :: Python :: 2.7",
+    "Programming Language :: Python :: 3",
+    # "Programming Language :: Python :: 3.2",
+    # "Programming Language :: Python :: 3.3",
+    # "Programming Language :: Python :: 3.4",
+    # "Programming Language :: Python :: 3.5",
+    # "Programming Language :: Python :: 3.6",
+    # "Programming Language :: Python :: 3.7",
+    # "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    # other classifiers
+    "Topic :: Software Development :: User Interfaces",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Repository = "https://github.com/rsalmei/alive-progress"
+
+[tool.setuptools]
+packages = ["alive_progress"]
