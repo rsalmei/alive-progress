@@ -452,7 +452,7 @@ for item in bar:  # <<-- iterate on bar
 Note that this is a slightly special `bar`, which does not support `bar()`, since the iterator adapter tracks items automatically for you. Also, it supports `finalize`, which enables you to set the title and/or text of the final receipt:
 
 ```python
-alive_it(items, finalize=lambda bar: bar.text('Success!'))
+alive_it(items, finalize=lambda bar: bar.text('Success!'), receipt_text=True)
 ...
 ```
 
