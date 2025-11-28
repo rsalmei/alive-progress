@@ -39,6 +39,7 @@ def __name_lookup(name_lookup):
     def _input(x):
         if isinstance(x, str):
             return name_lookup.get(x) or ERROR
+        return None  # it's the Python default, but the IDE complains if I don't return None.
 
     return _input
 
@@ -51,6 +52,7 @@ def __func_lookup(module_lookup, inner_name):
                     and func_file.endswith(os.path.splitext(x.__code__.co_filename)[0]):
                 return x
             return ERROR
+        return None  # it's the Python default, but the IDE complains if I don't return None.
 
     return _input
 
