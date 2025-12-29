@@ -9,6 +9,7 @@
 import type { Bar } from "../animations/bars.js";
 import type { Spinner } from "../animations/spinners.js";
 import { getStringWidth } from "../utils/cells.js";
+import { cursor } from "../utils/colors.js";
 import {
   createTerminal,
   type TerminalWriter,
@@ -105,6 +106,7 @@ interface ProgressState {
   isRunning: boolean;
   isPaused: boolean;
   lastFrame: string;
+  lastWasDualLine: boolean;
   receipt: Receipt | null;
   skipped: number;
   printBuffer: string[];
@@ -304,8 +306,17 @@ function printLine(state: ProgressState, text: string): void {
 
   pauseHooks();
 
-  // Clear current line, print the text, then redraw the bar
-  state.terminal.clearLine();
+  // Clear current line(s), print the text, then redraw the bar
+  if (state.lastWasDualLine) {
+    state.terminal.write(cursor.up(1));
+    state.terminal.clearLine();
+    state.terminal.write(cursor.down(1));
+    state.terminal.clearLine();
+    state.terminal.write(cursor.up(1));
+  } else {
+    state.terminal.clearLine();
+  }
+
   state.terminal.writeLine(text);
 
   // Redraw the bar
@@ -327,10 +338,25 @@ function updateDisplay(state: ProgressState): void {
   pauseHooks();
 
   const frame = renderFrame(state);
-  state.lastFrame = frame;
+  const isDualLine = state.config.dualLine && state.text !== "";
 
-  state.terminal.clearLine();
+  // If previous frame was dual-line, we need to clear both lines
+  if (state.lastWasDualLine) {
+    // Move up to the first line, clear it
+    state.terminal.write(cursor.up(1));
+    state.terminal.clearLine();
+    // Move down and clear the second line
+    state.terminal.write(cursor.down(1));
+    state.terminal.clearLine();
+    // Move back up to write from the first line
+    state.terminal.write(cursor.up(1));
+  } else {
+    state.terminal.clearLine();
+  }
+
   state.terminal.write(frame);
+  state.lastFrame = frame;
+  state.lastWasDualLine = isDualLine;
 
   resumeHooks();
 }
@@ -453,13 +479,32 @@ function finalize(state: ProgressState): void {
       parts.push(state.text);
     }
 
-    state.terminal.clearLine();
+    // Clear dual-line if necessary
+    if (state.lastWasDualLine) {
+      state.terminal.write(cursor.up(1));
+      state.terminal.clearLine();
+      state.terminal.write(cursor.down(1));
+      state.terminal.clearLine();
+      state.terminal.write(cursor.up(1));
+    } else {
+      state.terminal.clearLine();
+    }
+
     state.terminal.writeLine(parts.join(" "));
     state.terminal.showCursor();
 
     resumeHooks();
   } else {
-    state.terminal.clearLine();
+    // Clear dual-line if necessary
+    if (state.lastWasDualLine) {
+      state.terminal.write(cursor.up(1));
+      state.terminal.clearLine();
+      state.terminal.write(cursor.down(1));
+      state.terminal.clearLine();
+      state.terminal.write(cursor.up(1));
+    } else {
+      state.terminal.clearLine();
+    }
     state.terminal.showCursor();
   }
 }
@@ -506,11 +551,12 @@ export function aliveBar(
     bar: config.bar(config.length),
     unknownSpinner: config.unknown(config.length),
     timer: new Timer(),
-    etaCalculator: new ETACalculator(),
+    etaCalculator: new ETACalculator(config.etaAlpha),
     refreshInterval: null,
     isRunning: true,
     isPaused: false,
     lastFrame: "",
+    lastWasDualLine: false,
     receipt: null,
     skipped: 0,
     printBuffer: [],
@@ -655,7 +701,17 @@ export function aliveBar(
       value() {
         state.isPaused = true;
         state.timer.pause();
-        state.terminal.clearLine();
+
+        // Clear dual-line if necessary
+        if (state.lastWasDualLine) {
+          state.terminal.write(cursor.up(1));
+          state.terminal.clearLine();
+          state.terminal.write(cursor.down(1));
+          state.terminal.clearLine();
+          state.terminal.write(cursor.up(1));
+        } else {
+          state.terminal.clearLine();
+        }
         state.terminal.showCursor();
 
         return () => {

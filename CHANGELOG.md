@@ -21,5 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unknown mode for indeterminate progress
 - Dual-line mode for detailed status messages
 - Global configuration with `setGlobalConfig()`
+- Configurable ETA smoothing with `etaAlpha` option
+- Proper dual-line clearing for Windows compatibility
 - Full TypeScript type definitions
-- Comprehensive test suite (229 tests)
+- Comprehensive test suite (231 tests)

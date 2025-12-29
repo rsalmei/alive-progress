@@ -94,6 +94,7 @@ done();
 | `enrichPrint` | boolean | true | Enrich console.log with position |
 | `disable` | boolean | false | Disable all output |
 | `forceTty` | boolean | null | Force TTY mode |
+| `etaAlpha` | number | 0.1 | ETA smoothing factor (0-1). Higher = more responsive to rate changes |
 
 ## Built-in Styles
 

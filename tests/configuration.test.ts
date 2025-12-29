@@ -171,6 +171,16 @@ describe("resolveConfig", () => {
     const resolved = resolveConfig({ precision: 2 });
     expect(resolved.precision).toBe(2);
   });
+
+  test("uses default etaAlpha of 0.1", () => {
+    const resolved = resolveConfig();
+    expect(resolved.etaAlpha).toBe(0.1);
+  });
+
+  test("handles custom etaAlpha option", () => {
+    const resolved = resolveConfig({ etaAlpha: 0.3 });
+    expect(resolved.etaAlpha).toBe(0.3);
+  });
 });
 
 describe("config object", () => {

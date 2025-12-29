@@ -64,6 +64,8 @@ export interface AliveBarOptions {
   // Calibration
   /** Calibration value for FPS calculation */
   calibrate?: number;
+  /** ETA smoothing factor (0-1). Higher = more responsive to rate changes */
+  etaAlpha?: number;
 
   // Units
   /** Unit label (e.g., 'B', 'bytes') */
@@ -102,6 +104,7 @@ export interface ResolvedConfig {
   dualLine: boolean;
   refreshSecs: number;
   calibrate: number;
+  etaAlpha: number;
   unit: string;
   scale: "SI" | "IEC" | "SI2" | null;
   precision: number;
@@ -131,6 +134,7 @@ const DEFAULT_CONFIG: ResolvedConfig = {
   dualLine: false,
   refreshSecs: 0,
   calibrate: 1_000_000,
+  etaAlpha: 0.1,
   unit: "",
   scale: null,
   precision: 1,
@@ -195,6 +199,7 @@ export function resolveConfig(options: AliveBarOptions = {}): ResolvedConfig {
     dualLine: merged.dualLine ?? DEFAULT_CONFIG.dualLine,
     refreshSecs: merged.refreshSecs ?? DEFAULT_CONFIG.refreshSecs,
     calibrate: merged.calibrate ?? DEFAULT_CONFIG.calibrate,
+    etaAlpha: merged.etaAlpha ?? DEFAULT_CONFIG.etaAlpha,
     unit: merged.unit ?? DEFAULT_CONFIG.unit,
     scale: merged.scale ?? DEFAULT_CONFIG.scale,
     precision: merged.precision ?? DEFAULT_CONFIG.precision,
