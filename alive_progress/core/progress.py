@@ -2,7 +2,8 @@ import io
 import threading
 from collections.abc import Iterable
 from contextlib import contextmanager
-from typing import Any, Callable, Optional, TypeVar
+from contextlib import AbstractContextManager
+from typing import Any, Callable, Generic, Iterator, Optional, TypeVar
 
 import about_time
 import math
@@ -17,7 +18,7 @@ from ..utils.timing import eta_text, fn_simple_eta, gen_simple_exponential_smoot
     time_display, RUN, END
 
 
-def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, **options: Any):
+def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, **options: Any) -> 'AbstractContextManager[__AliveBarHandle]':
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, elapsed time, throughput and ETA.
     When the operation finishes, a receipt is displayed with statistics.
@@ -507,7 +508,7 @@ T = TypeVar('T')
 
 def alive_it(it: Iterable[T], total: Optional[int] = None, *,
              finalize: Callable[[Any], None] = None,
-             calibrate: Optional[int] = None, **options: Any) -> Iterable[T]:
+             calibrate: Optional[int] = None, **options: Any) -> '__AliveBarIteratorAdapter[T]':
     """New iterator adapter in 2.0, which makes it simpler to monitor any processing.
 
     Simply wrap your iterable with `alive_it`, and process your items normally!
@@ -581,11 +582,20 @@ DB updated |████████████████████| 100k/1
     return __AliveBarIteratorAdapter(it, finalize, __alive_bar(config, total, calibrate=calibrate))
 
 
-class __AliveBarIteratorAdapter(Iterable[T]):
+class __AliveBarIteratorAdapter(Iterable[T], Generic[T]):
+    # Type annotations for attributes proxied to __AliveBarHandle via __getattr__/__setattr__.
+    text: str
+    title: str
+    current: Any
+    monitor: str
+    rate: str
+    eta: str
+    elapsed: str
+
     def __init__(self, it, finalize, inner_bar):
         self._it, self._finalize, self._inner_bar = it, finalize, inner_bar
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[T]:
         if '_bar' in self.__dict__:  # this iterator has already initiated.
             return
 
