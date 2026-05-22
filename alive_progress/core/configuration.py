@@ -140,7 +140,7 @@ def _file_input_factory():
 
 Config = namedtuple('Config', 'title length max_cols spinner bar unknown force_tty disable manual '
                               'enrich_print enrich_offset receipt receipt_text monitor elapsed stats '
-                              'title_length spinner_length refresh_secs monitor_end elapsed_end '
+                              'title_length spinner_length refresh_secs min_fps monitor_end elapsed_end '
                               'stats_end ctrl_c dual_line unit scale precision file')
 
 
@@ -169,6 +169,7 @@ def create_config():
             title_length=0,
             spinner_length=0,
             refresh_secs=0,
+            min_fps=2.,
             ctrl_c=True,
             dual_line=False,
             unit='',
@@ -248,6 +249,7 @@ def create_config():
             title_length=_int_input_factory(0, 1000),
             spinner_length=_int_input_factory(0, 1000),
             refresh_secs=_float_input_factory(0, 60 * 60 * 24),  # maximum 24 hours.
+            min_fps=_float_input_factory(0, 30),  # max min_fps is half of max_fps.
             ctrl_c=_bool_input_factory(),
             dual_line=_bool_input_factory(),
             # title_effect=_enum_input_factory(),  # TODO someday.
