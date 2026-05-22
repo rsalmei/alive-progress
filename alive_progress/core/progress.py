@@ -1,8 +1,7 @@
 import io
 import threading
 from collections.abc import Iterable
-from contextlib import contextmanager
-from contextlib import AbstractContextManager
+from contextlib import contextmanager, AbstractContextManager
 from typing import Any, Callable, Generic, Iterator, Optional, TypeVar
 
 import about_time
@@ -18,7 +17,8 @@ from ..utils.timing import eta_text, fn_simple_eta, gen_simple_exponential_smoot
     time_display, RUN, END
 
 
-def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, **options: Any) -> 'AbstractContextManager[__AliveBarHandle]':
+def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None,
+              **options: Any) -> 'AbstractContextManager[__AliveBarHandle]':
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, elapsed time, throughput and ETA.
     When the operation finishes, a receipt is displayed with statistics.
