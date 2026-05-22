@@ -1,12 +1,12 @@
 import io
-import math
 import threading
-import time
 from collections.abc import Iterable
 from contextlib import contextmanager
 from typing import Any, Callable, Optional, TypeVar
 
 import about_time
+import math
+import time
 
 from .calibration import reactive_fps, custom_fps
 from .configuration import config_handler
@@ -348,7 +348,8 @@ def __alive_bar(config, total=None, *, calibrate=None,
     bar_handle = __AliveBarHandle(pause_monitoring, set_title, set_text,
                                   current, lambda: run.monitor_text, lambda: run.rate_text,
                                   lambda: run.eta_text, lambda: run.elapsed, get_receipt)
-    set_text(), set_title()
+    set_text()
+    set_title()
     start_monitoring()
     try:
         yield bar_handle if not _sampling else locals()

@@ -202,15 +202,11 @@ def create_config():
             except KeyError:
                 raise ValueError(f'Invalid config key: {key!r}')
 
-            try:
-                result = validation(value)
-                if result is ERROR:
-                    raise UserWarning(validation.err_help)
-                return result
-            except UserWarning as e:
-                raise ValueError(f'Invalid config value: {key}={value!r}\n{e}') from None
-            except Exception as e:
-                raise ValueError(f'Error in config value: {key}={value!r}\nCause: {e!r}') from None
+            result = validation(value)
+            if result is ERROR:
+                raise ValueError(
+                    f'Invalid config value: {key}={value!r}\n{validation.err_help}') from None
+            return result
 
         from ..styles.internal import THEMES
         if theme:
