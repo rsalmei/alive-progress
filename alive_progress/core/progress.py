@@ -130,8 +130,10 @@ def __alive_bar(config, total=None, *, calibrate=None,
 
     if total is not None:  # pragma: no cover
         if not isinstance(total, int):
-            raise TypeError(f"integer argument expected, got '{type(total).__name__}'.")
-        if total <= 0:
+            raise TypeError(f"expected integer total, got '{type(total).__name__}'.")
+        if total < 0:
+            raise ValueError(f"total must be non-negative, got {total}.")
+        if total == 0:
             total = None
 
     def run(spinner_player, spinner_suffix):
