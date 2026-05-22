@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10, <4"
 dependencies = [
     "about_time>=4.2",
-    "graphemeu>=0.7.2",
+    "graphemeu>=0.10.0",
 ]
 license = { text = "MIT" }  # can't upgrade format yet, see 'requires' above.
 authors = [

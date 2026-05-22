@@ -7,6 +7,4 @@ pytest
 pytest-cov
 pytest-sugar
 ruff
-
-click
-setuptools
+build
