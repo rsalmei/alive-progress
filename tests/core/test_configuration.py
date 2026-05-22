@@ -3,18 +3,34 @@ from unittest import mock
 import pytest
 
 from alive_progress.core.configuration import Config, ERROR, __style_input, \
-    _bool_input_factory, _int_input_factory, create_config, _format_input_factory
+    _bool_input_factory, _float_input_factory, _int_input_factory, create_config, \
+    _format_input_factory
 from alive_progress.styles.internal import BARS, SPINNERS, THEMES
 
 
 @pytest.mark.parametrize('lower, upper, num, expected', [
     (100, 110, 100, 100),
+    (100, 110, '100', 100),
     (100, 110, 110, 110),
     (100, 110, -1, ERROR),
     (100, 110, 111, ERROR),
+    (100, 110, 'oops', ERROR),
 ])
 def test_int_input_factory(lower, upper, num, expected):
     func = _int_input_factory(lower, upper)
+    assert func(num) == expected
+
+
+@pytest.mark.parametrize('lower, upper, num, expected', [
+    (0., 100., 0., 0.),
+    (0., 100., 100., 100.),
+    (0., 100., '100', 100.),
+    (0., 100., -1., ERROR),
+    (0., 100., 101., ERROR),
+    (0., 100., 'oops', ERROR),
+])
+def test_float_input_factory(lower, upper, num, expected):
+    func = _float_input_factory(lower, upper)
     assert func(num) == expected
 
 
