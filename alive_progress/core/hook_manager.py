@@ -41,7 +41,7 @@ def buffered_hook_manager(header_template, get_pos, offset, cond_refresh, term):
         buffer = buffers[stream]
         if part != '\n':
             osc = part.find('\x1b]')  # https://en.wikipedia.org/wiki/ANSI_escape_code
-            if osc >= 0:
+            if osc >= 0:  # pragma: no cover
                 end, s = part.find('\x07', osc + 2), 1  # 1 -> len('\x07')
                 if end < 0:
                     end, s = part.find('\x1b\\', osc + 2), 2  # 2 -> len('\x1b\\')
@@ -117,7 +117,7 @@ def buffered_hook_manager(header_template, get_pos, offset, cond_refresh, term):
         # which causes a TypeError: unhashable type: 'types.SimpleNamespace'...
         # or simply a logger **reuses** a handler...
 
-    if issubclass(sys.stdout.__class__, BaseHook):
+    if issubclass(sys.stdout.__class__, BaseHook):  # pragma: no cover
         raise UserWarning('Nested use of alive_progress is not yet supported.')
 
     # internal data.

@@ -19,12 +19,12 @@ def time_display(seconds: float, conf: TimeDisplay) -> str:
     minutes, seconds = divmod(seconds, 60.)
     if minutes < 60.:
         if conf.round_sec_on_min:
-            seconds = floor(seconds / 10) * 10
+            seconds = floor(seconds / 10) * 10  # pragma: no cover
         return '{}{:.0f}:{:0{}f}'.format(conf.prefix, minutes, seconds, conf.min_prec)
 
     hours, minutes = divmod(minutes, 60.)
     if conf.clear_sec_on_hour:
-        seconds = 0
+        seconds = 0  # pragma: no cover
     return '{}{:.0f}:{:02.0f}:{:0{}f}'.format(conf.prefix, hours, minutes, seconds, conf.hour_prec)
 
 

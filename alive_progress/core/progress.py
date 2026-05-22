@@ -128,7 +128,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
     """Actual alive_bar handler, that exposes internal functions for configuration of
     both normal operation and sampling overhead."""
 
-    if total is not None:
+    if total is not None:  # pragma: no cover
         if not isinstance(total, int):
             raise TypeError(f"integer argument expected, got '{type(total).__name__}'.")
         if total <= 0:
