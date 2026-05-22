@@ -70,6 +70,9 @@ Support for these cool chars, like Emojis 😃, was so damn hard to implement be
 
 import unicodedata
 
+# noinspection PyPackageRequirements
+from grapheme import graphemes
+
 from . import sanitize
 
 VS_15 = '\ufe0e'
@@ -163,7 +166,6 @@ def to_cells(text):
 
 
 def split_graphemes(text):
-    from grapheme import graphemes
     return tuple(graphemes(text))
 
 

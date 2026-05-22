@@ -279,7 +279,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
         return f.format(count=run.monitor_text, total=total_human, percent=run.percent)
 
     def monitor_end(f):
-        warning = '(!) ' if total is not None and current() != logic_total else ''
+        warning = '(!) ' if total and current() != logic_total else ''
         return f'{warning}{monitor_run(f, None)}'
 
     def elapsed_run(f):
@@ -414,6 +414,7 @@ class _GatedFunction(_ReadOnlyProperty):  # pragma: no cover
     """A gated descriptor that provides a function only while the bar is running."""
 
     def __get__(self, obj, objtype=None):
+        # noinspection PyProtectedMember
         if obj._handle:
             return getattr(obj, self.prop)
         return _noop
@@ -571,6 +572,7 @@ DB updated |████████████████████| 100k/1
         raise UserWarning("Manual mode can't be used in iterator adapter.")
 
     if total is None and hasattr(it, '__len__'):
+        # noinspection PyTypeChecker
         total = len(it)
     it = iter(it)
     if total is None and hasattr(it, '__length_hint__'):

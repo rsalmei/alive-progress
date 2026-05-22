@@ -91,10 +91,13 @@ def buffered_hook_manager(header_template, get_pos, offset, cond_refresh, term):
             yield from (logging.getLogger(name) for name in logging.root.manager.loggerDict)
 
         def set_hook(h):
+            # noinspection PyBroadException
             try:
                 return h.setStream(get_hook_for(h))
-            except Exception:  # captures AttributeError, AssertionError, and anything else,
-                pass  # then returns None, effectively leaving that handler alone, unchanged.
+            except Exception:  # pragma: no cover
+                # captures AttributeError, AssertionError, and anything else in unknown code paths,
+                # then returns None, effectively leaving that handler alone.
+                pass
 
         # account for reused handlers within loggers.
         handlers = set(h for logger in get_all_loggers()

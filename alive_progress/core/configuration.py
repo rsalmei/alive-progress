@@ -62,7 +62,7 @@ def _int_input_factory(lower, upper):
         try:
             x = int(x)
             return x if lower <= x <= upper else ERROR
-        except TypeError:
+        except (TypeError, ValueError):  # it was TypeError before, but it seems ValueError now.
             return ERROR
 
     _input.err_help = f'Expected an int between {lower} and {upper}'
@@ -74,7 +74,7 @@ def _float_input_factory(lower, upper):
         try:
             x = float(x)
             return x if lower <= x <= upper else ERROR
-        except TypeError:
+        except (TypeError, ValueError):  # it was TypeError before, but it seems ValueError now.
             return ERROR
 
     _input.err_help = f'Expected a float between {lower} and {upper}'
