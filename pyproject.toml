@@ -7,7 +7,7 @@ name = "alive-progress"
 version = "3.3.1"
 description = "A new kind of Progress Bar, with real-time throughput, ETA, and very cool animations!"
 readme = "README.md"
-requires-python = ">=3.9, <4"
+requires-python = ">=3.10, <4"
 dependencies = [
     "about_time>=4.2",
     "graphemeu>=0.7.2",
@@ -41,7 +41,7 @@ classifiers = [
     # "Programming Language :: Python :: 3.6",
     # "Programming Language :: Python :: 3.7",
     # "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
+    # "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
