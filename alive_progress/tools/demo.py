@@ -50,9 +50,14 @@ cases += [Case(name.capitalize(), 1000, {**features[i % len(BARS)], **config}, d
           for i, (name, config) in enumerate(OVERHEAD_SAMPLING, 1)]
 
 
-def demo(sleep=None):
+def demo(sleep):
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
+
+    sleep = sleep or 0.002  # default sleep time
+    print('Welcome to the alive-progress demo!')
+    print('  using sleep time:', sleep)
+    print('for more details: python -m alive_progress.tools.demo --help')
 
     for case in cases:
         if case.title:
@@ -67,7 +72,7 @@ def demo(sleep=None):
             time.sleep(0)
             # bar.reset(total)
             for i in range(1, case.count + 1):
-                time.sleep(sleep or .003)
+                time.sleep(sleep)
                 if manual:
                     bar(float(i) / (total or case.count))
                 else:
@@ -83,6 +88,6 @@ def demo(sleep=None):
 
 if __name__ == '__main__':
     parser, run = toolkit('Demonstrates alive-progress, showcasing several common scenarios.')
-    parser.add_argument('sleep', type=float, nargs='?', help='the sleep time (default=.003)')
+    parser.add_argument('sleep', type=float, nargs='?', help='the sleep time (default=.002)')
 
     run(demo)

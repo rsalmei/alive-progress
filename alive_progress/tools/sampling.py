@@ -17,7 +17,7 @@ def overhead(total=None, *, calibrate=None, **options):
     with __alive_bar(config, total, calibrate=calibrate, _cond=__lock, _sampling=True) as loc:
         # the timing of the print_cells function increases proportionately with the
         # number of columns in the terminal, so I want a baseline here `VOID.cols == 0`.
-        res = timeit.repeat('alive_repr()', repeat=repeat, number=number, globals=loc)
+        res = timeit.repeat('alive_repr(term)', repeat=repeat, number=number, globals=loc)
 
     return human_duration(min(res) / number)
 
