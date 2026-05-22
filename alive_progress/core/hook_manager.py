@@ -62,13 +62,11 @@ def buffered_hook_manager(header_template, get_pos, offset, cond_refresh, term):
                 if stream in base:  # pragma: no cover
                     term.clear_line()
                     term.clear_end_screen()
-                if buffer:
-                    header = get_header()
-                    spacer = '\n' + ' ' * len(header)
-                    nested = ''.join(spacer if line is None else line for line in buffer)
-                    buffer[:] = []
-                    stream.write(f'{header}{nested.rstrip()}')
-                stream.write('\n')
+                header = get_header()
+                spacer = '\n' + ' ' * len(header)
+                nested = ''.join(spacer if line is None else line for line in buffer)
+                buffer[:] = []
+                stream.write(f'{header}{nested.rstrip()}\n')
                 stream.flush()
                 cond_refresh.notify()
 
