@@ -84,7 +84,7 @@ def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, *
             theme (str): a set of matching spinner, bar and unknown
                 accepts a predefined theme name
             force_tty (Optional[int|bool]): forces a specific kind of terminal:
-                False -> disables animations, keeping only the the final receipt
+                False -> disables animations, keeping only the final receipt
                 True -> enables animations, and auto-detects Jupyter Notebooks!
                 None (default) -> auto select, according to the terminal/Jupyter
             file (object): use `sys.stdout`, `sys.stderr`, or a similar `TextIOWrapper` object
