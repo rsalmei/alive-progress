@@ -6,8 +6,8 @@ import math
 import threading
 import time
 import io
-from contextlib import contextmanager
-from typing import Any, Callable, Optional, TypeVar
+from contextlib import AbstractContextManager, contextmanager
+from typing import Any, Callable, Iterator, Optional, Protocol, TypeVar
 from collections.abc import Collection, Iterable
 
 from .calibration import calibrated_fps, custom_fps
@@ -19,7 +19,57 @@ from ..utils.timing import eta_text, fn_simple_eta, gen_simple_exponential_smoot
     time_display, RUN, END
 
 
-def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, **options: Any):
+T = TypeVar('T')
+T_co = TypeVar('T_co', covariant=True)
+
+
+class _AliveBarHandle(Protocol):
+    """Publicly inferred interface exposed inside an ``alive_bar`` context."""
+
+    def __call__(self, *args: Any, **kwargs: Any) -> None: ...
+
+    @property
+    def pause(self) -> Callable[..., AbstractContextManager[None]]: ...
+
+    @property
+    def current(self) -> float: ...
+
+    @property
+    def text(self) -> Callable[[Optional[str]], None]: ...
+
+    @text.setter
+    def text(self, value: Optional[str]) -> None: ...
+
+    @property
+    def title(self) -> Callable[[Optional[str]], None]: ...
+
+    @title.setter
+    def title(self, value: Optional[str]) -> None: ...
+
+    @property
+    def monitor(self) -> str: ...
+
+    @property
+    def rate(self) -> str: ...
+
+    @property
+    def eta(self) -> str: ...
+
+    @property
+    def elapsed(self) -> float: ...
+
+    @property
+    def receipt(self) -> Callable[[], str]: ...
+
+
+class _AliveBarIterator(_AliveBarHandle, Protocol[T_co]):
+    """Typed iterator that retains the progress bar handle interface."""
+
+    def __iter__(self) -> Iterator[T_co]: ...
+
+
+def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None,
+              **options: Any) -> AbstractContextManager[_AliveBarHandle]:
     """An alive progress bar to keep track of lengthy operations.
     It has a spinner indicator, elapsed time, throughput and ETA.
     When the operation finishes, a receipt is displayed with statistics.
@@ -501,12 +551,9 @@ def _render_title(config, title=None):
     return combine_cells(fix_cells(title[:length - 1]), ('…',))
 
 
-T = TypeVar('T')
-
-
 def alive_it(it: Collection[T], total: Optional[int] = None, *,
              finalize: Callable[[Any], None] = None,
-             calibrate: Optional[int] = None, **options: Any) -> Iterable[T]:
+             calibrate: Optional[int] = None, **options: Any) -> _AliveBarIterator[T]:
     """New iterator adapter in 2.0, which makes it simpler to monitor any processing.
 
     Simply wrap your iterable with `alive_it`, and process your items normally!
@@ -583,7 +630,7 @@ class __AliveBarIteratorAdapter(Iterable[T]):
     def __init__(self, it, finalize, inner_bar):
         self._it, self._finalize, self._inner_bar = it, finalize, inner_bar
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[T]:
         if '_bar' in self.__dict__:  # this iterator has already initiated.
             return
 

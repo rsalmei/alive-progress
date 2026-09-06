@@ -1,9 +1,18 @@
 import sys
+from contextlib import AbstractContextManager
+from typing import get_args, get_origin, get_type_hints
 
 import pytest
 
-from alive_progress.core.progress import __alive_bar, __AliveBarIteratorAdapter
 from alive_progress.core.configuration import config_handler
+from alive_progress.core.progress import (
+    __alive_bar,
+    __AliveBarIteratorAdapter,
+    _AliveBarHandle,
+    _AliveBarIterator,
+    alive_bar,
+    alive_it,
+)
 
 DATA = {
     # enrich_print, total, manual, scale
@@ -24,6 +33,16 @@ DATA = {
     (False, False, True, True): 'half\n[===] 100% in 1.2s (9.88k%U/s)',
     (False, False, True, False): 'half\n[===] 100% in 1.2s (9876.54%U/s)',
 }
+
+
+def test_public_helpers_preserve_the_bar_handle_in_return_types():
+    bar_return = get_type_hints(alive_bar)['return']
+    iterator_return = get_type_hints(alive_it)['return']
+
+    assert get_origin(bar_return) is AbstractContextManager
+    assert get_args(bar_return) == (_AliveBarHandle,)
+    assert get_origin(iterator_return) is _AliveBarIterator
+    assert len(get_args(iterator_return)) == 1
 
 
 @pytest.fixture(params=[True, False])
