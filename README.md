@@ -412,6 +412,7 @@ After a bar has finished (or even while running), you have a plethora of methods
 
 - `bar.text('message')` or `bar.text = 'message'`: set a situational message at the end of the bar, where you can display information about the current item or the phase the processing is in.
 - `bar.title('Title')` or `bar.title = 'Title'`: set a title at the beginning of the bar; can be set right when starting it or while it's running or even after finished to affect the receipt on demand — mix it with `title_length` config to keep the bar from changing its length while running.
+- `bar.monitor_end`, `bar.elapsed_end`, and `bar.stats_end`: change or hide the corresponding final receipt widgets while the bar is running or after it has finished. They accept the same boolean or format string values as the matching configuration options.
 - `bar.current`: retrieve the current bar count or percentage — more details below on Modes of Operation.
 - `bar.monitor` returns the current monitor widget text, which is the current bar position formatted according to the current configuration.
 - `bar.eta`: returns the current ETA widget text, formatted according to the current configuration.

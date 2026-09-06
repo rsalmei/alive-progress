@@ -75,3 +75,42 @@ def test_progress_it(enrich_print, total, scale, capsys):
 
     alive_it_case(n if total else None)
     assert capsys.readouterr().out.strip() == DATA[enrich_print, total, False, scale]
+
+
+def test_progress_bar_can_hide_receipt_widgets(capsys):
+    config = config_handler(length=3, bar='classic', force_tty=False, file=sys.stdout)
+
+    with __alive_bar(config, 1, _testing=True) as bar:
+        bar()
+        bar.monitor_end = False
+        bar.elapsed_end = False
+        bar.stats_end = False
+
+    assert capsys.readouterr().out.strip() == '[===]'
+
+
+def test_progress_bar_can_customize_receipt_widgets(capsys):
+    config = config_handler(length=3, bar='classic', force_tty=False, file=sys.stdout)
+
+    with __alive_bar(config, 1, _testing=True) as bar:
+        bar()
+        bar.monitor_end = '{count} done'
+        bar.elapsed_end = 'after {elapsed}'
+        bar.stats_end = 'at {rate}'
+
+    assert capsys.readouterr().out.strip() == '[===] 1 done after 1.2s at 9876.54/s'
+
+    bar.monitor_end = False
+    bar.elapsed_end = False
+    bar.stats_end = False
+    assert bar.receipt() == '[===]'
+
+
+def test_progress_bar_validates_dynamic_receipt_widgets(capsys):
+    config = config_handler(length=3, bar='classic', force_tty=False, file=sys.stdout)
+
+    with __alive_bar(config, 1, _testing=True) as bar, \
+            pytest.raises(ValueError, match='Expected only the fields'):
+        bar.elapsed_end = '{rate}'
+
+    capsys.readouterr()

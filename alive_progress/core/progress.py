@@ -339,6 +339,10 @@ def __alive_bar(config, total=None, *, calibrate=None,
     stats = _Widget(stats_run, config.stats, stats_default)
     stats_end = _Widget(stats_end, config.stats_end, '({rate})' if stats.f[:-1] else '')
 
+    def set_end_widget(name, widget, value):
+        value = getattr(config_handler(**{name: value}), name)
+        widget.set(value)
+
     def get_receipt():
         buffer = io.StringIO()
         tbuf = terminal.get_term(buffer, True, 1000)  # large enough to not truncate.
@@ -347,6 +351,9 @@ def __alive_bar(config, total=None, *, calibrate=None,
         return buffer.getvalue().strip()
 
     bar_handle = __AliveBarHandle(pause_monitoring, set_title, set_text,
+                                  lambda value=None: set_end_widget('monitor_end', monitor_end, value),
+                                  lambda value=None: set_end_widget('elapsed_end', elapsed_end, value),
+                                  lambda value=None: set_end_widget('stats_end', stats_end, value),
                                   current, lambda: run.monitor_text, lambda: run.rate_text,
                                   lambda: run.eta_text, lambda: run.elapsed, get_receipt)
     set_text(), set_title()
@@ -384,10 +391,16 @@ def __alive_bar(config, total=None, *, calibrate=None,
 class _Widget:  # pragma: no cover
     def __init__(self, func, value, default):
         self.func = func
+        self.default = default
+        self.set(value)
+
+    def set(self, value):
+        """Set the widget format."""
+
         if isinstance(value, str):
             self.f = value
         elif value:
-            self.f = default
+            self.f = self.default
         else:
             self.f = ''
 
@@ -439,16 +452,20 @@ class __AliveBarHandle:
     current = _ReadOnlyProperty()
     text = _AssignFunction()
     title = _AssignFunction()
+    monitor_end = _AssignFunction()
+    elapsed_end = _AssignFunction()
+    stats_end = _AssignFunction()
     monitor = _ReadOnlyProperty()
     rate = _ReadOnlyProperty()
     eta = _ReadOnlyProperty()
     elapsed = _ReadOnlyProperty()
     receipt = _Function()
 
-    def __init__(self, pause, set_title, set_text, get_current, get_monitor, get_rate, get_eta,
-                 get_elapsed, get_receipt):
+    def __init__(self, pause, set_title, set_text, set_monitor_end, set_elapsed_end, set_stats_end,
+                 get_current, get_monitor, get_rate, get_eta, get_elapsed, get_receipt):
         self._handle, self._pause, self._current = None, pause, get_current
         self._title, self._text = set_title, set_text
+        self._monitor_end, self._elapsed_end, self._stats_end = set_monitor_end, set_elapsed_end, set_stats_end
         self._monitor, self._rate, self._eta = get_monitor, get_rate, get_eta
         self._elapsed, self._receipt = get_elapsed, get_receipt
 
