@@ -75,3 +75,27 @@ def test_progress_it(enrich_print, total, scale, capsys):
 
     alive_it_case(n if total else None)
     assert capsys.readouterr().out.strip() == DATA[enrich_print, total, False, scale]
+
+
+def test_progress_bar_reports_terminal_progress(capsys):
+    config = config_handler(length=3, bar='classic', force_tty=True,
+                            terminal_progress=True, file=sys.stdout)
+
+    with __alive_bar(config, 2, _testing=True) as bar:
+        bar()
+
+    output = capsys.readouterr().out
+    assert '\x1b]9;4;1;50\x07' in output
+    assert output.endswith('\x1b]9;4;0;0\x07')
+
+
+def test_progress_bar_reports_indeterminate_terminal_progress(capsys):
+    config = config_handler(length=3, bar='classic', force_tty=True,
+                            terminal_progress=True, file=sys.stdout)
+
+    with __alive_bar(config, _testing=True):
+        pass
+
+    output = capsys.readouterr().out
+    assert '\x1b]9;4;3;0\x07' in output
+    assert output.endswith('\x1b]9;4;0;0\x07')

@@ -114,6 +114,7 @@ def test_config_creation(handler):
     (dict(bar=BARS['solid']), {}),
     (dict(force_tty=False), {}),
     (dict(manual=True), {}),
+    (dict(terminal_progress=True), {}),
     (dict(enrich_print=False), {}),
     (dict(title_length=20), {}),
     (dict(scale=False, manual=True, enrich_print=False, title_length=10), dict(scale=None)),

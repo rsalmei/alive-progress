@@ -29,6 +29,9 @@ def new(original, max_cols):
     def factory_cursor_up(num):
         return _ansi_escape_sequence('A', num)  # sends cursor up: CSI {x}A.
 
+    def progress(state, percent=0):
+        write(f'\x1b]9;4;{state};{percent}\x07')
+
     clear_line = _ansi_escape_sequence('2K\r')  # clears the entire line: CSI n K -> with n=2.
     clear_end_line = _ansi_escape_sequence('K')  # clears line from cursor: CSI K.
     clear_end_screen = _ansi_escape_sequence('J')  # clears screen from cursor: CSI J.

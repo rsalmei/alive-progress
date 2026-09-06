@@ -19,6 +19,7 @@ def _create(mod, interactive):
         # directly from terminal impl.
         write=mod.write,
         flush=mod.flush,
+        progress=mod.progress,
         cols=mod.cols,
         carriage_return=mod.carriage_return,
         clear_line=mod.clear_line,

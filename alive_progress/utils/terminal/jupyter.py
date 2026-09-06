@@ -20,7 +20,7 @@ def get_from(parent):
     # it seems spaces are appropriately handled to not wrap lines.
     _clear_line = f'\r{" " * cols()}\r'
 
-    from .void import factory_cursor_up, hide_cursor, show_cursor  # noqa
+    from .void import factory_cursor_up, hide_cursor, progress, show_cursor  # noqa
 
     flush = parent.flush
     write = parent.write

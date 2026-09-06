@@ -6,6 +6,10 @@ def flush():
     pass
 
 
+def progress(_state, _percent=0):
+    pass
+
+
 def _ansi_escape_sequence(_=''):
     def inner(_available=None):
         pass

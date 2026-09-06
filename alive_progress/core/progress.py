@@ -112,6 +112,7 @@ def alive_bar(total: Optional[int] = None, *, calibrate: Optional[int] = None, *
             refresh_secs (int): forces the refresh period, `0` for the reactive visual feedback
             ctrl_c (bool): if False, disables CTRL+C (captures it)
             dual_line (bool): if True, places the text below the bar
+            terminal_progress (bool): if True, reports progress to compatible terminals via OSC 9;4
             unit (str): any text that labels your entities
             scale (any): the scaling to apply to units: 'SI', 'IEC', 'SI2'
             precision (int): how many decimals do display when scaling
@@ -140,7 +141,8 @@ def __alive_bar(config, total=None, *, calibrate=None,
         with cond_refresh:
             while thread:
                 event_renderer.wait()
-                alive_repr(term, next(spinner_player), spinner_suffix)
+                alive_repr(term, next(spinner_player), spinner_suffix,
+                           report_progress=config.terminal_progress)
                 cond_refresh.wait(1. / fps(run.rate))
 
     run.rate, run.init, run.elapsed, run.percent = 0., 0., 0., 0.
@@ -158,8 +160,15 @@ def __alive_bar(config, total=None, *, calibrate=None,
             run.elapsed = time.perf_counter() - run.init
             run.rate = gen_rate.send((processed(), run.elapsed))
 
-    def alive_repr(out, spinner=None, spinner_suffix=None):
+    def alive_repr(out, spinner=None, spinner_suffix=None, *, report_progress=False):
         main_update_hook()
+
+        if report_progress:
+            if total or config.manual:
+                percent = round(min(1., run.percent) * 100)
+                out.progress(1, percent)
+            else:
+                out.progress(3)
 
         fragments = (run.title, bar_repr(run.percent), bar_suffix, spinner, spinner_suffix,
                      monitor(), elapsed(), stats(), *run.text)
@@ -218,7 +227,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
     def pause_monitoring():
         event_renderer.clear()
         offset = stop_monitoring()
-        alive_repr(term)
+        alive_repr(term, report_progress=config.terminal_progress)
         term.write('\n')
         term.flush()
         try:
@@ -373,10 +382,12 @@ def __alive_bar(config, total=None, *, calibrate=None,
             if not config.receipt_text:
                 set_text()
             term.clear_end_screen()
-            alive_repr(term)
+            alive_repr(term, report_progress=config.terminal_progress)
             term.write('\n')
         else:
             term.clear_line()
+        if config.terminal_progress:
+            term.progress(0)
         main_update_hook = _noop  # freeze the final elapsed, rate and eta values.
         term.flush()
 

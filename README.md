@@ -616,6 +616,7 @@ These are the options - default values in brackets:
 - `refresh_secs`: [`0`] forces the refresh period to this, `0` is the reactive visual feedback
 - `ctrl_c`: [`True`] if False, disables CTRL+C (captures it)
 - `dual_line`: [`False`] if True, places the text below the bar
+- `terminal_progress`: [`False`] reports progress to compatible terminals using OSC 9;4
 - `unit`: any text that labels your entities
 - `scale`: the scaling to apply to units: `None`, `SI`, `IEC`, or `SI2`
   <br> ↳ supports aliases: `False` or `''` -> `None`, `True` -> `SI`, `10` or `'10'` -> `SI`, `2` or `'2'` -> `IEC`
