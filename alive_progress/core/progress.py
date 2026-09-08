@@ -7,6 +7,7 @@ import threading
 import time
 import io
 from contextlib import contextmanager
+from operator import length_hint
 from typing import Any, Callable, Optional, TypeVar
 from collections.abc import Collection, Iterable
 
@@ -574,8 +575,8 @@ DB updated |████████████████████| 100k/1
     if total is None and hasattr(it, '__len__'):
         total = len(it)
     it = iter(it)
-    if total is None and hasattr(it, '__length_hint__'):
-        total = it.__length_hint__()
+    if total is None:
+        total = length_hint(it)
     return __AliveBarIteratorAdapter(it, finalize, __alive_bar(config, total, calibrate=calibrate))
 
 
