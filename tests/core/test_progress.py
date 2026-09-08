@@ -75,3 +75,28 @@ def test_progress_it(enrich_print, total, scale, capsys):
 
     alive_it_case(n if total else None)
     assert capsys.readouterr().out.strip() == DATA[enrich_print, total, False, scale]
+
+
+@pytest.mark.parametrize('unavailable', [NotImplemented, TypeError])
+def test_progress_it_with_unavailable_length_hint(unavailable):
+    from alive_progress import alive_it
+
+    class Iterator:
+        def __init__(self):
+            self.items = iter(range(3))
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            return next(self.items)
+
+        def __length_hint__(self):
+            if unavailable is TypeError:
+                raise TypeError('length unavailable')
+            return unavailable
+
+    bar = alive_it(Iterator(), disable=True)
+
+    assert list(bar) == [0, 1, 2]
+    assert bar.current == 3
