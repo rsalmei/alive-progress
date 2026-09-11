@@ -42,6 +42,17 @@ def test_scrolling_spinner(length, block, blank, right, hiding, expected):
         assert tuple(cycle) == result
 
 
+@pytest.mark.parametrize('hiding, expected', [
+    (True, ('______', 'a_____', 'aa____', '_aa___', '__aa__', '___aa_', '____aa', '_____a')),
+    (False, ('aa____', '_aa___', '__aa__', '___aa_', '____aa', 'b____a')),
+])
+def test_scrolling_spinner_with_actual_length(hiding, expected):
+    spinner_factory = scrolling_spinner_factory('abc', length=3, block=1, blank='_',
+                                                right=True, hiding=hiding)
+    spinner = spinner_factory(length_actual=6)
+    assert tuple(spinner()) == expected
+
+
 @pytest.mark.parametrize('length, block, blank, hiding, expected', [
     (3, None, ' ', True, (('   ', 'c  ', 'bc ', 'abc', ' ab', '  a',
                            '   ', '  d', ' de', 'def', 'ef ', 'f  '),)),
@@ -61,6 +72,20 @@ def test_bouncing_spinner(length, block, blank, hiding, expected):
     for result in expected:
         cycle = spinner()
         assert tuple(cycle) == result
+
+
+@pytest.mark.parametrize('hiding, expected', [
+    (True, ('______', 'a_____', 'aa____', '_aa___', '__aa__', '___aa_', '____aa',
+            '_____a', '______', '_____d', '____dd', '___dd_', '__dd__', '_dd___',
+            'dd____', 'd_____')),
+    (False, ('aa____', '_aa___', '__aa__', '___aa_', '____dd', '___dd_', '__dd__',
+             '_dd___')),
+])
+def test_bouncing_spinner_with_actual_length(hiding, expected):
+    spinner_factory = bouncing_spinner_factory('abc', length=3, block=1, left_chars='def',
+                                               blank='_', hiding=hiding)
+    spinner = spinner_factory(length_actual=6)
+    assert tuple(spinner()) == expected
 
 
 @pytest.mark.parametrize('outputs, expected', [

@@ -8,6 +8,19 @@ from itertools import chain, repeat
 from .utils import repeating, sliding_window_factory, spinner_player
 
 
+def _actual_length_and_ratio(length_actual, length, natural):
+    ratio = float(length_actual) / length if length and length_actual else 1
+    return length_actual or natural, ratio
+
+
+def _block_size(block, ratio, chars):
+    return int((block or 0) * ratio) or len(chars)
+
+
+def _direction_size(length_actual, block_size, hiding):
+    return length_actual + block_size if hiding else abs(length_actual - block_size) or 1
+
+
 def frame_spinner_factory(*frames):
     """Create a factory of a spinner that delivers frames in sequence."""
 
@@ -34,8 +47,8 @@ def scrolling_spinner_factory(chars, length=None, block=None, blank=' ', right=T
         if block and not (length_actual or length):  # pragma: no cover
             raise ValueError('length must be set with block')
 
-        ratio = float(length_actual) / length if length and length_actual else 1
-        length_actual = length_actual or inner_factory.natural
+        length_actual, ratio = _actual_length_and_ratio(
+            length_actual, length, inner_factory.natural)
 
         if not hiding and block and block >= length_actual:  # pragma: no cover
             raise ValueError('cannot animate with block >= length')
@@ -46,7 +59,7 @@ def scrolling_spinner_factory(chars, length=None, block=None, blank=' ', right=T
                 yield next(infinite_ribbon)
 
         initial = 0
-        block_size = int((block or 0) * ratio) or len(chars)
+        block_size = _block_size(block, ratio, chars)
         if hiding:
             gap = length_actual
         else:
@@ -77,13 +90,12 @@ def bouncing_spinner_factory(right_chars, length, block=None, left_chars=None,
     """Create a factory of a spinner that bounces characters inside a line."""
 
     def inner_factory(length_actual=None):
+        length_actual, ratio = _actual_length_and_ratio(
+            length_actual, length, inner_factory.natural)
         right_scroll = scrolling_spinner_factory(right_chars, length, block=block, blank=blank,
                                                  right=True, hiding=hiding)(length_actual)
         left_scroll = scrolling_spinner_factory(left_chars, length, block=block, blank=blank,
                                                 right=False, hiding=hiding)(length_actual)
-
-        ratio = float(length_actual) / length if length and length_actual else 1
-        length_actual = length_actual or inner_factory.natural
 
         @repeating(length_actual)
         def inner_spinner():
@@ -94,12 +106,10 @@ def bouncing_spinner_factory(right_chars, length, block=None, left_chars=None,
                 if i < left_direction_size:
                     yield fill
 
-        right_block_size = int((block or 0) * ratio) or len(right_chars)
-        left_block_size = int((block or 0) * ratio) or len(left_chars)
-        right_direction_size = length_actual + right_block_size \
-            if hiding else abs(length_actual - right_block_size) or 1
-        left_direction_size = length_actual + left_block_size \
-            if hiding else abs(length_actual - left_block_size) or 1
+        right_block_size = _block_size(block, ratio, right_chars)
+        left_block_size = _block_size(block, ratio, left_chars)
+        right_direction_size = _direction_size(length_actual, right_block_size, hiding)
+        left_direction_size = _direction_size(length_actual, left_block_size, hiding)
 
         inner_spinner.cycles = right_direction_size + left_direction_size
         return inner_spinner
