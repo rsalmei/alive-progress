@@ -417,7 +417,7 @@ After a bar has finished (or even while running), you have a plethora of methods
 - `bar.eta`: returns the current ETA widget text, formatted according to the current configuration.
 - `bar.rate`: returns the current throughput widget text, formatted according to the current configuration.
 - `bar.elapsed`: returns the current elapsed time in seconds, with full precision.
-- `bar.receipt`: returns an on-demand receipt, which can be used however you want in your code, such as logging or displaying it in a custom way.
+- `bar.receipt()`: returns an on-demand receipt, which can be used however you want in your code, such as logging or displaying it in a custom way.
 - `bar.pause()`: pauses the bar without losing its state — more details below on the Pause Mechanism.
 
 ## Auto-iterating
@@ -519,10 +519,13 @@ The `bar()` handlers support either relative or absolute semantics, depending on
 
 You can call `bar()` as many times as you want! The terminal refresh rate will always be asynchronously computed according to the current throughput and progress, so you won't risk spamming the terminal with more updates than needed.
 
-In any case, to retrieve the current counter/percentage, just call: `bar.current`:
+In any case, to retrieve the current counter/percentage, read the `bar.current` property:
 
 - in _auto_ and _unknown_ modes, this provides an **integer** — the actual internal counter;
-- in _manual_ mode, this provides a **float** in the interval [0, 1] — the last percentage set.
+- in _manual_ mode with a positive `total`, this provides an **integer** — the percentage multiplied by `total`, rounded up;
+- in _manual_ mode without a positive `total`, this provides a **float** — the last percentage set, clamped to a minimum of zero. Values greater than 1 are allowed to represent overflow.
+
+For example, after `bar(0.351)` in manual mode, `bar.current` is `36` with `total=100`, or `0.351` without a total.
 
 Finally, the `bar()` handler in **auto** mode leverages a unique ability: skip items! Just call `bar(skipped=True)` or `bar(10, skipped=True)` to exclude those items from the throughput calculations, and thus preventing them from inaccurately affecting the ETA.
 
