@@ -75,3 +75,73 @@ def test_progress_it(enrich_print, total, scale, capsys):
 
     alive_it_case(n if total else None)
     assert capsys.readouterr().out.strip() == DATA[enrich_print, total, False, scale]
+
+
+@pytest.mark.parametrize('before,after', [(None, 'next item'), ('current item', None)])
+@pytest.mark.parametrize('dual_line', [True, False])
+def test_text_change_during_render(before, after, dual_line, monkeypatch):
+    import io
+
+    from alive_progress.core import progress
+    from alive_progress.utils import terminal
+
+    output = io.StringIO()
+    term = terminal.get_term(output, force_tty=True, cols=200)
+    term.interactive = False  # Drive frames explicitly rather than depend on thread timing.
+    monkeypatch.setattr(terminal, 'get_term', lambda *args: term)
+    config = config_handler(file=output, dual_line=dual_line, enrich_print=False)
+
+    with __alive_bar(config, 2, _testing=True, _sampling=True) as state:
+        state['set_text'](before)
+        output.seek(0)
+        output.truncate()
+        print_cells = progress.print_cells
+
+        def change_text_after_cells(*args):
+            result = print_cells(*args)
+            # The main thread can update text while the renderer writes a frame.
+            state['set_text'](after)
+            return result
+
+        with monkeypatch.context() as patch:
+            patch.setattr(progress, 'print_cells', change_text_after_cells)
+            state['alive_repr'](term)
+
+        frame = output.getvalue()
+        assert frame.count('\n') == int(dual_line and bool(before))
+        assert frame.count(term.cursor_up_1.sequence) == int(dual_line and bool(before))
+        if before:
+            assert before in frame
+        if after:
+            assert after not in frame
+
+        output.seek(0)
+        output.truncate()
+        state['alive_repr'](term)
+        frame = output.getvalue()
+        assert frame.count('\n') == int(dual_line and bool(after))
+        assert frame.count(term.cursor_up_1.sequence) == int(dual_line and bool(after))
+        if after:
+            assert after in frame
+
+
+@pytest.mark.parametrize('receipt_text', [True, False])
+def test_dual_line_receipt_cursor(receipt_text, monkeypatch):
+    import io
+
+    from alive_progress.utils import terminal
+
+    output = io.StringIO()
+    term = terminal.get_term(output, force_tty=True, cols=200)
+    term.interactive = False
+    monkeypatch.setattr(terminal, 'get_term', lambda *args: term)
+    config = config_handler(file=output, dual_line=True, receipt_text=receipt_text)
+
+    with __alive_bar(config, 1, _testing=True) as bar:
+        bar.text = 'finished item'
+        bar()
+
+    receipt = output.getvalue()
+    assert ('finished item' in receipt) == receipt_text
+    assert receipt.count('\n') == 1 + receipt_text
+    assert term.cursor_up_1.sequence not in receipt

@@ -145,7 +145,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
 
     run.rate, run.init, run.elapsed, run.percent = 0., 0., 0., 0.
     run.count, run.processed, run.last_len = 0, 0, 0
-    run.text, run.title, run.suffix, ctrl_c = None, None, None, False
+    run.text, run.title, ctrl_c = None, None, False
     run.monitor_text, run.eta_text, run.rate_text = '?', '?', '?'
 
     if _testing:  # it's easier than trying to mock these internal values.
@@ -161,18 +161,19 @@ def __alive_bar(config, total=None, *, calibrate=None,
     def alive_repr(out, spinner=None, spinner_suffix=None):
         main_update_hook()
 
+        text, suffix = run.text  # Keep the text and cursor movement from the same update.
         fragments = (run.title, bar_repr(run.percent), bar_suffix, spinner, spinner_suffix,
-                     monitor(), elapsed(), stats(), *run.text)
+                     monitor(), elapsed(), stats(), *text)
 
         run.last_len = print_cells(fragments, out.cols(), out, run.last_len)
-        out.write(run.suffix)
+        out.write(suffix)
         out.flush()
 
     def set_text(text=None):
         if text and config.dual_line:
-            run.text, run.suffix = ('\n', to_cells(str(text))), term.cursor_up_1.sequence
+            run.text = ('\n', to_cells(str(text))), term.cursor_up_1.sequence
         else:
-            run.text, run.suffix = (to_cells(None if text is None else str(text)),), ''  # 1-tuple.
+            run.text = (to_cells(None if text is None else str(text)),), ''  # 1-tuple.
 
     def set_title(title=None):
         run.title = _render_title(config, None if title is None else str(title))
@@ -369,7 +370,7 @@ def __alive_bar(config, total=None, *, calibrate=None,
 
         if config.receipt:  # prints the nice but optional final receipt.
             elapsed, stats, monitor = elapsed_end, stats_end, monitor_end
-            bar_repr, run.suffix = bar_repr.end, ''
+            bar_repr, run.text = bar_repr.end, (run.text[0], '')
             if not config.receipt_text:
                 set_text()
             term.clear_end_screen()
