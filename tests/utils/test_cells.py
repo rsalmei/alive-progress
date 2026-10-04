@@ -2,7 +2,7 @@ import sys
 
 import pytest
 
-from alive_progress.utils.cells import to_cells, print_cells
+from alive_progress.utils.cells import fix_cells, is_wide, print_cells, to_cells
 from alive_progress.utils.terminal import get_term
 
 
@@ -52,6 +52,51 @@ def test_sanitize_text_wide_chars(text, expected, show_marks):
 def test_sanitize_text_double(text, expected, show_marks):
     result = to_cells(text)
     assert show_marks(result) == expected
+
+
+@pytest.mark.parametrize('text', ['e\u0301', 'a\u0308\u0301', 'α\u0301'])
+def test_combining_diacritics_use_base_cell_width(text):
+    assert not is_wide(text)
+    assert to_cells(text) == (text,)
+
+
+def test_combining_mark_keeps_wide_cjk_base():
+    text = '中\u0301'
+    assert is_wide(text)
+    assert to_cells(text) == (text, None)
+
+
+@pytest.mark.parametrize('text', ['e\u093e', 'e\u20dd', '1\u20e3'])
+def test_spacing_and_enclosing_marks_keep_existing_wide_behavior(text):
+    assert is_wide(text)
+    assert to_cells(text) == (text, None)
+
+
+@pytest.mark.parametrize('text', ['❤️', '1️⃣', '🇨🇳', '👩\u200d💻'])
+def test_complex_graphemes_keep_existing_wide_behavior(text):
+    assert is_wide(text)
+    assert to_cells(text) == (text, None)
+
+
+def test_combining_cluster_render_and_clip_use_one_cell(capsys):
+    term = get_term(force_tty=True)
+    text = 'Ae\u0301B'
+    assert print_cells((to_cells(text),), 2, term) == 2
+    term.flush()
+    assert capsys.readouterr().out == '\rAe\u0301'
+
+
+def test_fix_cells_does_not_pad_a_combining_cluster():
+    text = 'e\u0301'
+    assert fix_cells(to_cells(text)[:1]) == (text,)
+
+
+@pytest.mark.parametrize('text', ['e\u093e', 'e\u20dd', '1\u20e3'])
+def test_non_mn_cluster_clip_keeps_wide_cell_boundary(text, capsys):
+    term = get_term(force_tty=True)
+    assert print_cells((to_cells(text),), 1, term) == 1
+    term.flush()
+    assert capsys.readouterr().out == '\r '
 
 
 @pytest.mark.parametrize('fragments, cols, ret, expected', [

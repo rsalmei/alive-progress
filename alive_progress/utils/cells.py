@@ -75,6 +75,28 @@ from . import sanitize
 VS_15 = '\ufe0e'
 
 
+def _is_variation_selector(char):
+    """Return whether *char* is a Unicode variation selector."""
+    codepoint = ord(char)
+    return codepoint in range(0xfe00, 0xfe10) or codepoint in range(0xe0100, 0xe01f0)
+
+
+def _is_combining_cluster(g):
+    """Identify a base character followed only by combining marks.
+
+    This deliberately excludes variation selectors: ``❤️`` and other emoji
+    presentation sequences are complex graphemes whose existing wide-cell
+    behavior must be preserved.  A cluster is therefore narrowed only when
+    Unicode's own category data says every trailing codepoint is a nonspacing
+    mark (``Mn``) and no
+    presentation or joining control is involved.
+    """
+    return len(g) > 1 and unicodedata.category(g[0])[0] != 'M' and all(
+        unicodedata.category(char) == 'Mn' and not _is_variation_selector(char)
+        for char in g[1:]
+    )
+
+
 def print_cells(fragments, cols, term, last_line_len=0):
     """Print a tuple of fragments of tuples of cells on the terminal, until a given number of
     cols is achieved, slicing over cells when needed.
@@ -145,7 +167,11 @@ def is_wide(g):
         g (str): the grapheme sequence to be tested
 
     """
-    return g[-1] != VS_15 and (len(g) > 1 or unicodedata.east_asian_width(g) in ('W', 'F'))
+    if g[-1] == VS_15:
+        return False
+    if _is_combining_cluster(g):
+        return unicodedata.east_asian_width(g[0]) in ('W', 'F')
+    return len(g) > 1 or unicodedata.east_asian_width(g) in ('W', 'F')
 
 
 def fix_cells(chars):
