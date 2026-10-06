@@ -44,8 +44,8 @@ def _is_notebook():
         return False
 
     from IPython import get_ipython
-    class_ = get_ipython().__class__.__name__
-    return class_ != 'TerminalInteractiveShell'
+    shell = get_ipython()
+    return shell is not None and shell.__class__.__name__ != 'TerminalInteractiveShell'
 
 
 def get_void():
