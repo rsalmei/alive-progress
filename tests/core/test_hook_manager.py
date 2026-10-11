@@ -1,13 +1,15 @@
 import logging
 import sys
 from contextlib import contextmanager
+from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 from threading import Condition
 from unittest import mock
 
 import click
 import pytest
 
-from alive_progress.core.hook_manager import buffered_hook_manager
+from alive_progress import alive_bar
+from alive_progress.core.hook_manager import BaseHook, buffered_hook_manager
 from alive_progress.utils.terminal import get_term
 
 
@@ -129,3 +131,55 @@ def test_uninstall(handlers):
     with mock.patch('logging.StreamHandler.setStream') as mock_set_stream:
         hook_manager.uninstall()
     mock_set_stream.assert_has_calls(tuple(mock.call(mock.ANY) for _ in handlers))
+
+
+@pytest.mark.parametrize('error', [AttributeError, RuntimeError])
+def test_install_ignores_unavailable_handler_stream(error, monkeypatch, capsys):
+    class CustomHandler(logging.StreamHandler):
+        pass
+
+    handler = CustomHandler()
+    logger = logging.getLogger('alive-progress-custom-handler-test')
+    monkeypatch.setattr(logger, 'handlers', [handler])
+    try:
+        with mock.patch.object(CustomHandler, 'stream', create=True,
+                               new_callable=mock.PropertyMock, side_effect=error):
+            with install_hook():
+                print('ok')
+        assert capsys.readouterr().out == 'nice 35! ok\n'
+    finally:
+        handler.close()
+
+
+@pytest.mark.parametrize('handler_type', [
+    logging.FileHandler, RotatingFileHandler, TimedRotatingFileHandler,
+])
+@pytest.mark.parametrize('delay', [True, False])
+@pytest.mark.parametrize('emit_during', [True, False])
+def test_file_handler_lazy_open(handler_type, delay, emit_during, tmp_path, monkeypatch):
+    path = tmp_path / 'progress.log'
+    handler = handler_type(path, delay=delay, encoding='utf-8')
+    logger = logging.getLogger('alive-progress-file-handler-test')
+    monkeypatch.setattr(logger, 'handlers', [handler])
+    monkeypatch.setattr(logger, 'propagate', False)
+    monkeypatch.setattr(logger, 'level', logging.WARNING)
+
+    try:
+        with alive_bar(1, force_tty=False, receipt=False, enrich_print=False) as bar:
+            if delay:
+                assert handler.stream is None
+                assert not path.exists()
+            if emit_during:
+                logger.warning('inside')
+            bar()
+
+        assert not isinstance(handler.stream, BaseHook)
+        assert path.exists() == (not delay or emit_during)
+        logger.warning('outside')
+        assert path.read_text(encoding='utf-8') == (
+            'inside\noutside\n' if emit_during else 'outside\n')
+    finally:
+        # Ensure a failing regression cannot leave a wrapped handler behind.
+        if isinstance(handler.stream, BaseHook):
+            handler.stream = handler.stream._stream
+        handler.close()
