@@ -92,6 +92,9 @@ def buffered_hook_manager(header_template, get_pos, offset, cond_refresh, term):
 
         def set_hook(h):
             try:
+                if h.stream is None:
+                    # Leave delayed FileHandlers unopened until their first record.
+                    return None
                 return h.setStream(get_hook_for(h))
             except Exception:  # captures AttributeError, AssertionError, and anything else,
                 pass  # then returns None, effectively leaving that handler alone, unchanged.
