@@ -38,6 +38,9 @@ def buffered_hook_manager(header_template, get_pos, offset, cond_refresh, term):
         if isinstance(part, bytes):
             part = part.decode(ENCODING)
 
+        if part == '':
+            return
+
         buffer = buffers[stream]
         if part != '\n':
             osc = part.find('\x1b]')  # https://en.wikipedia.org/wiki/ANSI_escape_code

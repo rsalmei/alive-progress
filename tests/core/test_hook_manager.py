@@ -7,6 +7,7 @@ from unittest import mock
 import click
 import pytest
 
+from alive_progress import alive_bar
 from alive_progress.core.hook_manager import buffered_hook_manager
 from alive_progress.utils.terminal import get_term
 
@@ -83,6 +84,49 @@ def test_hook_manager_flush(capsys):
     # after used, the buffers should be empty
     hook_manager.flush_buffers()
     assert capsys.readouterr().out == ''
+
+
+@pytest.mark.parametrize('part', ['', b''])
+@pytest.mark.parametrize('stream_name', ['stdout', 'stderr'])
+@pytest.mark.parametrize('flush_method', ['stream', 'manager', 'exit'])
+def test_hook_manager_ignores_empty_writes(part, stream_name, flush_method, capsys):
+    hook_manager = hook('nice {}! ')
+    with install_hook(hook_manager):
+        stream = getattr(sys, stream_name)
+        stream.write(part)
+        if flush_method == 'stream':
+            stream.flush()
+        elif flush_method == 'manager':
+            hook_manager.flush_buffers()
+
+    assert capsys.readouterr() == ('', '')
+
+
+@pytest.mark.parametrize('enrich_print', [True, False])
+def test_empty_print_with_alive_bar(enrich_print, capsys):
+    with alive_bar(1, force_tty=False, receipt=False, enrich_print=enrich_print,
+                   file=sys.stdout) as bar:
+        print('', end='', flush=True)
+        bar()
+
+    assert capsys.readouterr() == ('', '')
+
+
+def test_hook_manager_empty_writes_preserve_pending_text(capsys):
+    with install_hook():
+        sys.stdout.write('o')
+        sys.stdout.write('')
+        sys.stdout.write(b'')
+        sys.stdout.write('k')
+
+    assert capsys.readouterr().out == 'nice 35! ok\n'
+
+
+def test_hook_manager_preserves_explicit_newline(capsys):
+    with install_hook():
+        sys.stdout.write('\n')
+
+    assert capsys.readouterr().out == '\n'
 
 
 def test_hook_manager_do_clear_line_on_stdout():
