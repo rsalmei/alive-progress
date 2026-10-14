@@ -11,7 +11,7 @@ except ImportError:
 from alive_progress.styles.internal import BARS, SPINNERS, THEMES
 # noinspection PyProtectedMember
 from alive_progress.core.configuration import Config, _bool_input_factory, _int_input_factory, \
-    _style_input_factory, create_config
+    _merge_theme, _style_input_factory, create_config
 
 
 @pytest.mark.parametrize('lower, upper, num, expected', [
@@ -158,3 +158,14 @@ def test_config_global_theme(config_params_theme, handler):
     handler.set_global(theme='cool')
     config = handler()
     assert {k: getattr(config, k) for k in config_params_theme} == config_params_theme
+
+
+def test_merge_theme_with_overrides():
+    with mock.patch.dict(THEMES, cool=dict(length=10, title_length=2)):
+        assert _merge_theme('cool', dict(length=20)) == dict(length=20, title_length=2)
+
+
+def test_merge_theme_does_not_mutate_theme():
+    with mock.patch.dict(THEMES, cool=dict(length=10)):
+        _merge_theme('cool', dict(length=20))
+        assert THEMES['cool'] == dict(length=10)

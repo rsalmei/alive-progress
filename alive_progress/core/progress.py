@@ -17,6 +17,33 @@ from .utils import clear_traces, hide_cursor, render_title, sanitize_text_markin
 from ..animations.utils import spinner_player
 
 
+def _normalize_total(total):
+    if total is None:
+        return None
+    if not isinstance(total, int):
+        raise TypeError("integer argument expected, got '{}'.".format(type(total).__name__))
+    if total <= 0:
+        return None
+    return total
+
+
+def _create_fps_controller(get_rate, calibrate, factor):
+    min_fps, max_fps = 2., 60.
+    calibrate = max(0., calibrate or factor)
+    adjust_log_curve = 100. / min(calibrate, 100.)  # adjust curve for small numbers
+    factor = (max_fps - min_fps) / math.log10((calibrate * adjust_log_curve) + 1.)
+
+    def fps():
+        rate = get_rate()
+        if rate <= 0:
+            return 10.  # bootstrap speed
+        if rate < calibrate:
+            return math.log10((rate * adjust_log_curve) + 1.) * factor + min_fps
+        return max_fps
+
+    return fps
+
+
 @contextmanager
 def alive_bar(total=None, title=None, calibrate=None, **options):
     """An alive progress bar to keep track of lengthy operations.
@@ -87,11 +114,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
             title_length (int): fixed title length, or 0 for unlimited
 
     """
-    if total is not None:
-        if not isinstance(total, int):
-            raise TypeError("integer argument expected, got '{}'.".format(type(total).__name__))
-        if total <= 0:
-            total = None
+    total = _normalize_total(total)
     config = config_handler(**options)
 
     def run(spinner):
@@ -230,17 +253,7 @@ def alive_bar(total=None, title=None, calibrate=None, **options):
     # so the factor k = (maxfps - minfps) / log10(c + 1), and
     #   fps = log10(x + 1) * (maxfps - minfps) / log10(c + 1) + minfps
     # neat! ;)
-    min_fps, max_fps = 2., 60.
-    calibrate = max(0., calibrate or factor)
-    adjust_log_curve = 100. / min(calibrate, 100.)  # adjust curve for small numbers
-    factor = (max_fps - min_fps) / math.log10((calibrate * adjust_log_curve) + 1.)
-
-    def fps():
-        if run.rate <= 0:
-            return 10.  # bootstrap speed
-        if run.rate < calibrate:
-            return math.log10((run.rate * adjust_log_curve) + 1.) * factor + min_fps
-        return max_fps
+    fps = _create_fps_controller(lambda: run.rate, calibrate, factor)
 
     end, run.text, run.last_line_len = False, '', 0
     run.count, run.percent, run.rate, run.init = 0, 0., 0., 0.
