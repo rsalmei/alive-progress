@@ -579,6 +579,9 @@ DB updated |████████████████████| 100k/1
     return __AliveBarIteratorAdapter(it, finalize, __alive_bar(config, total, calibrate=calibrate))
 
 
+_BAR_HANDLE_ATTRIBUTES = frozenset(vars(__AliveBarHandle))
+
+
 class __AliveBarIteratorAdapter(Iterable[T]):
     def __init__(self, it, finalize, inner_bar):
         self._it, self._finalize, self._inner_bar = it, finalize, inner_bar
@@ -602,6 +605,8 @@ class __AliveBarIteratorAdapter(Iterable[T]):
         # makes this adapter work as the real bar.
         if '_bar' in self.__dict__:  # detects not yet started bar instances.
             return getattr(self._bar, item)
+        if item not in _BAR_HANDLE_ATTRIBUTES:
+            raise AttributeError(item)
         raise UserWarning('Configure this bar either via `alive_it()` or after iterating it.')
 
     def __setattr__(self, key, value):

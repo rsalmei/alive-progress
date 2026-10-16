@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- let unknown iterator-adapter attributes report AttributeError for standard Python introspection
+
 ## 3.3.0 - Jul 19, 2025
 - the final receipt is available in the alive_bar handle
 - the elapsed time is available in the alive_bar handle, in seconds with full precision
