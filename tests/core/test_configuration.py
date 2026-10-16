@@ -55,6 +55,26 @@ def test_format_input_factory(param, expected):
     assert func(param) == expected
 
 
+@pytest.mark.parametrize('pattern', ['{count:{missing}}', '{count!z}', '{count:{total!z}}'])
+def test_nested_format_rejects_invalid_fields(pattern):
+    assert _format_input_factory('count total percent')(pattern) is ERROR
+    with pytest.raises(ValueError):
+        create_config()(monitor=pattern)
+
+
+def test_nested_format_accepts_allowed_fields():
+    pattern = '{count:>{total}}'
+    assert _format_input_factory('count total percent')(pattern) == pattern
+    assert create_config()(monitor=pattern).monitor == pattern
+    assert pattern.format(count='1', total='3') == '  1'
+
+
+@pytest.mark.parametrize('conversion', ['s', 'r', 'a'])
+def test_format_accepts_standard_conversions(conversion):
+    pattern = '{count!' + conversion + '}'
+    assert _format_input_factory('count')(pattern) == pattern
+
+
 def func_style_123():
     def artifact_super_cool_compiler_assembler_factory():
         pass
