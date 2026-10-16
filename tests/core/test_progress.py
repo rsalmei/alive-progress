@@ -75,3 +75,17 @@ def test_progress_it(enrich_print, total, scale, capsys):
 
     alive_it_case(n if total else None)
     assert capsys.readouterr().out.strip() == DATA[enrich_print, total, False, scale]
+def test_iterator_attribute_probes_before_start():
+    import inspect
+    from alive_progress import alive_it
+
+    adapter = alive_it([1, 2], disable=True)
+    assert not hasattr(adapter, '__wrapped__')
+    assert not hasattr(adapter, '__rich__')
+    assert not hasattr(adapter, 'missing_attribute')
+    assert inspect.unwrap(adapter) is adapter
+    with pytest.raises(UserWarning, match='Configure this bar'):
+        _ = adapter.current
+    assert list(adapter) == [1, 2]
+    assert not hasattr(adapter, '__wrapped__')
+    assert inspect.unwrap(adapter) is adapter
