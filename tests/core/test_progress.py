@@ -75,3 +75,19 @@ def test_progress_it(enrich_print, total, scale, capsys):
 
     alive_it_case(n if total else None)
     assert capsys.readouterr().out.strip() == DATA[enrich_print, total, False, scale]
+
+
+def test_alive_it_falsey_finalizer():
+    from alive_progress import alive_it
+
+    calls = []
+
+    class Finalizer:
+        def __bool__(self):
+            return False
+
+        def __call__(self, bar):
+            calls.append(bar.current)
+
+    assert list(alive_it([1, 2], finalize=Finalizer(), disable=True)) == [1, 2]
+    assert calls == [2]
