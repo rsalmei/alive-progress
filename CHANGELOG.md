@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- invoke supplied iterator finalizers even when their callable object has a false boolean value
+
 ## 3.3.0 - Jul 19, 2025
 - the final receipt is available in the alive_bar handle
 - the elapsed time is available in the alive_bar handle, in seconds with full precision

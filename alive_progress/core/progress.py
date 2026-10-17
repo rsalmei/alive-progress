@@ -592,7 +592,7 @@ class __AliveBarIteratorAdapter(Iterable[T]):
             for item in self._it:
                 yield item
                 self._bar()
-            if self._finalize:
+            if self._finalize is not None:
                 self._finalize(self._bar)
 
     def __call__(self, *args, **kwargs):
