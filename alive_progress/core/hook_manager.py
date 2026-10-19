@@ -75,7 +75,8 @@ def buffered_hook_manager(header_template, get_pos, offset, cond_refresh, term):
     # better hook impl, which works even when nested, since __hash__ will be forwarded.
     class Hook(BaseHook):
         def write(self, part):
-            return write(self._stream, part)
+            write(self._stream, part)
+            return len(part)
 
         def flush(self):
             return flush(self._stream)

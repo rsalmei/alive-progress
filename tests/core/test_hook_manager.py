@@ -48,6 +48,18 @@ def test_hook_manager_captures_bytes_stdout(print_data, capsys):
     assert capsys.readouterr().out == expected
 
 
+@pytest.mark.parametrize('stream_name', ['stdout', 'stderr'])
+@pytest.mark.parametrize('part', [
+    '', 'hello', '你好🙂', '\n', 'first\nsecond',
+    '\x1b]0;title\x07', '\x1b]0;title\x1b\\text', b'bytes',
+])
+def test_hook_write_returns_input_length(stream_name, part, capsys):
+    with install_hook():
+        written = getattr(sys, stream_name).write(part)
+
+    assert written == len(part)
+
+
 # I couldn't make this work yet, there's some weird interaction
 # between my hook and the pytest one...
 def _hook_manager_captures_logging(capsys):
