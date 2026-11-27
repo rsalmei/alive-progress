@@ -341,9 +341,11 @@ def __alive_bar(config, total=None, *, calibrate=None,
 
     def get_receipt():
         buffer = io.StringIO()
-        tbuf = terminal.get_term(buffer, True, 1000)  # large enough to not truncate.
-        run.last_len = 0  # prevents the inclusion of the clear end line escape sequence.
+        tbuf = terminal.get_term(buffer, False, 1000)  # plain text, large enough to not truncate.
+        suffix, last_len = run.suffix, run.last_len
+        run.suffix, run.last_len = '', 0  # excludes cursor moves and the clear end line escapes.
         alive_repr(tbuf)
+        run.suffix, run.last_len = suffix, last_len
         return buffer.getvalue().strip()
 
     bar_handle = __AliveBarHandle(pause_monitoring, set_title, set_text,

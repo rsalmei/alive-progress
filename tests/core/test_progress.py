@@ -75,3 +75,24 @@ def test_progress_it(enrich_print, total, scale, capsys):
 
     alive_it_case(n if total else None)
     assert capsys.readouterr().out.strip() == DATA[enrich_print, total, False, scale]
+
+
+@pytest.mark.parametrize('dual_line', [True, False])
+def test_receipt_has_no_ansi_escapes(dual_line, capsys):
+    config = config_handler(dual_line=dual_line, enrich_print=False,
+                            length=10, bar='classic', force_tty=False, file=sys.stdout)
+
+    with __alive_bar(config, 3, _testing=True) as bar:
+        for i in range(3):
+            bar()
+            bar.text(f'item {i}')
+        receipt = bar.receipt()
+
+    assert '\x1b' not in receipt  # cursor-control escapes must not leak into the receipt.
+    assert '[==========' in receipt
+    assert '3/3 [100%]' in receipt
+    if dual_line:
+        assert '\nitem 2' in receipt  # the text goes on its own line, as plain text.
+    else:
+        assert 'item 2' in receipt
+    capsys.readouterr()  # the bar itself is rendered to the (non-tty) captured stdout.
